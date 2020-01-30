@@ -1,5 +1,5 @@
-var API_URL = 'https://api.passninja.com/callback/'
-
+var API_URL = 'https://api.passninja.com/v1/'
+//var API_URL = 'https://passninja.ngrok.io/'
 
 function onOpen() {
   var spreadsheet = SpreadsheetApp.getActive();
