@@ -112,20 +112,23 @@ function createPass_() {
 
   /* var postData =  { 
     "passJson":{ 
-       "passTypeIdentifier":"pass.com.passninja.matthewkeil",
+       "passTypeIdentifier":"pass.com.passninja.demo.testing",
       "serialNumber": code,
        "webServiceURL":"https://api.passninja.com/v1/",
-       "authenticationToken":"1234567890123456"
+       "authenticationToken":"1234567890123456",
+       "hexBackground":"#571616"
     }
  };*/
 
   var parsedName = parseName(fullName);
 
   var postData = {
-    "passType": "matthewkeil",
+    "passType": "demo.testing",
     "pass": {
       "firstName": parsedName.name,
-      "lastName": parsedName.lastName + " " + parsedName.secondLastName
+      "lastName": parsedName.lastName + " " + parsedName.secondLastName,
+      "issuerName": "required",
+      "hexBackground":"#571616"
     }
   };
 
