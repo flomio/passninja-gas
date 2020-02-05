@@ -110,16 +110,6 @@ function createPass_() {
     return;
   }
 
-  /* var postData =  { 
-    "passJson":{ 
-       "passTypeIdentifier":"pass.com.passninja.demo.testing",
-      "serialNumber": code,
-       "webServiceURL":"https://api.passninja.com/v1/",
-       "authenticationToken":"1234567890123456",
-       "hexBackground":"#571616"
-    }
- };*/
-
   var parsedName = parseName(fullName);
 
   var postData = {
