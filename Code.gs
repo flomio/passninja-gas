@@ -5,7 +5,7 @@ function onOpen() {
   var spreadsheet = SpreadsheetApp.getActive();
   var menuItems = [
     { name: 'Create A Pass', functionName: 'createPass_' },
-    { name: 'Update A Pass', functionName: 'updatePass_' },
+ //   { name: 'Update A Pass', functionName: 'updatePass_' },
     { name: 'Show Events', functionName: 'showEvents_' }
   ];
   spreadsheet.addMenu('PassNinja', menuItems);
@@ -22,6 +22,8 @@ function onboardNewPassholderFromForm(e) {
   if (lock.tryLock(10000))  {
 
     var newRow = contactSheet.getLastRow() + 1;
+    // https://stackoverflow.com/questions/11495588/google-apps-script-spreadsheets-write-array-to-cells
+    // need to make md-array and just dump into the first cell.
     contactSheet.getRange(newRow, 1).setValue(e.namedValues['First and Last Name'][0]);
     contactSheet.getRange(newRow, 2).setValue(e.namedValues['Birthday'][0]);
     contactSheet.getRange(newRow, 3).setValue(e.namedValues['Email Address'][0]);
