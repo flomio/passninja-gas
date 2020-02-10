@@ -27,6 +27,8 @@ function onboardNewPassholderFromForm(e) {
     var lock = LockService.getPublicLock();
     if (lock.tryLock(10000)) {
         var newRow = contactSheet.getLastRow() + 1;
+      // https://stackoverflow.com/questions/11495588/google-apps-script-spreadsheets-write-array-to-cells
+      // do this and one big lob of data instead of all that individual shenaniga
         contactSheet.getRange(newRow, 1).setValue(e.namedValues['First and Last Name'][0]);
         contactSheet.getRange(newRow, 2).setValue(e.namedValues['Birthday'][0]);
         contactSheet.getRange(newRow, 3).setValue(e.namedValues['Email Address'][0]);

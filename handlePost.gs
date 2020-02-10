@@ -15,6 +15,9 @@ function doPost(e) {
 
 
 function testPost() {
+  /** initial attempt to test post .. not yet loading the e thing correctly
+ */
+  
     var data = {
         "callback": "https://script.google.com/macros/s/AKfycbxAnr781LarJsrDJgFzq1zr1rq2OECY4gzRA7Z8iFP_ShFQbnQB/exec",
         "date": "2020-02-04T15:15:13.341Z",
