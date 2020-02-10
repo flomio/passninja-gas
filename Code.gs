@@ -117,7 +117,10 @@ function createPass_() {
 
   var spreadsheet = SpreadsheetApp.getActive();
   var contactSheet = spreadsheet.getSheetByName('Contacts');
-
+ var passTypeId = spreadsheet.getRangeByName("passTypeId").getValue();
+  
+  Logger.log("passTypeID: ", passTypeId);
+  
   // if valid, get the correct row of data.
   var selectedRow = contactSheet.getActiveCell().getRow();
   var rowNumber = Number(selectedRow);
@@ -143,7 +146,7 @@ function createPass_() {
   var parsedName = parseName(fullName);
 
   var postData = {
-    "passType": "demo.testing",
+    "passType": passTypeId,
     "pass": {
       "firstName": parsedName.name,
       "lastName": parsedName.lastName + " " + parsedName.secondLastName,

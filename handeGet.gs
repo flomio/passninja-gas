@@ -25,7 +25,7 @@ function findContactBySerial(serialNumber) {
       }
   }
   
-  var serialNumberColumn = getColumnFromName(ss, 'serialNumber') -1 ;
+  var serialNumberColumn = getColumnFromName(ss, 'serialNumber') -1 ; //its in a js array so -1
   Logger.log("serialNumberColumn: ", serialNumberColumn);
   for(nn=1;nn<data.length;++nn){
     Logger.log(nn);
