@@ -18,25 +18,10 @@ function onboardNewPassholderFromForm(e) {
   
   var spreadsheet = SpreadsheetApp.getActive();
   var contactSheet = spreadsheet.getSheetByName('Contacts');
- /* var appendInfo =  contactSheet.appendRow([e.namedValues['First and Last Name'][0],
-                            e.namedValues['Birthday'][0],
-                            e.namedValues['Email Address'][0],
-                            e.namedValues['Phone'][0],
-                            e.namedValues['carrier'][0],
-                            e.namedValues['city'][0],
-                            e.namedValues['state'][0],
-                            e.namedValues['referral_code'][0],
-                            e.namedValues['date_created'][0],
-                            e.namedValues['code'][0]
-                            ]);
- Logger.log(appendInfo.tableRange); */
-
-   var lock = LockService.getPublicLock();
+  var lock = LockService.getPublicLock();
   if (lock.tryLock(10000))  {
 
     var newRow = contactSheet.getLastRow() + 1;
-
-
     contactSheet.getRange(newRow, 1).setValue(e.namedValues['First and Last Name'][0]);
     contactSheet.getRange(newRow, 2).setValue(e.namedValues['Birthday'][0]);
     contactSheet.getRange(newRow, 3).setValue(e.namedValues['Email Address'][0]);
@@ -50,12 +35,10 @@ function onboardNewPassholderFromForm(e) {
     contactSheet.getRange(newRow, 11).setValue(e.namedValues['code'][0]);
     lock.releaseLock();
     contactSheet.setActiveRange(contactSheet.getRange(newRow,1));
-    
-
+   
   } else {
     return "Lock Timeout";
   }
-  
   
   createPass_();
   
@@ -76,7 +59,7 @@ function updatePass_(firstName, LastName) {
     Browser.msgBox("First Create a pass, then update.");
     return;
   }
-  // Build the object to use in MailApp
+
   var name = rowRange[0][0];
   var phone = rowRange[0][1];
   var code = rowRange[0][10];
@@ -92,7 +75,6 @@ function updatePass_(firstName, LastName) {
     'method': 'post',
     'contentType': 'application/json',
     'muteHttpExceptions': true,
-    // Convert the JavaScript object to a JSON string.
     'payload': updateJson
   };
   try {
@@ -101,7 +83,6 @@ function updatePass_(firstName, LastName) {
   }
   catch (err) {
     {
-      //  contactSheet.getRange(rowNumber, 13).setValue(data.statusCode);
       contactSheet.getRange(rowNumber, 12).setValue(data.response);
       contactSheet.getRange(rowNumber, 12).setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID);
       contactSheet.getRange(rowNumber, 12).setBackground("#FF4500")
@@ -117,13 +98,13 @@ function updatePass_(firstName, LastName) {
 }
 
 function showEvents_() {
-    var spreadsheet = SpreadsheetApp.getActive();
-    var contactSheet = spreadsheet.getSheetByName('Contacts');
-    var selectedRow = contactSheet.getActiveCell().getRow();
+  var spreadsheet = SpreadsheetApp.getActive();
+  var contactSheet = spreadsheet.getSheetByName('Contacts');
+  var selectedRow = contactSheet.getActiveCell().getRow();
   var rowNumber = Number(selectedRow);
-   var row = contactSheet.getRange(rowNumber, 1, 1, 12);
+  var row = contactSheet.getRange(rowNumber, 1, 1, 12);
   var rowValues = row.getValues()
-    var serialNumber = rowRange[0][12];
+  var serialNumber = rowRange[0][12];
   var html = '<p>' + serialNumber   + '<p>'
   var htmlOutput = HtmlService
     .createHtmlOutput(html)
@@ -186,7 +167,6 @@ function createPass_() {
     {
       Logger.log("error caught: ", err);
       data = JSON.parse(response.getContentText());
-      //  contactSheet.getRange(rowNumber, 13).setValue(data.statusCode);
       contactSheet.getRange(rowNumber, 12).setValue(err);
       contactSheet.getRange(rowNumber, 12).setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID);
       contactSheet.getRange(rowNumber, 12).setBackground("#FF4500")
@@ -195,12 +175,13 @@ function createPass_() {
 
   Logger.log("response:", response.getContentText())
   data = JSON.parse(response.getContentText());
-  contactSheet.getRange(rowNumber, 12).setValue(data.landingUrl);
-  Logger.log("data.applePassUrl: ", data.landingUrl)
-  // passTypeId =  data.applePassUrl.substring(data.applePassUrl.indexOf("passes/")+7,data.applePassUrl.indexof("/","passes/"+7))
-  contactSheet.getRange(rowNumber, 13).setValue(data.apple.passTypeIdentifier);
-  contactSheet.getRange(rowNumber, 14).setValue(data.apple.serialNumber);
-
+  contactSheet.getRange(rowNumber, (getColumnFromName(contactSheet, 'passUrl'))).setValue(data.landingUrl);
+  contactSheet.getRange(rowNumber, (getColumnFromName(contactSheet, 'passType'))).setValue(data.apple.passTypeIdentifier.replace(
+                "pass.com.passninja.",
+                ""
+            ));
+  contactSheet.getRange(rowNumber, (getColumnFromName(contactSheet, 'serialNumber'))).setValue(data.apple.serialNumber);
+  //have to fix the below to color the right fields later
   contactSheet.getRange(rowNumber, 12, 1, 3).setBorder(true, true, true, true, true, true, "#008000", SpreadsheetApp.BorderStyle.SOLID);
   contactSheet.getRange(rowNumber, 12, 1, 3).setBackground("#ADFF2F");
   contactSheet.getRange(rowNumber, 12, 1, 3).setFontWeight("bold");
