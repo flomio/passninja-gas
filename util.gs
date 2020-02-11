@@ -109,7 +109,7 @@ function parseName(input) {
  * @param {string} searchTerm Search term
  * @returns {int} The first found column index, -1 if not found
  */
-function getColumnFromName(sheet, searchTerm) {
+function getColumnIndexFromString(sheet, searchTerm) {
   var headers = getHeaders(sheet);
   for (var i = 0; i < headers.length; i++) {
     if (headers[i] == searchTerm) return i;
@@ -133,14 +133,14 @@ function getHeaders(sheet) {
  * @returns {object} The resulting match or an empty object if no match is found
  */
 function findContactBySerial(sheet, serialNumber) {
-  var serialNumberColumn = getColumnFromName(sheet, "serialNumber");
+  var serialNumberColumn = getColumnIndexFromString(sheet, "serialNumber");
   var serialNumberColumnData = sheet
     .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
     .getValues();
 
   var matchIndex = findMatchIndexAtColumn(
-    serialNumberColumn,
     serialNumberColumnData,
+    serialNumberColumn,
     serialNumber
   );
 
@@ -150,7 +150,7 @@ function findContactBySerial(sheet, serialNumber) {
 
 /** Returns the index of the matching query in the 2D array at column index.
  *
- * @param {array} arr 2D Array to query 
+ * @param {array} arr 2D Array to query
  * @param {int} column Index at second level to query
  * @param {string} query Query term
  * @returns {int} Query match index or -1 if not found
