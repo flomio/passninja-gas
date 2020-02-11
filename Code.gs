@@ -21,39 +21,35 @@ function onOpen() {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-  var data = e.namedValues;
+  var data = e.namedValues
   Logger.log(data);
-
+  
   var spreadsheet = SpreadsheetApp.getActive();
-  var contactSheet = spreadsheet.getSheetByName("Contacts");
+  var contactSheet = spreadsheet.getSheetByName('Contacts');
   var lock = LockService.getPublicLock();
-  if (lock.tryLock(10000)) {
+  if (lock.tryLock(10000))  {
+
     var newRow = contactSheet.getLastRow() + 1;
     // https://stackoverflow.com/questions/11495588/google-apps-script-spreadsheets-write-array-to-cells
-    // do this and one big lob of data instead of all that individual shenaniga
-    contactSheet
-      .getRange(newRow, 1)
-      .setValue(e.namedValues["First and Last Name"][0]);
-    contactSheet.getRange(newRow, 2).setValue(e.namedValues["Birthday"][0]);
-    contactSheet
-      .getRange(newRow, 3)
-      .setValue(e.namedValues["Email Address"][0]);
-    contactSheet.getRange(newRow, 4).setValue(e.namedValues["Phone"][0]);
-    contactSheet.getRange(newRow, 5).setValue(e.namedValues["carrier"][0]);
-    contactSheet.getRange(newRow, 6).setValue(e.namedValues["city"][0]);
-    contactSheet.getRange(newRow, 7).setValue(e.namedValues["state"][0]);
-    contactSheet
-      .getRange(newRow, 8)
-      .setValue(e.namedValues["referral_code"][0]);
-    contactSheet.getRange(newRow, 9).setValue(e.namedValues["date_created"][0]);
-    contactSheet.getRange(newRow, 10).setValue(e.namedValues["s"][0]);
-    contactSheet.getRange(newRow, 11).setValue(e.namedValues["code"][0]);
+    // need to make md-array and just dump into the first cell.
+    contactSheet.getRange(newRow, 1).setValue(e.namedValues['First and Last Name'][0]);
+    contactSheet.getRange(newRow, 2).setValue(e.namedValues['Birthday'][0]);
+    contactSheet.getRange(newRow, 3).setValue(e.namedValues['Email Address'][0]);
+    contactSheet.getRange(newRow, 4).setValue(e.namedValues['Phone'][0]);
+    contactSheet.getRange(newRow, 5).setValue(e.namedValues['carrier'][0]);
+    contactSheet.getRange(newRow, 6).setValue(e.namedValues['city'][0]);
+    contactSheet.getRange(newRow, 7).setValue(e.namedValues['state'][0]);
+    contactSheet.getRange(newRow, 8).setValue(e.namedValues['referral_code'][0]);
+    contactSheet.getRange(newRow, 9).setValue(e.namedValues['date_created'][0]);
+    contactSheet.getRange(newRow, 10).setValue(e.namedValues['s'][0]);
+    contactSheet.getRange(newRow, 11).setValue(e.namedValues['code'][0]);
     lock.releaseLock();
-    contactSheet.setActiveRange(contactSheet.getRange(newRow, 1));
+    contactSheet.setActiveRange(contactSheet.getRange(newRow,1));
+   
   } else {
     return "Lock Timeout";
   }
-
+  
   createPass_();
 }
 
