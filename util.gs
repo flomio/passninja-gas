@@ -161,7 +161,6 @@ function findMatchIndexAtColumn(arr, column, query) {
  *
  * @param {Sheet} sheet String to query the column headers
  * @param {string[]} data Array of string data representing a row
- * @returns
  */
 function rowToJson(sheet, data) {
     var obj = {};
@@ -181,7 +180,6 @@ function rowToJson(sheet, data) {
  * @param {string} flashColor Valid Google SpreadSheet color to flash
  * @param {int} numFlashes Number of times to flash the range
  * @param {int} timeout The timeout (in ms) for the flashes
- * @returns
  */
 function flashRange(range, flashColor, numFlashes, timeout) {
     var originalBgColor = range.getBackground()
