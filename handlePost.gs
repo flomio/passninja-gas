@@ -3,8 +3,7 @@
  * @returns {object} Standard response with a JavaScript text body
  */
 function doPost(e) {
-    var eventSheet = getSheet("Events");
-    var response = addEvent(eventSheet, e.postData.contents);
+    var response = addEvent(getSheet(ENUMS.EVENTS), e.postData.contents);
     return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(
         ContentService.MimeType.JSON
     );
@@ -16,13 +15,9 @@ function doPost(e) {
  * @return {boolean} If the action completed successfully
  */
 function addEvent(targetSheet, eventJson) {
-    Logger.log(targetSheet)
-    Logger.log('event containing JSON', eventJson[0])
-    Logger.log(eventJson.callback)
-
     try {
         eventJson = JSON.parse(eventJson);
-        var eventData = [
+        var event = [
             eventJson.date,
             eventJson.event.type,
             eventJson.event.passType,
@@ -30,26 +25,19 @@ function addEvent(targetSheet, eventJson) {
             eventJson.event.passJson
         ]
     } catch (e) {
-        var msg = "Invalid event data sent: " + e;
-        toast(msg, "Error", 5);
-        return { "error": msg };
+        return { "error": `Invalid event data sent: ${e}` };
     }
 
-    insertRow(targetSheet, eventData, 2);
+    insertRow(targetSheet, event, 2);
+    autoResizeSheet(targetSheet)
 
     try {
         flashRange(targetSheet.getRange("A2:E2"), "red", 5, 500);
     } catch (e) {
-        Logger.log("There was an error notifying the user", e)
+        log(log.ERROR, "There was an error notifying the user", e)
     }
 
-    return {
-        "event": [
-            eventJson.date,
-            eventJson.event.type,
-            eventJson.event.passType,
-            eventJson.event.serialNumber,
-            eventJson.event
-        ]
-    };
+    log(log.SUCCESS, 'Succesfully added event.')
+    event.push(eventJson.event)
+    return { event };
 }

@@ -5,8 +5,7 @@
  */
 function doGet(request) {
     var serialNumber = request.parameter.serialNumber;
-    clientData = findContactBySerial(getSheet('Contacts'), serialNumber);
-    clientData.oauth = ScriptApp.getOAuthToken()
+    clientData = findContactBySerial(getSheet(ENUMS.CONTACTS), serialNumber);
     return ContentService.createTextOutput(
         JSON.stringify(clientData)
     ).setMimeType(ContentService.MimeType.JSON);
