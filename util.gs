@@ -1,8 +1,16 @@
+var COLORS = {
+    FIELD_PASSNINJA: '#6aa84f',
+    FIELD_PASS: '#3c78d8',
+    GENERIC: '#666666',
+    SUCCESS: '#ADFF2F',
+    ERROR: '#FF4500'
+}
+
 var STATUS_LOOKUP = {
     success: {
         border: "#008000",
         color: "#000000",
-        background: "#ADFF2F",
+        background: COLORS.SUCCESS,
         bold: true
     },
     ok: {
@@ -10,9 +18,17 @@ var STATUS_LOOKUP = {
     },
     error: {
         border: "#000000",
-        background: "#FF4500"
+        background: COLORS.ERROR
     }
 };
+
+var ENUMS = {
+    CONTACTS: 'Contacts',
+    EVENTS: 'Events',
+    PASSURL: 'passUrl',
+    PASSTYPE: 'passType',
+    SERIAL: 'serialNumber'
+}
 
 /** Determines whether the selected row is valid
  *
@@ -132,7 +148,7 @@ function getColumnIndexFromString(sheet, searchTerm) {
 /** Gets the column headers of the specified sheet
  *
  * @param {Sheet} sheet Google Sheet to query
- * @returns {array} The headers of the first column.
+ * @returns {array} The headers of the first row.
  */
 function getHeaders(sheet) {
     return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
@@ -233,4 +249,55 @@ function insertRow(sheet, rowData, index) {
 function toast(msg, title, timeout) {
     var currentSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
     currentSpreadsheet.toast(msg, title, timeout);
+}
+
+/** Clears all previous form items from a form
+ *
+ * @param {Form} form The Google Form to clear
+ */
+function clearForm(form) {
+    var items = form.getItems();
+    while (items.length > 0) {
+        form.deleteItem(items.pop());
+    }
+}
+
+/** Gets the named range of the given spreadsheet
+ *
+ * @param {string} name The name of the named range to query
+ * @param {Spreadsheet} ss The Google spreadsheet to query
+ * @returns {Range} The resulting range
+ */
+function getNamedRange(name, ss) {
+    return ss.getNamedRanges().filter(e => e.getName() === name)[0].getRange();
+}
+
+/** Creates a default PassNinja formatted Google sheet on the given spreadsheet 
+ *
+ * @param {string} name The name of the named range to query
+ * @param {Spreadsheet} ss The Google spreadsheet to query
+ * @returns {Sheet} The resulting Google sheet
+ */
+function initializeSheet(name, ss) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) {
+        sheet = ss.insertSheet(name);
+    }
+    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
+    allCells.setBackground(COLORS.GENERIC)
+    allCells.setFontColor('#efefef')
+    allCells.setFontFamily("Helvetica Neue")
+
+    return sheet
+}
+
+/** Deletes all columns from min->max on the given sheet
+ *
+ * @param {int} min The starting column index
+ * @param {int} max The final column index
+ */
+function deleteUnusedColumns(min, max, sheet) {
+    for (var i = max; i >= min; i--) {
+        sheet.deleteColumn(i);
+    }
 }

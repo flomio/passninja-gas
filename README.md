@@ -4,32 +4,15 @@
 ## Functions
 
 <dl>
-<dt><a href="#onOpen">onOpen()</a></dt>
-<dd><p>Adds the PassNinja script set as a menu item on load.</p>
-</dd>
-<dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code></dt>
-<dd><p>Creates a PassNinja pass from the selected row.</p>
-</dd>
-<dt><a href="#updatePass_">updatePass_()</a> ⇒ <code>string</code></dt>
-<dd><p>Updates a given pass from the highlighted row with the new values in the row
- Pops up a dialog input box where the user can input new json data to overwrite the existing pass</p>
-</dd>
-<dt><a href="#onboardNewPassholderFromForm">onboardNewPassholderFromForm(e)</a> ⇒ <code>string</code></dt>
-<dd><p>Inputs a new user&#39;s data from a form submit event and triggers a pass creation.</p>
-</dd>
-<dt><a href="#showEvents_">showEvents_()</a></dt>
-<dd><p>Pops up a modal with the pass events of the current highlighted row
-related to the pass via serial number</p>
-</dd>
 <dt><a href="#doGet">doGet(e)</a> ⇒ <code>object</code></dt>
 <dd><p>Returns the corresponding user entry in the Contacts sheet
  matching the serialNumber query parameter</p>
 </dd>
-<dt><a href="#doPost">doPost(e)</a> ⇒ <code>object</code></dt>
-<dd><p>Creates an event entry in the Events spreadsheet</p>
-</dd>
 <dt><a href="#findContactBySerial">findContactBySerial(sheet, serialNumber)</a> ⇒ <code>object</code></dt>
 <dd><p>Creates a JSON object from the first found match of the given serial number.</p>
+</dd>
+<dt><a href="#doPost">doPost(e)</a> ⇒ <code>object</code></dt>
+<dd><p>Creates an event entry in the Events spreadsheet</p>
 </dd>
 <dt><a href="#addEvent">addEvent(targetSheet, eventJson)</a> ⇒ <code>boolean</code></dt>
 <dd><p>Adds a PassNinja event to a new row in the target spreadsheet</p>
@@ -70,10 +53,52 @@ related to the pass via serial number</p>
 </dd>
 <dt><a href="#insertRow">insertRow(sheet, rowData, [index])</a></dt>
 <dd><p>Inserts a row
- Ref: <a href="https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top">https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top</a></p>   
+ Ref: <a href="https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top">https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top</a></p>
 </dd>
 <dt><a href="#toast">toast(msg, title, timeout)</a></dt>
 <dd><p>Toasts the user at the current spreadsheet</p>
+</dd>
+<dt><a href="#clearForm">clearForm(form)</a></dt>
+<dd><p>Clears all previous form items from a form</p>
+</dd>
+<dt><a href="#getNamedRange">getNamedRange(name, ss)</a> ⇒ <code>Range</code></dt>
+<dd><p>Gets the named range of the given spreadsheet</p>
+</dd>
+<dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
+<dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
+</dd>
+<dt><a href="#deleteUnusedColumns">deleteUnusedColumns(min, max)</a></dt>
+<dd><p>Deletes all columns from min-&gt;max on the given sheet</p>
+</dd>
+<dt><a href="#onOpen">onOpen()</a></dt>
+<dd><p>Adds the PassNinja script set as a menu item on load.</p>
+</dd>
+<dt><a href="#updateFromConfig_">updateFromConfig_(ss, values)</a></dt>
+<dd><p>Creates a Google Form that allows respondents to select which conference
+sessions they would like to attend, grouped by date and start time.</p>
+</dd>
+<dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a></dt>
+<dd><p>Builds a contacts sheet based on the user config sheet</p>
+</dd>
+<dt><a href="#buildEventsSheet">buildEventsSheet(ss, fieldsNames)</a></dt>
+<dd><p>Builds a events sheet based on the user config sheet</p>
+</dd>
+<dt><a href="#buildContactsForm">buildContactsForm(ss, sheet, fieldData)</a></dt>
+<dd><p>Builds a form based on the user config sheet</p>
+</dd>
+<dt><a href="#onboardNewPassholderFromForm">onboardNewPassholderFromForm(e)</a> ⇒ <code>string</code></dt>
+<dd><p>Inputs a new user&#39;s data from a form submit event and triggers a pass creation.</p>
+</dd>
+<dt><a href="#updatePass_">updatePass_()</a> ⇒ <code>string</code></dt>
+<dd><p>Updates a given pass from the highlighted row with the new values in the row
+ Pops up a dialog input box where the user can input new json data to overwrite the existing pass</p>
+</dd>
+<dt><a href="#showEvents_">showEvents_()</a></dt>
+<dd><p>Pops up a modal with the pass events of the current highlighted row
+related to the pass via serial number</p>
+</dd>
+<dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code></dt>
+<dd><p>Creates a PassNinja pass from the selected row.</p>
 </dd>
 </dl>
 
@@ -207,7 +232,7 @@ Returns first found matching column (searches first row of the sheet)
 Gets the column headers of the specified sheet
 
 **Kind**: global function
-**Returns**: <code>array</code> - The headers of the first column.
+**Returns**: <code>array</code> - The headers of the first row.
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -280,7 +305,7 @@ Inserts a row
 ## toast(msg, title, timeout)
 Toasts the user at the current spreadsheet
 
-**Kind**: global function  
+**Kind**: global function
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -288,12 +313,111 @@ Toasts the user at the current spreadsheet
 | title | <code>string</code> | The title of the toast |
 | timeout | <code>int</code> | The timeout of the toast |
 
+<a name="clearForm"></a>
+
+## clearForm(form)
+Clears all previous form items from a form
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| form | <code>Form</code> | The Google Form to clear |
+
+<a name="getNamedRange"></a>
+
+## getNamedRange(name, ss) ⇒ <code>Range</code>
+Gets the named range of the given spreadsheet
+
+**Kind**: global function
+**Returns**: <code>Range</code> - The resulting range
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | The name of the named range to query |
+| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
+
+<a name="initializeSheet"></a>
+
+## initializeSheet(name, ss) ⇒ <code>Sheet</code>
+Creates a default PassNinja formatted Google sheet on the given spreadsheet
+
+**Kind**: global function
+**Returns**: <code>Sheet</code> - The resulting Google sheet
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | The name of the named range to query |
+| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
+
+<a name="deleteUnusedColumns"></a>
+
+## deleteUnusedColumns(min, max)
+Deletes all columns from min->max on the given sheet
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| min | <code>int</code> | The starting column index |
+| max | <code>int</code> | The final column index |
+
 <a name="onOpen"></a>
 
 ## onOpen()
 Adds the PassNinja script set as a menu item on load.
 
-**Kind**: global function  
+**Kind**: global function
+<a name="updateFromConfig_"></a>
+
+## updateFromConfig\_(ss, values)
+Creates a Google Form that allows respondents to select which conference
+sessions they would like to attend, grouped by date and start time.
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The spreadsheet that contains the conference data. |
+| values | <code>Array.&lt;string&gt;</code> | Cell values for the spreadsheet range. |
+
+<a name="buildContactsSheet"></a>
+
+## buildContactsSheet(ss, fieldsNames)
+Builds a contacts sheet based on the user config sheet
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The container spreadsheet |
+| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+
+<a name="buildEventsSheet"></a>
+
+## buildEventsSheet(ss, fieldsNames)
+Builds a events sheet based on the user config sheet
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The container spreadsheet |
+| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+
+<a name="buildContactsForm"></a>
+
+## buildContactsForm(ss, sheet, fieldData)
+Builds a form based on the user config sheet
+
+**Kind**: global function
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The container spreadsheet |
+| sheet | <code>Sheet</code> | The container sheet for the form |
+| fieldData | <code>Array.&lt;string&gt;</code> | The fields that the user has entered in the config |
+
 <a name="onboardNewPassholderFromForm"></a>
 
 ## onboardNewPassholderFromForm(e) ⇒ <code>string</code>
@@ -326,7 +450,7 @@ related to the pass via serial number
 ## createPass\_() ⇒ <code>string</code>
 Creates a PassNinja pass from the selected row.
 
-**Kind**: global function
+**Kind**: global function  
 **Returns**: <code>string</code> - The response from the PassNinja API.
 
 ### Generated with [jsdoc2md](https://github.com/jsdoc2md/jsdoc-to-markdown/wiki/Create-a-README-template)
