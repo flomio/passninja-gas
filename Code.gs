@@ -5,7 +5,6 @@ var API_URL = "https://api.passninja.com/v1/";
  */
 function onOpen() {
     var sheet = SpreadsheetApp.getActive();
-    updateFromConfig_(sheet)
     var menuItems = [
         { name: "Create A Pass", functionName: "createPass_" },
         { name: "Update A Pass", functionName: "updatePass_" },
@@ -25,71 +24,24 @@ function onOpen() {
 function updateFromConfig_() {
     var ss = SpreadsheetApp.getActive();
     var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
-    var fieldsNames = fieldsData.map(f => f[0])
-    buildEventsSheet(ss)
-    var sheet = buildContactsSheet(ss, fieldsNames);
-    var form = buildContactsForm(ss, sheet, fieldsData);
-}
+    var fieldsHash = PropertiesService.getScriptProperties().getProperty('fieldsHash');
+    var hash = MD5(JSON.stringify(fieldsData), true);
+    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <->${fieldsHash}`)
 
-/** Builds a contacts sheet based on the user config sheet
- * 
- * @param {Spreadsheet} ss The container spreadsheet
- * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
- */
-function buildContactsSheet(ss, fieldsNames) {
-    var sheet = initializeSheet(ENUMS.CONTACTS, ss)
+    if (hash !== fieldsHash) {
+        PropertiesService.getScriptProperties().setProperty('fieldsHash', hash);
 
-    var fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
-    fieldHeaders.setValues([fieldsNames])
-    fieldHeaders.setBackground(COLORS.FIELD_PASS)
-    fieldHeaders.setFontWeight('bold')
+        var fieldsNames = fieldsData.map(f => f[0])
 
-    var passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL]
-    var passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length)
-    passNinjaHeaders.setValues([passNinjaFields])
-    passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA)
-    passNinjaHeaders.setFontWeight('bold')
-
-    deleteUnusedColumns(passNinjaFields.length + fieldsNames.length + 1, sheet.getMaxColumns(), sheet)
-}
-
-/** Builds a events sheet based on the user config sheet
- * 
- * @param {Spreadsheet} ss The container spreadsheet
- * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
- */
-function buildEventsSheet(ss) {
-    var sheet = initializeSheet(ENUMS.EVENTS, ss)
-
-    var fieldsNames = ["eventDate", "eventType", "passType", "serialNumber", "eventData"]
-    var fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
-    fieldHeaders.setValues([fieldsNames])
-    fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA)
-    fieldHeaders.setFontWeight('bold')
-
-    deleteUnusedColumns(fieldsNames.length + 1, sheet.getMaxColumns(), sheet)
-}
-
-/** Builds a form based on the user config sheet
- * 
- * @param {Spreadsheet} ss The container spreadsheet
- * @param {Sheet} sheet The container sheet for the form
- * @param {string[]} fieldData The fields that the user has entered in the config
- */
-function buildContactsForm(ss, sheet, fieldData) {
-    var form = FormApp.openByUrl(ss.getFormUrl())
-    if (!form) {
-        form = FormApp.create('Create New Contact');
-        ss.setActiveSheet(sheet)
-        form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
-        ScriptApp.newTrigger('onboardNewPassholderFromForm').forSpreadsheet(ss).onFormSubmit().create();
+        catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
+        var sheet = catchError(() => buildContactsSheet(ss, fieldsNames), 'Error building Contacts Sheet - ')
+        catchError(() => buildContactsForm(ss, sheet, fieldsData), 'Error building Contacts Form - ')
     } else {
-        clearForm(form)
-    }
-
-    for (field of fieldData) {
-        Logger.log('header', field)
-        form.addTextItem().setTitle(field[0]).setRequired(true);
+        Browser.msgBox(
+            "No Update",
+            "The Config sheet's field data has not changed, not updating.",
+            Browser.Buttons.OK
+        );
     }
 }
 
@@ -99,17 +51,19 @@ function buildContactsForm(ss, sheet, fieldData) {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-    var data = e.namedValues
-    var sheet = getSheet(ENUMS.CONTACTS)
+    var ss = SpreadsheetApp.getActive();
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
+    var fieldsNames = fieldsData.map(f => f[0])
 
+    var sheet = getSheet(ENUMS.CONTACTS)
     var lock = LockService.getPublicLock();
     if (lock.tryLock(10000)) {
-        var newRow = contactSheet.appendRow(Object.keys(data).map(k => data[k][0]));
-        contactSheet.setActiveRange(newRow);
+        var newRow = sheet.appendRow(fieldsNames.map(field => e.namedValues[field][0])) //Object.keys(e.namedValues).map(k => e.namedValues[k][0]));
         lock.releaseLock();
     } else {
         return "Lock Timeout";
     }
+    autoResizeSheet(sheet)
 
     //    createPass_();
 }
@@ -151,7 +105,7 @@ function updatePass_() {
     };
     try {
         response = UrlFetchApp.fetch(API_URL + "apple", options);
-        Logger.log(response.getContentText());
+        print(response.getContentText());
     } catch (err) {
         range = contactSheet.getRange(rowNumber, 12);
         highlightCells(range, "error", data.response);
@@ -189,7 +143,7 @@ function createPass_() {
     var contactSheet = getSheet(ENUMS.CONTACTS);
     var rowNumber = getValidSheetSelectedRow(contactSheet);
     var passTypeId = contactSheet.getRangeByName("passType").getValue();
-    Logger.log("passTypeID: ", passTypeId);
+    print("passTypeID: ", passTypeId);
 
     // Retrieve the addresses in that row.
     var row = contactSheet.getRange(rowNumber, 1, 1, 11);
@@ -227,7 +181,7 @@ function createPass_() {
         highlightCells(contactSheet.getRange(rowNumber, getColumnIndexFromString('passUrl') - 1), "error", err);
     }
 
-    Logger.log("response:", response.getContentText());
+    print("response:", response.getContentText());
     data = JSON.parse(response.getContentText());
     contactSheet
         .getRange(rowNumber, getColumnFromName(contactSheet, "passUrl"))
@@ -240,6 +194,6 @@ function createPass_() {
         .setValue(data.apple.serialNumber);
     highlightCells(contactSheet.getRange(rowNumber, 12, 1, 3), "success");
 
-    Logger.log(response.getContentText());
+    print(response.getContentText());
     return response.getContentText();
 }
