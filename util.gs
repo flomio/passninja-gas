@@ -1,33 +1,20 @@
-var COLORS = {
-    FIELD_PASSNINJA: '#6aa84f',
-    FIELD_PASS: '#3c78d8',
-    GENERIC: '#666666',
-    SUCCESS: '#ADFF2F',
-    ERROR: '#FF4500'
+/** Sorts the specified sheet
+ *
+ * @param {Sheet} sheet The Google sheet to sort
+ */
+function sortSheet(sheet) {
+    var range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
+    range.sort({ column: 1, ascending: false })
 }
 
-var STATUS_LOOKUP = {
-    success: {
-        border: "#008000",
-        color: "#000000",
-        background: COLORS.SUCCESS,
-        bold: true
-    },
-    ok: {
-        border: "#008000"
-    },
-    error: {
-        border: "#000000",
-        background: COLORS.ERROR
-    }
-};
-
-var ENUMS = {
-    CONTACTS: 'Contacts',
-    EVENTS: 'Events',
-    PASSURL: 'passUrl',
-    PASSTYPE: 'passType',
-    SERIAL: 'serialNumber'
+/** Returns the requested Google Sheet by name
+ *
+ * @param {string} sheetName Name of the sheet you want to get back
+ * @returns {Sheet} Google Sheet object
+ */
+function getSheet(sheetName) {
+    var spreadsheet = SpreadsheetApp.getActive();
+    return spreadsheet.getSheetByName(sheetName);
 }
 
 /** Determines whether the selected row is valid
@@ -50,26 +37,44 @@ function getValidSheetSelectedRow(sheet) {
     return rowNumber;
 }
 
-/** Sorts the specified sheet
+/** Creates a default PassNinja formatted Google sheet on the given spreadsheet 
  *
- * @param {Sheet} sheet The Google sheet to sort
+ * @param {string} name The name of the named range to query
+ * @param {Spreadsheet} ss The Google spreadsheet to query
+ * @returns {Sheet} The resulting Google sheet
  */
-function sortSheet(sheet) {
-    var range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn())
-    range.sort({ column: 1, ascending: false })
-        //  sheet.getRange("A1").activate();
-        //  Logger.log(sheet.getRange("A1").getFilter())
-        //  sheet.getFilter().sort(1, false);
+function initializeSheet(name, ss) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) {
+        sheet = ss.insertSheet(name);
+    }
+    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
+    allCells.setBackground(COLORS.GENERIC)
+    allCells.setFontColor('#efefef')
+    allCells.setFontFamily("Helvetica Neue")
+
+    return sheet
 }
 
-/** Returns the requested Google Sheet by name
+/** Auto resizes all sheet columns
  *
- * @param {string} sheetName Name of the sheet you want to get back
- * @returns {Sheet} Google Sheet object
+ * @param {Sheet} sheet The sheet to resize
  */
-function getSheet(sheetName) {
-    var spreadsheet = SpreadsheetApp.getActive();
-    return spreadsheet.getSheetByName(sheetName);
+function autoResizeSheet(sheet) {
+    for (i = 1; i <= sheet.getMaxColumns(); i++) {
+        sheet.autoResizeColumn(i)
+    }
+}
+
+/** Deletes all columns from min->max on the given sheet
+ *
+ * @param {int} min The starting column index
+ * @param {int} max The final column index
+ */
+function deleteUnusedColumns(min, max, sheet) {
+    for (var i = max; i >= min; i--) {
+        sheet.deleteColumn(i);
+    }
 }
 
 /** Highlights a given range via custom status presets
@@ -79,7 +84,6 @@ function getSheet(sheetName) {
  * @param {string} [value] Value to set the cell contents to
  */
 function highlightCells(cells, status, value) {
-    if (status === "error") Logger.log("error caught: ", value);
     if (value) cells.setValue(value);
     var statusColors = STATUS_LOOKUP[status];
     if (statusColors.border)
@@ -96,6 +100,179 @@ function highlightCells(cells, status, value) {
     if (statusColors.background) cells.setBackground(statusColors.background);
     if (statusColors.color) cells.setFontColor(statusColors.color);
     if (statusColors.bold) cells.setFontWeight("bold");
+}
+
+/** Creates an object from a sheet's first row headers as keys with the values from the data object.
+ *
+ * @param {Sheet} sheet String to query the column headers
+ * @param {string[]} data Array of string data representing a row
+ */
+function rowToJson(sheet, data) {
+    var obj = {};
+    var keys = getHeaders(sheet);
+
+    for (var i = 0; i < data.length; i++) {
+        obj[keys[i]] = data[i];
+    }
+
+    return obj;
+}
+
+/** Inserts a row
+ *  Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
+ * @param {Sheet} sheet Google Sheet to insert row data into
+ * @param {string[]} rowData Array of string data to insert in the rows
+ * @param {int} [index] Optional index to specify the insertion point
+ */
+function insertRow(sheet, rowData, index) {
+    var lock = LockService.getScriptLock();
+    lock.waitLock(30000);
+    try {
+        var index = index || 1;
+        sheet.insertRowBefore(index).getRange(index, 1, 1, rowData.length).setValues([rowData]);
+        SpreadsheetApp.flush();
+    } finally {
+        lock.releaseLock();
+    }
+}
+
+/** Returns the index of the matching query in the 2D array at column index.
+ *
+ * @param {array} arr 2D Array to query
+ * @param {int} column Index at second level to query
+ * @param {string} query Query term
+ * @returns {int} Query match index or -1 if not found
+ */
+function findMatchIndexAtColumn(arr, column, query) {
+    var matchIndex = -1;
+    for (i = 1; i < arr.length; ++i) {
+        if (arr[i][column] == query) {
+            matchIndex = i;
+            break;
+        }
+    }
+    return matchIndex;
+}
+
+/** Returns first found matching column (searches first row of the sheet)
+ *
+ * @param {Sheet} sheet Google Sheet to query
+ * @param {string} searchTerm Search term
+ * @returns {int} The first found column index, -1 if not found
+ */
+function getColumnIndexFromString(sheet, searchTerm) {
+    var headers = getHeaders(sheet);
+    for (var i = 0; i < headers.length; i++) {
+        if (headers[i] == searchTerm) return i;
+    }
+    return -1;
+}
+
+/** Gets the column headers of the specified sheet
+ *
+ * @param {Sheet} sheet Google Sheet to query
+ * @returns {array} The headers of the first row.
+ */
+function getHeaders(sheet) {
+    return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+}
+
+/** Gets the named range of the given spreadsheet
+ *
+ * @param {string} name The name of the named range to query
+ * @param {Spreadsheet} ss The Google spreadsheet to query
+ * @returns {Range} The resulting range
+ */
+function getNamedRange(name, ss) {
+    return ss.getNamedRanges().filter(e => e.getName() === name)[0].getRange();
+}
+
+/** Clears all previous form items from a form
+ *
+ * @param {Form} form The Google Form to clear
+ */
+function clearForm(form) {
+    var items = form.getItems();
+    while (items.length > 0) {
+        form.deleteItem(items.pop());
+    }
+}
+
+/** Returns the matching sheet that the form is dumping into
+ *
+ * @param {Form} form A Google Form
+ * @returns {Sheet} The Google Sheet that is recording the responses
+ * @returns {null} If no matching sheet is linked.
+ */
+function getFormDestinationSheet(form) {
+    const formId = form.getId();
+    const destinationId = form.getDestinationId();
+    if (destinationId) {
+        const spreadsheet = SpreadsheetApp.openById(destinationId);
+        const matches = spreadsheet.getSheets().filter(sheet => {
+            const url = sheet.getFormUrl();
+            return url && url.indexOf(formId) > -1;
+        });
+        if (matches.length) return matches[0]
+    }
+    return null
+}
+
+/** Deletes and returns the data from the previous form response sheet
+ *
+ * @param {Form} form A Google Form
+ * @param {Spreadsheet} ss The Google spreadsheet to relink to
+ * @returns {null} If no matching sheet is linked.
+ */
+function clearFormDestinationSheet(form) {
+    var destinationSheet = getFormDestinationSheet(form)
+    form.removeDestination()
+    form.deleteAllResponses()
+    destinationSheet.setName(`${destinationSheet.getName()}_${(new Date).toISOString().replace(/[:]/g,'.')}`)
+}
+
+/** Returns the file ID of the current spreadsheet.
+ *
+ * @returns {string} - The file ID or undefined if not found.
+ */
+function getFileId() {
+    var files = DriveApp.getFiles();
+    while (files.hasNext()) {
+        var file = files.next();
+        if (file.getName() == DriveApp.getFileById(current.getId())) {
+            return file.getId();
+        }
+    }
+}
+
+/** Toasts the user at the current spreadsheet
+ *
+ * @param {string} msg The message to sent
+ * @param {string} title The title of the toast
+ * @param {int} timeout The timeout of the toast
+ */
+function toast(msg, title, timeout) {
+    var currentSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+    currentSpreadsheet.toast(msg, title, timeout);
+}
+
+/** Flashes a row of a sheet
+ *  Note: the range will end overridden with the top left's background color.
+ *
+ * @param {Range} range Range to flash across
+ * @param {string} flashColor Valid Google SpreadSheet color to flash
+ * @param {int} numFlashes Number of times to flash the range
+ * @param {int} timeout The timeout (in ms) for the flashes
+ */
+function flashRange(range, flashColor, numFlashes, timeout) {
+    var originalBgColor = range.getBackground()
+    for (var i = 0; i < numFlashes; i++) {
+        range.setBackground(flashColor);
+        SpreadsheetApp.flush();
+        Utilities.sleep(timeout);
+        range.setBackground(originalBgColor);
+        SpreadsheetApp.flush();
+    }
 }
 
 /** Takes in a name and parses to an object with a name, lastName and secondLast Name
@@ -131,173 +308,56 @@ function parseName(input) {
     return result;
 }
 
-/** Returns first found matching column (searches first row of the sheet)
+/** Runs the function and catches then throws any error and logs it.
  *
- * @param {Sheet} sheet Google Sheet to query
- * @param {string} searchTerm Search term
- * @returns {int} The first found column index, -1 if not found
+ * @param {string} error Error to log
+ * @param {string} msg The extra message to add
  */
-function getColumnIndexFromString(sheet, searchTerm) {
-    var headers = getHeaders(sheet);
-    for (var i = 0; i < headers.length; i++) {
-        if (headers[i] == searchTerm) return i;
-    }
-    return -1;
-}
-
-/** Gets the column headers of the specified sheet
- *
- * @param {Sheet} sheet Google Sheet to query
- * @returns {array} The headers of the first row.
- */
-function getHeaders(sheet) {
-    return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-}
-
-
-/** Returns the index of the matching query in the 2D array at column index.
- *
- * @param {array} arr 2D Array to query
- * @param {int} column Index at second level to query
- * @param {string} query Query term
- * @returns {int} Query match index or -1 if not found
- */
-function findMatchIndexAtColumn(arr, column, query) {
-    var matchIndex = -1;
-    for (i = 1; i < arr.length; ++i) {
-        if (arr[i][column] == query) {
-            matchIndex = i;
-            break;
-        }
-    }
-    return matchIndex;
-}
-
-/** Creates an object from a sheet's first row headers as keys with the values from the data object.
- *
- * @param {Sheet} sheet String to query the column headers
- * @param {string[]} data Array of string data representing a row
- */
-function rowToJson(sheet, data) {
-    var obj = {};
-    var keys = getHeaders(sheet);
-
-    for (var i = 0; i < data.length; i++) {
-        obj[keys[i]] = data[i];
-    }
-
-    return obj;
-}
-
-/** Flashes a row of a sheet
- *  Note: the range will end overridden with the top left's background color.
- *
- * @param {Range} range Range to flash across
- * @param {string} flashColor Valid Google SpreadSheet color to flash
- * @param {int} numFlashes Number of times to flash the range
- * @param {int} timeout The timeout (in ms) for the flashes
- */
-function flashRange(range, flashColor, numFlashes, timeout) {
-    var originalBgColor = range.getBackground()
-    for (var i = 0; i < numFlashes; i++) {
-        range.setBackground(flashColor);
-        SpreadsheetApp.flush();
-        Utilities.sleep(timeout);
-        range.setBackground(originalBgColor);
-        SpreadsheetApp.flush();
-    }
-}
-
-/** Returns the file ID of the current spreadsheet.
- *
- * @returns {string} - The file ID or undefined if not found.
- */
-function getFileId() {
-    var files = DriveApp.getFiles();
-    while (files.hasNext()) {
-        var file = files.next();
-        if (file.getName() == DriveApp.getFileById(current.getId())) {
-            return file.getId();
-        }
-    }
-}
-
-/** Inserts a row
- *  Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
- * @param {Sheet} sheet Google Sheet to insert row data into
- * @param {string[]} rowData Array of string data to insert in the rows
- * @param {int} [index] Optional index to specify the insertion point
- */
-function insertRow(sheet, rowData, index) {
-    var lock = LockService.getScriptLock();
-    lock.waitLock(30000);
+function catchError(fn, errorMsg) {
     try {
-        var index = index || 1;
-        sheet.insertRowBefore(index).getRange(index, 1, 1, rowData.length).setValues([rowData]);
-        SpreadsheetApp.flush();
-    } finally {
-        lock.releaseLock();
+        return fn();
+    } catch (e) {
+        log(log.ERROR, errorMsg, e)
+        throw (errorMsg + e)
     }
 }
 
-/** Toasts the user at the current spreadsheet
+/** You can get a MD5 hash value and even a 4digit short Hash value of a string.
+ * Latest version:
+ *   https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d
+ * Author:
+ *   KEINOS @ https://github.com/keinos
  *
- * @param {string} msg The message to sent
- * @param {string} title The title of the toast
- * @param {int} timeout The timeout of the toast
- */
-function toast(msg, title, timeout) {
-    var currentSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
-    currentSpreadsheet.toast(msg, title, timeout);
-}
-
-/** Clears all previous form items from a form
+ * @param {string} input The value to hash.
+ * @param {boolean} isShortMode Set true for 4 digit shortend hash, else returns usual MD5 hash.
+ * @return {string} The hashed input
+ * @customfunction
  *
- * @param {Form} form The Google Form to clear
  */
-function clearForm(form) {
-    var items = form.getItems();
-    while (items.length > 0) {
-        form.deleteItem(items.pop());
-    }
-}
+function MD5(input, isShortMode) {
+    var txtHash = '';
+    var rawHash = Utilities.computeDigest(
+        Utilities.DigestAlgorithm.MD5,
+        input,
+        Utilities.Charset.UTF_8);
+    var isShortMode = (isShortMode == true) ? true : false;
 
-/** Gets the named range of the given spreadsheet
- *
- * @param {string} name The name of the named range to query
- * @param {Spreadsheet} ss The Google spreadsheet to query
- * @returns {Range} The resulting range
- */
-function getNamedRange(name, ss) {
-    return ss.getNamedRanges().filter(e => e.getName() === name)[0].getRange();
-}
+    if (!isShortMode) {
+        for (i = 0; i < rawHash.length; i++) {
+            var hashVal = rawHash[i];
+            if (hashVal < 0) hashVal += 256;
+            if (hashVal.toString(16).length == 1) txtHash += '0';
+            txtHash += hashVal.toString(16);
+        };
+    } else {
+        for (j = 0; j < 16; j += 8) {
+            hashVal = (rawHash[j] + rawHash[j + 1] + rawHash[j + 2] + rawHash[j + 3]) ^
+                (rawHash[j + 4] + rawHash[j + 5] + rawHash[j + 6] + rawHash[j + 7]);
 
-/** Creates a default PassNinja formatted Google sheet on the given spreadsheet 
- *
- * @param {string} name The name of the named range to query
- * @param {Spreadsheet} ss The Google spreadsheet to query
- * @returns {Sheet} The resulting Google sheet
- */
-function initializeSheet(name, ss) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) {
-        sheet = ss.insertSheet(name);
-    }
-    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
-    allCells.setBackground(COLORS.GENERIC)
-    allCells.setFontColor('#efefef')
-    allCells.setFontFamily("Helvetica Neue")
-
-    return sheet
-}
-
-/** Deletes all columns from min->max on the given sheet
- *
- * @param {int} min The starting column index
- * @param {int} max The final column index
- */
-function deleteUnusedColumns(min, max, sheet) {
-    for (var i = max; i >= min; i--) {
-        sheet.deleteColumn(i);
-    }
+            if (hashVal < 0) hashVal += 1024;
+            if (hashVal.toString(36).length == 1) txtHash += "0";
+            txtHash += hashVal.toString(36);
+        };
+    };
+    return txtHash.toUpperCase();
 }
