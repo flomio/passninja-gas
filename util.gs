@@ -27,11 +27,7 @@ function getValidSheetSelectedRow(sheet) {
     var selectedRow = sheet.getActiveCell().getRow();
     var rowNumber = Number(selectedRow);
     if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
-        Browser.msgBox(
-            "Error",
-            Utilities.formatString('Row "%s" is not valid.', selectedRow),
-            Browser.Buttons.OK
-        );
+        throw (`Row ${selectedRow} is not valid.`)
         return false;
     }
     return rowNumber;
@@ -163,7 +159,7 @@ function findMatchIndexAtColumn(arr, column, query) {
 function getColumnIndexFromString(sheet, searchTerm) {
     var headers = getHeaders(sheet);
     for (var i = 0; i < headers.length; i++) {
-        if (headers[i] == searchTerm) return i;
+        if (headers[i] == searchTerm) return i + 1;
     }
     return -1;
 }

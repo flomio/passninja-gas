@@ -18,7 +18,7 @@ function doGet(request) {
  * @returns {object} The resulting match or an empty object if no match is found
  */
 function findContactBySerial(sheet, serialNumber) {
-    var serialNumberColumn = getColumnIndexFromString(sheet, "serialNumber");
+    var serialNumberColumn = getColumnIndexFromString(sheet, "serialNumber") - 1;
     var serialNumberColumnData = sheet
         .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
         .getValues();

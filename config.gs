@@ -6,11 +6,11 @@ log.ERROR = 'ERROR'
 log.STATUS = 'STATUS'
 
 var COLORS = {
-  FIELD_PASSNINJA: '#6aa84f',
-  FIELD_PASS: '#3c78d8',
-  GENERIC: '#666666',
-  SUCCESS: '#ADFF2F',
-  ERROR: '#FF4500'
+    FIELD_PASSNINJA: '#6aa84f',
+    FIELD_PASS: '#3c78d8',
+    GENERIC: '#666666',
+    SUCCESS: '#ADFF2F',
+    ERROR: '#FF4500'
 }
 
 var STATUS_LOOKUP = {
@@ -30,9 +30,9 @@ var STATUS_LOOKUP = {
 };
 
 var ENUMS = {
-  CONTACTS: 'Contacts',
-  EVENTS: 'Events',
-  PASSURL: 'passUrl',
-  PASSTYPE: 'passType',
-  SERIAL: 'serialNumber'
+    CONTACTS: 'Contacts',
+    EVENTS: 'Events',
+    PASSURL: 'passUrl',
+    PASSTYPE: 'passType',
+    SERIAL: 'serialNumber'
 }
