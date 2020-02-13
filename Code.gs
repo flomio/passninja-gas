@@ -1,18 +1,48 @@
 var API_URL = "https://api.passninja.com/v1/";
 
-//var API_URL = 'https://passninja.ngrok.io/'
-
 /** Adds the PassNinja script set as a menu item on load.
  * 
  */
 function onOpen() {
-    var spreadsheet = SpreadsheetApp.getActive();
+    var sheet = SpreadsheetApp.getActive();
     var menuItems = [
         { name: "Create A Pass", functionName: "createPass_" },
         { name: "Update A Pass", functionName: "updatePass_" },
-        { name: "Show Events", functionName: "showEvents_" }
+        { name: "Show Events", functionName: "showEvents_" },
+        { name: "Build/Update From Config", functionName: "updateFromConfig_" }
     ];
-    spreadsheet.addMenu("PassNinja", menuItems);
+    sheet.addMenu("PassNinja", menuItems);
+}
+
+/**
+ * Creates a Google Form that allows respondents to select which conference
+ * sessions they would like to attend, grouped by date and start time.
+ *
+ * @param {Spreadsheet} ss The spreadsheet that contains the conference data.
+ * @param {string[]} values Cell values for the spreadsheet range.
+ */
+function updateFromConfig_() {
+    var ss = SpreadsheetApp.getActive();
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
+    var fieldsHash = PropertiesService.getScriptProperties().getProperty('fieldsHash');
+    var hash = MD5(JSON.stringify(fieldsData), true);
+    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <->${fieldsHash}`)
+
+    if (hash !== fieldsHash) {
+        PropertiesService.getScriptProperties().setProperty('fieldsHash', hash);
+
+        var fieldsNames = fieldsData.map(f => f[0])
+
+        catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
+        var sheet = catchError(() => buildContactsSheet(ss, fieldsNames), 'Error building Contacts Sheet - ')
+        catchError(() => buildContactsForm(ss, sheet, fieldsData), 'Error building Contacts Form - ')
+    } else {
+        Browser.msgBox(
+            "No Update",
+            "The Config sheet's field data has not changed, not updating.",
+            Browser.Buttons.OK
+        );
+    }
 }
 
 /** Inputs a new user's data from a form submit event and triggers a pass creation.
@@ -21,34 +51,77 @@ function onOpen() {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-    var data = e.namedValues
-    Logger.log(data);
+    var ss = SpreadsheetApp.getActive();
+    var sheet = getSheet(ENUMS.CONTACTS)
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
+    var fieldsNames = fieldsData.map(f => f[0])
 
-    var spreadsheet = SpreadsheetApp.getActive();
-    var contactSheet = spreadsheet.getSheetByName('Contacts');
     var lock = LockService.getPublicLock();
     if (lock.tryLock(10000)) {
-        var newRow = contactSheet.getLastRow() + 1;
-        // https://stackoverflow.com/questions/11495588/google-apps-script-spreadsheets-write-array-to-cells
-        // need to make md-array and just dump into the first cell.
-        contactSheet.getRange(newRow, 1).setValue(e.namedValues['First and Last Name'][0]);
-        contactSheet.getRange(newRow, 2).setValue(e.namedValues['Birthday'][0]);
-        contactSheet.getRange(newRow, 3).setValue(e.namedValues['Email Address'][0]);
-        contactSheet.getRange(newRow, 4).setValue(e.namedValues['Phone'][0]);
-        contactSheet.getRange(newRow, 5).setValue(e.namedValues['carrier'][0]);
-        contactSheet.getRange(newRow, 6).setValue(e.namedValues['city'][0]);
-        contactSheet.getRange(newRow, 7).setValue(e.namedValues['state'][0]);
-        contactSheet.getRange(newRow, 8).setValue(e.namedValues['referral_code'][0]);
-        contactSheet.getRange(newRow, 9).setValue(e.namedValues['date_created'][0]);
-        contactSheet.getRange(newRow, 10).setValue(e.namedValues['s'][0]);
-        contactSheet.getRange(newRow, 11).setValue(e.namedValues['code'][0]);
+        sheet.appendRow(fieldsNames.map(field => e.namedValues[field][0]))
         lock.releaseLock();
-        contactSheet.setActiveRange(contactSheet.getRange(newRow, 1));
     } else {
         return "Lock Timeout";
     }
-
+    autoResizeSheet(sheet)
+    sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
     createPass_();
+}
+
+/** Creates a PassNinja pass from the selected row.
+ * @returns {string} The response from the PassNinja API.
+ */
+function createPass_() {
+    var ss = SpreadsheetApp.getActive();
+    var contactSheet = getSheet(ENUMS.CONTACTS);
+
+    var passNinjaColumnStart = getColumnIndexFromString(contactSheet, 'passUrl')
+    var rowNumber = getValidSheetSelectedRow(contactSheet);
+    var row = contactSheet.getRange(rowNumber, 1, 1, getColumnIndexFromString(contactSheet, "passUrl") - 1);
+
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
+    var values = row.getValues()[0]
+    log(log.STATUS, `Working on row #${rowNumber} with values [${values}]`)
+
+    var postData = {
+        passType: ss.getRangeByName("config_passTypeId").getValue(),
+        pass: {
+            issuerName: "required",
+            hexBackground: "#571616"
+        }
+    };
+
+    for (i = 0; i < values.length; i++) {
+        var [fieldName, fieldIncluded] = fieldsData[i]
+        if (fieldIncluded === 'Y') {
+            log(log.SUCCESS, `Added (${fieldName}: ${values[i]}) to POST payload.`)
+            postData.pass[fieldName] = values[i]
+        }
+    }
+
+    try {
+        log(log.STATUS, "Attempting to POST /passes with: ", JSON.stringify(postData));
+        response = UrlFetchApp.fetch(API_URL + "passes/", {
+            method: "post",
+            contentType: "application/json",
+            muteHttpExceptions: true,
+            payload: JSON.stringify(postData)
+        });
+        log(log.SUCCESS, "POST /passes response: ", response.getContentText());
+    } catch (e) {
+        highlightCells(contactSheet.getRange(rowNumber, passNinjaColumnStart - 1, "error", e));
+        throw ('There was an error with the API Request: ' + e)
+    }
+
+    data = JSON.parse(response.getContentText());
+    contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3).setValues([
+        [data.landingUrl, data.apple.passTypeIdentifier.replace("pass.com.passninja.", ""), data.apple.serialNumber]
+    ]);
+
+    highlightCells(contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3), "success");
+    autoResizeSheet(contactSheet)
+
+    return response.getContentText();
 }
 
 /** Updates a given pass from the highlighted row with the new values in the row
@@ -57,20 +130,15 @@ function onboardNewPassholderFromForm(e) {
  * @returns {string} The response from the PassNinja API.
  */
 function updatePass_() {
-    var spreadsheet = SpreadsheetApp.getActive();
-    var contactSheet = spreadsheet.getSheetByName("Contacts");
-
-    // if valid, get the correct row of data.
-    var rowNumber = contactSheet.getActiveCell().getRow();
-    Logger.log("rowNumber:", rowNumber);
-
-    // get the range for that row
+    var contactSheet = getSheet(ENUMS.CONTACTS);
+    var rowNumber = getValidSheetSelectedRow(contactSheet);
     var rowRangeValues = contactSheet.getRange(rowNumber, 1, 1, 12).getValues();
 
     if (!contactSheet.getRange(rowNumber, 12).getValue()) {
         Browser.msgBox("First Create a pass, then update.");
         return;
     }
+
     // Build the object to use in MailApp
     var name = rowRangeValues[0][0];
     var phone = rowRangeValues[0][1];
@@ -93,7 +161,7 @@ function updatePass_() {
     };
     try {
         response = UrlFetchApp.fetch(API_URL + "apple", options);
-        Logger.log(response.getContentText());
+        log(log.SUCCESS, response.getContentText());
     } catch (err) {
         range = contactSheet.getRange(rowNumber, 12);
         highlightCells(range, "error", data.response);
@@ -112,7 +180,7 @@ function updatePass_() {
  * 
  */
 function showEvents_() {
-    var contactSheet = getSheet("Contacts");
+    var contactSheet = getSheet(ENUMS.CONTACTS);
     var rowNumber = getValidSheetSelectedRow(contactSheet);
     var row = contactSheet.getRange(rowNumber, 1, 1, 12);
     var rowValues = row.getValues();
@@ -122,68 +190,4 @@ function showEvents_() {
         .setWidth(550)
         .setHeight(300);
     SpreadsheetApp.getUi().showModalDialog(htmlOutput, "Pass Events");
-}
-
-/** Creates a PassNinja pass from the selected row.
- * @returns {string} The response from the PassNinja API.
- */
-function createPass_() {
-    var contactSheet = getSheet("Contacts");
-    var rowNumber = getValidSheetSelectedRow(contactSheet);
-    var passTypeId = spreadsheet.getRangeByName("passTypeId").getValue();
-    Logger.log("passTypeID: ", passTypeId);
-
-    // Retrieve the addresses in that row.
-    var row = contactSheet.getRange(rowNumber, 1, 1, 11);
-    var rowValues = row.getValues();
-    var fullName = rowValues[0][0];
-    if (!fullName) {
-        Browser.msgBox(
-            "Error",
-            "Row does not contain contact name or code.",
-            Browser.Buttons.OK
-        );
-        return;
-    }
-
-    var parsedName = parseName(fullName);
-
-    var postData = {
-        passType: passTypeId,
-        pass: {
-            firstName: parsedName.name,
-            lastName: parsedName.lastName + " " + parsedName.secondLastName,
-            issuerName: "required",
-            hexBackground: "#571616"
-        }
-    };
-
-    var options = {
-        method: "post",
-        contentType: "application/json",
-        muteHttpExceptions: true,
-        payload: JSON.stringify(postData)
-    };
-
-    try {
-        response = UrlFetchApp.fetch(API_URL + "passes/", options);
-    } catch (err) {
-        highlightCells(contactSheet.getRange(rowNumber, 12), "error", err);
-    }
-
-    Logger.log("response:", response.getContentText());
-    data = JSON.parse(response.getContentText());
-    contactSheet
-        .getRange(rowNumber, getColumnFromName(contactSheet, "passUrl"))
-        .setValue(data.landingUrl);
-    contactSheet
-        .getRange(rowNumber, getColumnFromName(contactSheet, "passType"))
-        .setValue(data.apple.passTypeIdentifier.replace("pass.com.passninja.", ""));
-    contactSheet
-        .getRange(rowNumber, getColumnFromName(contactSheet, "serialNumber"))
-        .setValue(data.apple.serialNumber);
-    highlightCells(contactSheet.getRange(rowNumber, 12, 1, 3), "success");
-
-    Logger.log(response.getContentText());
-    return response.getContentText();
 }
