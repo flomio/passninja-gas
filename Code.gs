@@ -23,7 +23,7 @@ function onOpen() {
 function updateFromConfig_() {
     var ss = SpreadsheetApp.getActive();
     var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
-    var fieldsHash = getEnvVar('fieldsHash');
+    var fieldsHash = getEnvVar('fieldsHash', false);
     var hash = MD5(JSON.stringify(fieldsData), true);
     log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <->${fieldsHash}`)
 

@@ -70,6 +70,7 @@ function buildConfigSheet() {
     formTypeRange.setHorizontalAlignment('center').setValue('text')
 
     deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet)
+    autoResizeSheet(sheet)
     log(log.SUCCESS, 'Successfully built/updated Events sheet')
 }
 

@@ -1,6 +1,6 @@
-function getEnvVar(name) {
+function getEnvVar(name, throwError=true) {
     var envVar = PropertiesService.getScriptProperties().getProperty(name);
-    if (!envVar) throw (`Script variable ${name} does not exist.`)
+    if (throwError && !envVar) throw (`Script variable ${name} does not exist.`)
     return envVar
 }
 
