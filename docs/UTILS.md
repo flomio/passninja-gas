@@ -1,6 +1,9 @@
 ## Functions
 
 <dl>
+<dt><a href="#getConfigConstants">getConfigConstants()</a></dt>
+<dd><p>Returns an object with key:value pairs from the Config sheet</p>
+</dd>
 <dt><a href="#sortSheet">sortSheet(sheet)</a></dt>
 <dd><p>Sorts the specified sheet</p>
 </dd>
@@ -75,6 +78,12 @@ Author:
 </dd>
 </dl>
 
+<a name="getConfigConstants"></a>
+
+## getConfigConstants()
+Returns an object with key:value pairs from the Config sheet
+
+**Kind**: global function  
 <a name="sortSheet"></a>
 
 ## sortSheet(sheet)
