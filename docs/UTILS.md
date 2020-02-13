@@ -16,9 +16,6 @@
 <dt><a href="#getValidSheetSelectedRow">getValidSheetSelectedRow(sheet)</a> ⇒ <code>int</code> | <code>boolean</code></dt>
 <dd><p>Determines whether the selected row is valid</p>
 </dd>
-<dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
-<dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
-</dd>
 <dt><a href="#autoResizeSheet">autoResizeSheet(sheet)</a></dt>
 <dd><p>Auto resizes all sheet columns</p>
 </dd>
@@ -133,19 +130,6 @@ Determines whether the selected row is valid
 | Param | Type | Description |
 | --- | --- | --- |
 | sheet | <code>Sheet</code> | The Google Sheet to check against |
-
-<a name="initializeSheet"></a>
-
-## initializeSheet(name, ss) ⇒ <code>Sheet</code>
-Creates a default PassNinja formatted Google sheet on the given spreadsheet
-
-**Kind**: global function  
-**Returns**: <code>Sheet</code> - The resulting Google sheet  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>string</code> | The name of the named range to query |
-| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
 
 <a name="autoResizeSheet"></a>
 

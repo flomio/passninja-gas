@@ -18,6 +18,12 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dd><p>Pops up a modal with the pass events of the current highlighted row
 related to the pass via serial number</p>
 </dd>
+<dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
+<dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
+</dd>
+<dt><a href="#buildConfigSheet">buildConfigSheet()</a></dt>
+<dd><p>Builds initial contacts sheet</p>
+</dd>
 <dt><a href="#buildEventsSheet">buildEventsSheet(ss, fieldsNames)</a></dt>
 <dd><p>Builds a events sheet based on the user config sheet</p>
 </dd>
@@ -72,6 +78,25 @@ Creates a PassNinja pass from the selected row.
 ## showEvents\_()
 Pops up a modal with the pass events of the current highlighted row
 related to the pass via serial number
+
+**Kind**: global function  
+<a name="initializeSheet"></a>
+
+## initializeSheet(name, ss) ⇒ <code>Sheet</code>
+Creates a default PassNinja formatted Google sheet on the given spreadsheet
+
+**Kind**: global function  
+**Returns**: <code>Sheet</code> - The resulting Google sheet  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | The name of the named range to query |
+| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
+
+<a name="buildConfigSheet"></a>
+
+## buildConfigSheet()
+Builds initial contacts sheet
 
 **Kind**: global function  
 <a name="buildEventsSheet"></a>
