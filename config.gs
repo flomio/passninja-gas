@@ -9,6 +9,7 @@ var COLORS = {
     FIELD_PASSNINJA: '#6aa84f',
     FIELD_PASS: '#3c78d8',
     GENERIC: '#666666',
+    TEXT: '#efefef',
     SUCCESS: '#ADFF2F',
     ERROR: '#FF4500'
 }
@@ -30,6 +31,7 @@ var STATUS_LOOKUP = {
 };
 
 var ENUMS = {
+    CONFIG: 'Config',
     CONTACTS: 'Contacts',
     EVENTS: 'Events',
     PASSURL: 'passUrl',

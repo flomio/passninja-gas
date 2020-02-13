@@ -1,3 +1,14 @@
+/** Returns an object with key:value pairs from the Config sheet
+ */
+function getConfigConstants() {
+    var constants = SpreadsheetApp
+        .getActive()
+        .getRangeByName("config_constants")
+        .getValues()
+        .filter(row => !!row[0])
+    return Object.fromEntries(constants)
+}
+
 /** Sorts the specified sheet
  *
  * @param {Sheet} sheet The Google sheet to sort
@@ -46,7 +57,7 @@ function initializeSheet(name, ss) {
     }
     var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
     allCells.setBackground(COLORS.GENERIC)
-    allCells.setFontColor('#efefef')
+    allCells.setFontColor(COLORS.TEXT)
     allCells.setFontFamily("Helvetica Neue")
 
     return sheet
