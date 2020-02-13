@@ -75,30 +75,31 @@ function createPass_() {
     var ss = SpreadsheetApp.getActive();
     var contactSheet = getSheet(ENUMS.CONTACTS);
 
-    var passNinjaColumnStart = getColumnIndexFromString(contactSheet, 'passUrl')
+    var passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
+    var serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
     var rowNumber = getValidSheetSelectedRow(contactSheet);
-    var row = contactSheet.getRange(rowNumber, 1, 1, getColumnIndexFromString(contactSheet, "passUrl") - 1);
-
-    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
-    var values = row.getValues()[0]
-    log(log.STATUS, `Working on row #${rowNumber} with values [${values}]`)
+    var rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
+    var passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
+    var serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
+    var { passTypeId, ...passFieldConstants } = getConfigConstants()
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0]);
+    var rowValues = rowRange.getValues()[0];
+    log(log.STATUS, `Working on row #${rowNumber} with values [${rowValues}]`)
 
     var postData = {
-        passType: ss.getRangeByName("config_passTypeId").getValue(),
-        pass: {
-            issuerName: "required",
-            hexBackground: "#571616"
-        }
+        passType: passTypeId,
+        pass: passFieldConstants
     };
 
-    for (i = 0; i < values.length; i++) {
+    for (i = 0; i < rowValues.length; i++) {
         var [fieldName, fieldIncluded] = fieldsData[i]
         if (fieldIncluded === 'Y') {
-            log(log.SUCCESS, `Added (${fieldName}: ${values[i]}) to POST payload.`)
-            postData.pass[fieldName] = values[i]
+            log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`)
+            postData.pass[fieldName] = rowValues[i]
         }
     }
 
+    var data = undefined;
     try {
         log(log.STATUS, "Attempting to POST /passes with: ", JSON.stringify(postData));
         response = UrlFetchApp.fetch(API_URL + "passes/", {
@@ -107,18 +108,20 @@ function createPass_() {
             muteHttpExceptions: true,
             payload: JSON.stringify(postData)
         });
-        log(log.SUCCESS, "POST /passes response: ", response.getContentText());
+        if ((response.getResponseCode() < 200 || response.getResponseCode() > 299)) throw (response)
     } catch (e) {
-        highlightCells(contactSheet.getRange(rowNumber, passNinjaColumnStart - 1, "error", e));
-        throw ('There was an error with the API Request: ' + e)
+        var errorString = JSON.stringify(e.getContentText && e.getContentText() || e)
+        log(log.ERROR, `PassNinja API Error:\n${errorString}`)
+        throw (`PassNinja API error: ${errorString}`)
     }
 
     data = JSON.parse(response.getContentText());
-    contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3).setValues([
+    passNinjaContentRange.setValues([
         [data.landingUrl, data.apple.passTypeIdentifier.replace("pass.com.passninja.", ""), data.apple.serialNumber]
     ]);
 
-    highlightCells(contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3), "success");
+    highlightCells(passNinjaContentRange, "success");
+    contactSheet.setActiveSelection(serialNumberRange)
     autoResizeSheet(contactSheet)
 
     return response.getContentText();
