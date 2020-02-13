@@ -36,5 +36,7 @@ var ENUMS = {
     EVENTS: 'Events',
     PASSURL: 'passUrl',
     PASSTYPE: 'passType',
-    SERIAL: 'serialNumber'
+    SERIAL: 'serialNumber',
+    CONFIG_CONSTANTS: 'config_constants',
+    CONFIG_FIELDS: 'config_fields'
 }

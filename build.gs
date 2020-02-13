@@ -8,6 +8,60 @@ var FORM_LOOKUP = {
     text: 'addTextItem'
 }
 
+/** Creates a default PassNinja formatted Google sheet on the given spreadsheet 
+ *
+ * @param {string} name The name of the named range to query
+ * @param {Spreadsheet} ss The Google spreadsheet to query
+ * @returns {Sheet} The resulting Google sheet
+ */
+function initializeSheet(name, ss) {
+    var sheet = ss.getSheetByName(name);
+    if (!sheet) {
+        sheet = ss.insertSheet(name);
+    }
+    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
+    allCells.setBackground(COLORS.GENERIC)
+    allCells.setFontColor(COLORS.TEXT)
+    allCells.setFontFamily("Helvetica Neue")
+
+    return sheet
+}
+
+/** Builds initial contacts sheet
+ */
+function buildConfigSheet() {
+    var ss = SpreadsheetApp.getActive();
+    var sheet = initializeSheet(ENUMS.CONFIG, ss)
+
+    var headerNames = ["Pass Field", "Constant Value", null, "Contact Field", "Field in Pass?", "Form-Type", "Form Options (comma separated)"]
+    var headerRange = sheet.getRange(1, 1, 1, headerNames.length)
+
+    headerRange.setValues([headerNames])
+    headerRange.setBackground(COLORS.FIELD_PASSNINJA)
+    headerRange.setFontWeight('bold')
+
+    ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(2, 1, sheet.getMaxRows(), 2))
+    ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 3, sheet.getMaxRows(), 4))
+
+    var validationInPass = SpreadsheetApp.newDataValidation()
+        .requireValueInList(['N', 'Y'], true)
+        .setAllowInvalid(false)
+        .build()
+
+    var validationFormType = SpreadsheetApp.newDataValidation()
+        .requireValueInList(['text,date,datetime,time,duration'], true)
+        .setAllowInvalid(false)
+        .build()
+
+    sheet.getRange(2, headerNames.indexOf('Field in Pass?') + 1, sheet.getMaxRows(), 1)
+        .setDataValidation(validationInPass)
+    sheet.getRange(2, headerNames.indexOf('Form-Type') + 1, sheet.getMaxRows(), 1)
+        .setDataValidation(validationFormType)
+
+    deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet)
+    log(log.SUCCESS, 'Successfully built/updated Events sheet')
+}
+
 /** Builds a events sheet based on the user config sheet
  * 
  * @param {Spreadsheet} ss The container spreadsheet

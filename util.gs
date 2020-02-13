@@ -79,25 +79,6 @@ function getValidSheetSelectedRow(sheet) {
     return rowNumber;
 }
 
-/** Creates a default PassNinja formatted Google sheet on the given spreadsheet 
- *
- * @param {string} name The name of the named range to query
- * @param {Spreadsheet} ss The Google spreadsheet to query
- * @returns {Sheet} The resulting Google sheet
- */
-function initializeSheet(name, ss) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) {
-        sheet = ss.insertSheet(name);
-    }
-    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
-    allCells.setBackground(COLORS.GENERIC)
-    allCells.setFontColor(COLORS.TEXT)
-    allCells.setFontFamily("Helvetica Neue")
-
-    return sheet
-}
-
 /** Auto resizes all sheet columns
  *
  * @param {Sheet} sheet The sheet to resize

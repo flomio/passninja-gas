@@ -2,13 +2,13 @@
  * 
  */
 function onOpen() {
-    var sheet = SpreadsheetApp.getActive();
+    var ss = SpreadsheetApp.getActive();
     var menuItems = [
         { name: "Create/Update A Pass", functionName: "createPass_" },
         { name: "Show Events", functionName: "showEvents_" },
         { name: "Build/Update From Config", functionName: "updateFromConfig_" }
     ];
-    sheet.addMenu("PassNinja", menuItems);
+    ss.addMenu("PassNinja", menuItems);
 }
 
 /**
@@ -31,8 +31,8 @@ function updateFromConfig_() {
         var fieldsNames = fieldsData.map(f => f[0])
 
         catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
-        var sheet = catchError(() => buildContactsSheet(ss, fieldsNames), 'Error building Contacts Sheet - ')
-        catchError(() => buildContactsForm(ss, sheet, fieldsData), 'Error building Contacts Form - ')
+        catchError(() => buildContactsSheet(ss, fieldsNames), 'Error building Contacts Sheet - ')
+        catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fieldsData), 'Error building Contacts Form - ')
     } else {
         Browser.msgBox(
             "No Update",
