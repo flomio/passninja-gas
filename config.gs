@@ -6,10 +6,14 @@ log.ERROR = 'ERROR'
 log.STATUS = 'STATUS'
 
 var COLORS = {
-    FIELD_PASSNINJA: '#6aa84f',
-    FIELD_PASS: '#3c78d8',
-    GENERIC: '#666666',
+    FIELD_PASSNINJA: '#4A6572',
+    FIELD_CONSTANT: '#F9AA33',
+    FIELD_CONTACT: '#F9AA33',
+    FIELD_CONFIG: '#BCA136',
+    FIELD_PASS: '#829356',
+    GENERIC: '#232F34',
     TEXT: '#efefef',
+    TEXT_ON: '#17262A',
     SUCCESS: '#ADFF2F',
     ERROR: '#FF4500'
 }
@@ -36,5 +40,8 @@ var ENUMS = {
     EVENTS: 'Events',
     PASSURL: 'passUrl',
     PASSTYPE: 'passType',
-    SERIAL: 'serialNumber'
+    SERIAL: 'serialNumber',
+    CONFIG_CONSTANTS: 'config_constants',
+    CONFIG_FIELDS: 'config_fields',
+    FIELDS_HASH: 'fieldsHash'
 }

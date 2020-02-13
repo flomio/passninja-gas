@@ -2,13 +2,15 @@
  * 
  */
 function onOpen() {
-    var sheet = SpreadsheetApp.getActive();
-    var menuItems = [
-        { name: "Create/Update A Pass", functionName: "createPass_" },
-        { name: "Show Events", functionName: "showEvents_" },
-        { name: "Build/Update From Config", functionName: "updateFromConfig_" }
-    ];
-    sheet.addMenu("PassNinja", menuItems);
+    var ui = SpreadsheetApp.getUi();
+    ui.createMenu('PassNinja')
+        .addItem('Create/Update A Pass', 'createPass_')
+        .addItem('Show Events', 'showEvents_')
+        .addSeparator()
+        .addSubMenu(ui.createMenu('Create Default Sheet(s)')
+            .addItem('Create Config Sheet', 'buildConfigSheet')
+            .addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
+        .addToUi();
 }
 
 /**
@@ -20,19 +22,17 @@ function onOpen() {
  */
 function updateFromConfig_() {
     var ss = SpreadsheetApp.getActive();
-    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
-    var fieldsHash = getEnvVar('fieldsHash');
-    var hash = MD5(JSON.stringify(fieldsData), true);
-    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <->${fieldsHash}`)
+    var fields = getConfigFields()
+    var constants = getConfigConstants()
+    var fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
+    var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants))
+    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`)
 
     if (hash !== fieldsHash) {
-        setEnvVar('fieldsHash', hash)
-
-        var fieldsNames = fieldsData.map(f => f[0])
-
+        setEnvVar(ENUMS.FIELDS_HASH, hash)
         catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
-        var sheet = catchError(() => buildContactsSheet(ss, fieldsNames), 'Error building Contacts Sheet - ')
-        catchError(() => buildContactsForm(ss, sheet, fieldsData), 'Error building Contacts Form - ')
+        catchError(() => buildContactsSheet(ss, fields.map(f => f[0])), 'Error building Contacts Sheet - ')
+        catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ')
     } else {
         Browser.msgBox(
             "No Update",
@@ -69,7 +69,6 @@ function onboardNewPassholderFromForm(e) {
  * @returns {string} The response from the PassNinja API.
  */
 function createPass_() {
-    var pnService = new PassNinjaService()
     var ss = SpreadsheetApp.getActive();
     var contactSheet = getSheet(ENUMS.CONTACTS);
 
@@ -84,7 +83,7 @@ function createPass_() {
 
     var payloadJSONString = getRowPassPayload(ss, rowRange)
     var serial = serialNumberRange.getValue()
-    var responseData = serial ? pnService.updatePass(payloadJSONString, serial) : pnService.createPass(payloadJSONString);
+    var responseData = serial ? new PassNinjaService().updatePass(payloadJSONString, serial) : new PassNinjaService().createPass(payloadJSONString);
 
     passNinjaContentRange.setValues([
         [responseData.landingUrl,

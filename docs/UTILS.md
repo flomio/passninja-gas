@@ -7,6 +7,9 @@
 <dt><a href="#getConfigConstants">getConfigConstants()</a></dt>
 <dd><p>Returns an object with key:value pairs from the Config sheet</p>
 </dd>
+<dt><a href="#getConfigFields">getConfigFields()</a></dt>
+<dd><p>Returns a list of config field entries</p>
+</dd>
 <dt><a href="#sortSheet">sortSheet(sheet)</a></dt>
 <dd><p>Sorts the specified sheet</p>
 </dd>
@@ -15,9 +18,6 @@
 </dd>
 <dt><a href="#getValidSheetSelectedRow">getValidSheetSelectedRow(sheet)</a> ⇒ <code>int</code> | <code>boolean</code></dt>
 <dd><p>Determines whether the selected row is valid</p>
-</dd>
-<dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
-<dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
 </dd>
 <dt><a href="#autoResizeSheet">autoResizeSheet(sheet)</a></dt>
 <dd><p>Auto resizes all sheet columns</p>
@@ -99,6 +99,12 @@ Filters out non-pass related row entries and converts to JSON.
 Returns an object with key:value pairs from the Config sheet
 
 **Kind**: global function  
+<a name="getConfigFields"></a>
+
+## getConfigFields()
+Returns a list of config field entries
+
+**Kind**: global function  
 <a name="sortSheet"></a>
 
 ## sortSheet(sheet)
@@ -133,19 +139,6 @@ Determines whether the selected row is valid
 | Param | Type | Description |
 | --- | --- | --- |
 | sheet | <code>Sheet</code> | The Google Sheet to check against |
-
-<a name="initializeSheet"></a>
-
-## initializeSheet(name, ss) ⇒ <code>Sheet</code>
-Creates a default PassNinja formatted Google sheet on the given spreadsheet
-
-**Kind**: global function  
-**Returns**: <code>Sheet</code> - The resulting Google sheet  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| name | <code>string</code> | The name of the named range to query |
-| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
 
 <a name="autoResizeSheet"></a>
 
