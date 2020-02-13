@@ -7,6 +7,9 @@
 <dt><a href="#getConfigConstants">getConfigConstants()</a></dt>
 <dd><p>Returns an object with key:value pairs from the Config sheet</p>
 </dd>
+<dt><a href="#getConfigFields">getConfigFields()</a></dt>
+<dd><p>Returns a list of config field entries</p>
+</dd>
 <dt><a href="#sortSheet">sortSheet(sheet)</a></dt>
 <dd><p>Sorts the specified sheet</p>
 </dd>
@@ -94,6 +97,12 @@ Filters out non-pass related row entries and converts to JSON.
 
 ## getConfigConstants()
 Returns an object with key:value pairs from the Config sheet
+
+**Kind**: global function  
+<a name="getConfigFields"></a>
+
+## getConfigFields()
+Returns a list of config field entries
 
 **Kind**: global function  
 <a name="sortSheet"></a>
