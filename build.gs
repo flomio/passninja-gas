@@ -49,7 +49,7 @@ function buildConfigSheet() {
     // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
 
     ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(2, 1, sheet.getMaxRows(), 2))
-    ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 3, sheet.getMaxRows(), 4))
+    ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 4, sheet.getMaxRows(), 4))
 
     var validationInPass = SpreadsheetApp.newDataValidation()
         .requireValueInList(['N', 'Y'], true)
