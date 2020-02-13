@@ -5,7 +5,7 @@
  */
 function doGet(request) {
     var serialNumber = request.parameter.serialNumber;
-    clientData = findContactBySerial(getSheet(ENUMS.CONTACTS), serialNumber);
+    clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS), serialNumber);
     return ContentService.createTextOutput(
         JSON.stringify(clientData)
     ).setMimeType(ContentService.MimeType.JSON);
@@ -17,7 +17,7 @@ function doGet(request) {
  * @param {string} serialNumber Query string to match
  * @returns {object} The resulting match or an empty object if no match is found
  */
-function findContactBySerial(sheet, serialNumber) {
+function rowToJSONFromSerial(sheet, serialNumber) {
     var serialNumberColumn = getColumnIndexFromString(sheet, "serialNumber") - 1;
     var serialNumberColumnData = sheet
         .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())

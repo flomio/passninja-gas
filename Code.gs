@@ -102,9 +102,13 @@ function createPass_() {
 
     var data = undefined;
     try {
-        log(log.STATUS, "Attempting to POST /passes with: ", JSON.stringify(postData));
-        response = UrlFetchApp.fetch(API_URL + "passes/", {
-            method: "post",
+        var serial = serialNumberRange.getValue()
+        var method = !!serial ? 'put' : 'post'
+        var endpoint = `${API_URL}passes/${serial}`
+
+        log(log.STATUS, `Attempting to ${method.toUpperCase()} ${endpoint} with: ${JSON.stringify(postData)}`);
+        response = UrlFetchApp.fetch(endpoint, {
+            method,
             contentType: "application/json",
             muteHttpExceptions: true,
             payload: JSON.stringify(postData)
@@ -125,57 +129,6 @@ function createPass_() {
     contactSheet.setActiveSelection(passUrlRange)
     autoResizeSheet(contactSheet)
 
-    return response.getContentText();
-}
-
-/** Updates a given pass from the highlighted row with the new values in the row
- *  Pops up a dialog input box where the user can input new json data to overwrite the existing pass
- * 
- * @returns {string} The response from the PassNinja API.
- */
-function updatePass_() {
-    var contactSheet = getSheet(ENUMS.CONTACTS);
-    var rowNumber = getValidSheetSelectedRow(contactSheet);
-    var rowRangeValues = contactSheet.getRange(rowNumber, 1, 1, 12).getValues();
-
-    if (!contactSheet.getRange(rowNumber, 12).getValue()) {
-        Browser.msgBox("First Create a pass, then update.");
-        return;
-    }
-
-    // Build the object to use in MailApp
-    var name = rowRangeValues[0][0];
-    var phone = rowRangeValues[0][1];
-    var code = rowRangeValues[0][10];
-
-    // Prompt the user for json.
-    var updateJson = Browser.inputBox(
-        "Update A Pass",
-        "Please paste the json for your update.",
-        Browser.Buttons.OK_CANCEL
-    );
-    if (updateJson == "cancel") {
-        return;
-    }
-    var options = {
-        method: "post",
-        contentType: "application/json",
-        muteHttpExceptions: true,
-        payload: updateJson
-    };
-    try {
-        response = UrlFetchApp.fetch(API_URL + "apple", options);
-        log(log.SUCCESS, response.getContentText());
-    } catch (err) {
-        range = contactSheet.getRange(rowNumber, 12);
-        highlightCells(range, "error", data.response);
-    }
-
-    data = JSON.parse(response.getContentText());
-
-    if (data.statusCode == "200") {
-        highlightCells(contactSheet.getRange(rowNumber, 1, 1, 12), "ok");
-    }
     return response.getContentText();
 }
 
