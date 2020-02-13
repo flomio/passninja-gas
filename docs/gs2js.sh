@@ -1,0 +1,1 @@
+for f in *.gs; do mv -- "$f" "${f%.gs}.js"; done
