@@ -1,3 +1,38 @@
+function getEnvVar(name) {
+    var envVar = PropertiesService.getScriptProperties().getProperty(name);
+    if (!envVar) throw (`Script variable ${name} does not exist.`)
+    return envVar
+}
+
+function setEnvVar(name, value) {
+    return PropertiesService.getScriptProperties().setProperty(name, value);
+}
+
+/** Filters out non-pass related row entries and converts to JSON.
+ *
+ * @param {Spreadsheet} ss Spreadsheet to query for Config NamedRange
+ * @param {Range} rowRange Row range to query
+ */
+function getRowPassPayload(ss, rowRange) {
+    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0]);
+    var rowValues = rowRange.getValues()[0];
+    log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`)
+    var { passTypeId, ...passFieldConstants } = getConfigConstants()
+    var postData = {
+        passType: passTypeId,
+        pass: passFieldConstants
+    };
+
+    for (i = 0; i < rowValues.length; i++) {
+        var [fieldName, fieldIncluded] = fieldsData[i]
+        if (fieldIncluded === 'Y') {
+            log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`)
+            postData.pass[fieldName] = rowValues[i]
+        }
+    }
+    return postData
+}
+
 /** Returns an object with key:value pairs from the Config sheet
  */
 function getConfigConstants() {

@@ -1,13 +1,10 @@
-var API_URL = "https://api.passninja.com/v1/";
-
 /** Adds the PassNinja script set as a menu item on load.
  * 
  */
 function onOpen() {
     var sheet = SpreadsheetApp.getActive();
     var menuItems = [
-        { name: "Create A Pass", functionName: "createPass_" },
-        { name: "Update A Pass", functionName: "updatePass_" },
+        { name: "Create/Update A Pass", functionName: "createPass_" },
         { name: "Show Events", functionName: "showEvents_" },
         { name: "Build/Update From Config", functionName: "updateFromConfig_" }
     ];
@@ -24,12 +21,12 @@ function onOpen() {
 function updateFromConfig_() {
     var ss = SpreadsheetApp.getActive();
     var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
-    var fieldsHash = PropertiesService.getScriptProperties().getProperty('fieldsHash');
+    var fieldsHash = getEnvVar('fieldsHash');
     var hash = MD5(JSON.stringify(fieldsData), true);
     log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <->${fieldsHash}`)
 
     if (hash !== fieldsHash) {
-        PropertiesService.getScriptProperties().setProperty('fieldsHash', hash);
+        setEnvVar('fieldsHash', hash)
 
         var fieldsNames = fieldsData.map(f => f[0])
 
@@ -72,57 +69,28 @@ function onboardNewPassholderFromForm(e) {
  * @returns {string} The response from the PassNinja API.
  */
 function createPass_() {
+    var pnService = new PassNinjaService()
     var ss = SpreadsheetApp.getActive();
     var contactSheet = getSheet(ENUMS.CONTACTS);
 
     var passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
     var serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
     var rowNumber = getValidSheetSelectedRow(contactSheet);
+
     var rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
     var passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
     var passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
     var serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
-    var { passTypeId, ...passFieldConstants } = getConfigConstants()
-    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0]);
-    var rowValues = rowRange.getValues()[0];
-    log(log.STATUS, `Working on row #${rowNumber} with values [${rowValues}]`)
 
-    var postData = {
-        passType: passTypeId,
-        pass: passFieldConstants
-    };
+    var payloadJSONString = getRowPassPayload(ss, rowRange)
+    var serial = serialNumberRange.getValue()
+    var responseData = serial ? pnService.updatePass(payloadJSONString, serial) : pnService.createPass(payloadJSONString);
 
-    for (i = 0; i < rowValues.length; i++) {
-        var [fieldName, fieldIncluded] = fieldsData[i]
-        if (fieldIncluded === 'Y') {
-            log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`)
-            postData.pass[fieldName] = rowValues[i]
-        }
-    }
-
-    var data = undefined;
-    try {
-        var serial = serialNumberRange.getValue()
-        var method = !!serial ? 'put' : 'post'
-        var endpoint = `${API_URL}passes/${serial}`
-
-        log(log.STATUS, `Attempting to ${method.toUpperCase()} ${endpoint} with: ${JSON.stringify(postData)}`);
-        response = UrlFetchApp.fetch(endpoint, {
-            method,
-            contentType: "application/json",
-            muteHttpExceptions: true,
-            payload: JSON.stringify(postData)
-        });
-        if ((response.getResponseCode() < 200 || response.getResponseCode() > 299)) throw (response)
-    } catch (e) {
-        var errorString = JSON.stringify(e.getContentText && e.getContentText() || e)
-        log(log.ERROR, `PassNinja API Error:\n${errorString}`)
-        throw (`PassNinja API error: ${errorString}`)
-    }
-
-    data = JSON.parse(response.getContentText());
     passNinjaContentRange.setValues([
-        [data.landingUrl, data.apple.passTypeIdentifier.replace("pass.com.passninja.", ""), data.apple.serialNumber]
+        [responseData.landingUrl,
+            responseData.apple.passTypeIdentifier.replace("pass.com.passninja.", ""),
+            responseData.apple.serialNumber
+        ]
     ]);
 
     highlightCells(passNinjaContentRange, "success");
