@@ -2,13 +2,15 @@
  * 
  */
 function onOpen() {
-    var ss = SpreadsheetApp.getActive();
-    var menuItems = [
-        { name: "Create/Update A Pass", functionName: "createPass_" },
-        { name: "Show Events", functionName: "showEvents_" },
-        { name: "Build/Update From Config", functionName: "updateFromConfig_" }
-    ];
-    ss.addMenu("PassNinja", menuItems);
+    var ui = SpreadsheetApp.getUi();
+    ui.createMenu('PassNinja')
+        .addItem('Create/Update A Pass', 'createPass_')
+        .addItem('Show Events', 'showEvents_')
+        .addSeparator()
+        .addSubMenu(ui.createMenu('Create Default Sheet(s)')
+            .addItem('Create Config Sheet', 'buildConfigSheet')
+            .addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
+        .addToUi();
 }
 
 /**

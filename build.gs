@@ -15,10 +15,7 @@ var FORM_LOOKUP = {
  * @returns {Sheet} The resulting Google sheet
  */
 function initializeSheet(name, ss) {
-    var sheet = ss.getSheetByName(name);
-    if (!sheet) {
-        sheet = ss.insertSheet(name);
-    }
+    var sheet = ss.getSheetByName(name) || ss.insertSheet(name)
     var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
     allCells.setBackground(COLORS.GENERIC)
     allCells.setFontColor(COLORS.TEXT)
@@ -40,6 +37,17 @@ function buildConfigSheet() {
     headerRange.setBackground(COLORS.FIELD_PASSNINJA)
     headerRange.setFontWeight('bold')
 
+    sheet.getRange(1, 3, sheet.getMaxRows(), 1).setBackground(COLORS.GENERIC)
+    sheet.getRange(2, 1, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
+    sheet.getRange(2, 4, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
+    sheet.getRange(2, 1, 1, 2).setValues([
+        ['passTypeId', '<Your PassType>']
+    ])
+    sheet.getRange(2, 2, 1, 1).setNote('You must set your passTypeId to create passes.')
+
+    // TODO: Implement some kind of protection.  This causes a timeout.
+    // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
+
     ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(2, 1, sheet.getMaxRows(), 2))
     ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 3, sheet.getMaxRows(), 4))
 
@@ -49,14 +57,17 @@ function buildConfigSheet() {
         .build()
 
     var validationFormType = SpreadsheetApp.newDataValidation()
-        .requireValueInList(['text,date,datetime,time,duration'], true)
+        .requireValueInList(['text', 'date', 'datetime', 'time', 'duration'], true)
         .setAllowInvalid(false)
         .build()
 
-    sheet.getRange(2, headerNames.indexOf('Field in Pass?') + 1, sheet.getMaxRows(), 1)
-        .setDataValidation(validationInPass)
-    sheet.getRange(2, headerNames.indexOf('Form-Type') + 1, sheet.getMaxRows(), 1)
-        .setDataValidation(validationFormType)
+    var fieldInPassRange = sheet.getRange(2, headerNames.indexOf('Field in Pass?') + 1, sheet.getMaxRows(), 1)
+    fieldInPassRange.setDataValidation(validationInPass)
+    fieldInPassRange.setHorizontalAlignment('center').setValue('N')
+
+    var formTypeRange = sheet.getRange(2, headerNames.indexOf('Form-Type') + 1, sheet.getMaxRows(), 1)
+    formTypeRange.setDataValidation(validationFormType)
+    formTypeRange.setHorizontalAlignment('center').setValue('text')
 
     deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet)
     log(log.SUCCESS, 'Successfully built/updated Events sheet')
