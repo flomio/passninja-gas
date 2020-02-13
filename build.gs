@@ -41,9 +41,9 @@ function buildConfigSheet() {
     sheet.getRange(2, 1, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
     sheet.getRange(2, 4, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
     sheet.getRange(2, 1, 1, 2).setValues([
-        ['passTypeId', '<Your PassType>']
+        ['passType', '<Your PassType>']
     ])
-    sheet.getRange(2, 2, 1, 1).setNote('You must set your passTypeId to create passes.')
+    sheet.getRange(2, 2, 1, 1).setNote('You must set your passType to create passes.')
 
     // TODO: Implement some kind of protection.  This causes a timeout.
     // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');

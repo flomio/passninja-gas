@@ -42,5 +42,6 @@ var ENUMS = {
     PASSTYPE: 'passType',
     SERIAL: 'serialNumber',
     CONFIG_CONSTANTS: 'config_constants',
-    CONFIG_FIELDS: 'config_fields'
+    CONFIG_FIELDS: 'config_fields',
+    FIELDS_HASH: 'fieldsHash'
 }

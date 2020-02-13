@@ -1,4 +1,4 @@
-function getEnvVar(name, throwError=true) {
+function getEnvVar(name, throwError = true) {
     var envVar = PropertiesService.getScriptProperties().getProperty(name);
     if (throwError && !envVar) throw (`Script variable ${name} does not exist.`)
     return envVar
@@ -13,13 +13,13 @@ function setEnvVar(name, value) {
  * @param {Spreadsheet} ss Spreadsheet to query for Config NamedRange
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(ss, rowRange) {
-    var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0]);
+function getRowPassPayload(ss, rowRange, fieldsData) {
+    var fieldsData = getConfigFields();
+    var { passType, ...passFieldConstants } = getConfigConstants();
     var rowValues = rowRange.getValues()[0];
     log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`)
-    var { passTypeId, ...passFieldConstants } = getConfigConstants()
     var postData = {
-        passType: passTypeId,
+        passType,
         pass: passFieldConstants
     };
 
@@ -36,12 +36,25 @@ function getRowPassPayload(ss, rowRange) {
 /** Returns an object with key:value pairs from the Config sheet
  */
 function getConfigConstants() {
-    var constants = SpreadsheetApp
+    var constants = Object.fromEntries(SpreadsheetApp
         .getActive()
-        .getRangeByName("config_constants")
+        .getRangeByName(ENUMS.CONFIG_CONSTANTS)
+        .getValues()
+        .filter(row => !!row[0]))
+    if (!constants.passType) throw ('You must enter a passType in the Config sheet.')
+    return constants
+}
+
+/** Returns a list of config field entries
+ */
+function getConfigFields() {
+    var fieldsData = SpreadsheetApp
+        .getActive()
+        .getRangeByName(ENUMS.CONFIG_FIELDS)
         .getValues()
         .filter(row => !!row[0])
-    return Object.fromEntries(constants)
+    if (!fieldsData.length) throw ('You must enter at least one field in the Config sheet.')
+    return fieldsData
 }
 
 /** Sorts the specified sheet
