@@ -5,7 +5,7 @@
 <dd><p>Returns the corresponding user entry in the Contacts sheet
  matching the serialNumber query parameter</p>
 </dd>
-<dt><a href="#findContactBySerial">findContactBySerial(sheet, serialNumber)</a> ⇒ <code>object</code></dt>
+<dt><a href="#rowToJSONFromSerial">rowToJSONFromSerial(sheet, serialNumber)</a> ⇒ <code>object</code></dt>
 <dd><p>Creates a JSON object from the first found match of the given serial number.</p>
 </dd>
 <dt><a href="#doPost">doPost(e)</a> ⇒ <code>object</code></dt>
@@ -29,9 +29,9 @@ Returns the corresponding user entry in the Contacts sheet
 | --- | --- | --- |
 | e | <code>object</code> | Request event data |
 
-<a name="findContactBySerial"></a>
+<a name="rowToJSONFromSerial"></a>
 
-## findContactBySerial(sheet, serialNumber) ⇒ <code>object</code>
+## rowToJSONFromSerial(sheet, serialNumber) ⇒ <code>object</code>
 Creates a JSON object from the first found match of the given serial number.
 
 **Kind**: global function  

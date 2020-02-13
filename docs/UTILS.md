@@ -1,6 +1,9 @@
 ## Functions
 
 <dl>
+<dt><a href="#getRowPassPayload">getRowPassPayload(ss, rowRange)</a></dt>
+<dd><p>Filters out non-pass related row entries and converts to JSON.</p>
+</dd>
 <dt><a href="#getConfigConstants">getConfigConstants()</a></dt>
 <dd><p>Returns an object with key:value pairs from the Config sheet</p>
 </dd>
@@ -77,6 +80,18 @@ Author:
   KEINOS @ <a href="https://github.com/keinos">https://github.com/keinos</a></p>
 </dd>
 </dl>
+
+<a name="getRowPassPayload"></a>
+
+## getRowPassPayload(ss, rowRange)
+Filters out non-pass related row entries and converts to JSON.
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | Spreadsheet to query for Config NamedRange |
+| rowRange | <code>Range</code> | Row range to query |
 
 <a name="getConfigConstants"></a>
 

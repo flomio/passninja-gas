@@ -14,10 +14,6 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code></dt>
 <dd><p>Creates a PassNinja pass from the selected row.</p>
 </dd>
-<dt><a href="#updatePass_">updatePass_()</a> ⇒ <code>string</code></dt>
-<dd><p>Updates a given pass from the highlighted row with the new values in the row
- Pops up a dialog input box where the user can input new json data to overwrite the existing pass</p>
-</dd>
 <dt><a href="#showEvents_">showEvents_()</a></dt>
 <dd><p>Pops up a modal with the pass events of the current highlighted row
 related to the pass via serial number</p>
@@ -68,14 +64,6 @@ Inputs a new user's data from a form submit event and triggers a pass creation.
 
 ## createPass\_() ⇒ <code>string</code>
 Creates a PassNinja pass from the selected row.
-
-**Kind**: global function  
-**Returns**: <code>string</code> - The response from the PassNinja API.  
-<a name="updatePass_"></a>
-
-## updatePass\_() ⇒ <code>string</code>
-Updates a given pass from the highlighted row with the new values in the row
- Pops up a dialog input box where the user can input new json data to overwrite the existing pass
 
 **Kind**: global function  
 **Returns**: <code>string</code> - The response from the PassNinja API.  
