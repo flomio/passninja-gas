@@ -80,6 +80,7 @@ function createPass_() {
     var rowNumber = getValidSheetSelectedRow(contactSheet);
     var rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
     var passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
+    var passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
     var serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
     var { passTypeId, ...passFieldConstants } = getConfigConstants()
     var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0]);
@@ -121,7 +122,7 @@ function createPass_() {
     ]);
 
     highlightCells(passNinjaContentRange, "success");
-    contactSheet.setActiveSelection(serialNumberRange)
+    contactSheet.setActiveSelection(passUrlRange)
     autoResizeSheet(contactSheet)
 
     return response.getContentText();
