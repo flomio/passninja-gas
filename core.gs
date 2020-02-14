@@ -132,6 +132,10 @@ function createPass_() {
 
     var payloadJSONString = getRowPassPayload(ss, rowRange)
     var serial = serialNumberRange.getValue()
+
+    highlightCells(passNinjaContentRange, "loading");
+    passNinjaContentRange.setValues(['Please wait...', 'pass creation', 'in progress'])
+
     var responseData = serial ? new PassNinjaService().updatePass(payloadJSONString, serial) : new PassNinjaService().createPass(payloadJSONString);
 
     passNinjaContentRange.setValues([
@@ -144,7 +148,9 @@ function createPass_() {
     highlightCells(passNinjaContentRange, "success");
     contactSheet.setActiveSelection(passUrlRange)
     autoResizeSheet(contactSheet)
+
     if (!serial) sendText_()
+
     return response.getContentText();
 }
 
