@@ -25,6 +25,10 @@ var STATUS_LOOKUP = {
         background: COLORS.SUCCESS,
         bold: true
     },
+    loading: {
+        background: COLORS.FIELD_CONSTANT,
+        color: COLORS.TEXT_ON
+    },
     ok: {
         border: "#008000"
     },
