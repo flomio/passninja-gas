@@ -20,8 +20,9 @@ function onOpen() {
             .addItem('Create/Update Pass', 'createPass_')
             .addItem('Force Text passUrl to phoneNumber', 'sendText_'))
         .addSeparator()
-        .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
-        .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
+        .addSubMenu(ui.createMenu('Setup')
+            .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
+            .addItem('Set Twilio Credentials', 'storeTwilioDetails_'))
         .addToUi();
 }
 
