@@ -137,6 +137,7 @@ function createPass_() {
     passNinjaContentRange.setValues([
         ['Please wait...', 'pass creation', 'in progress']
     ])
+    SpreadsheetApp.flush();
 
     var responseData = serial ? new PassNinjaService().updatePass(payloadJSONString, serial) : new PassNinjaService().createPass(payloadJSONString);
 
