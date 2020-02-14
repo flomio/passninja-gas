@@ -17,7 +17,7 @@
 - [`Documentation`](#documentation)
 
 # INSTALLATION
-1.  Ask a PassNinja employee to share this personal Google Apps Script (GAS) Project with you.
+1.  Ask PassNinja to share this personal Google Apps Script (GAS) Project with you
 1.  Open the GAS Project and run the `createSpreadsheet` function.
 1.  It will ask for permission to run via an OAUTH popup which is required for functionality.
 1.  Check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet <DATE>"`
