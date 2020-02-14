@@ -1,9 +1,13 @@
 /** Creates the necessary demo spreadsheet in the user's spreadsheets.
- * 
- */function createSpreadsheet(){
-  var ss = SpreadsheetApp.create('PassNinja Demo Spreadsheet')
-  Utilities.sleep(2000)
-  ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
+ *  Spreadsheet is linked via a trigger to the script.
+ */
+function createSpreadsheet() {
+    var ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`)
+    Utilities.sleep(2000)
+    ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
+    buildConfigSheet(ss)
+    ss.deleteSheet(ss.getSheetByName('Sheet1'))
+    log(log.STATUS, ss.getSheets().map(sheet => sheet.getName()))
 }
 
 /** Adds the PassNinja script set as a menu item on load.
@@ -14,11 +18,50 @@ function onOpen() {
     ui.createMenu('PassNinja')
         .addItem('Create/Update A Pass', 'createPass_')
         .addItem('Show Events', 'showEvents_')
+        .addItem('Text passUrl to phoneNumber', 'sendText_')
         .addSeparator()
         .addSubMenu(ui.createMenu('Create Default Sheet(s)')
-            .addItem('Create Config Sheet', 'buildConfigSheet')
-            .addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
+            .addItem('Rebuild Config Sheet', 'menuBuildConfigSheet')
+            .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
+            .addItem('Set Twilio Credentials', 'storeTwilioDetails_'))
         .addToUi();
+}
+
+function menuBuildConfigSheet() {
+    buildConfigSheet(SpreadsheetApp.getActive())
+}
+
+function storeTwilioDetails_() {
+    var ui = SpreadsheetApp.getUi();
+
+    var questions = [
+        ['Enter your Twilio SID:', ENUMS.TWILIO_SID],
+        ['Enter your Twilio AUTH:', ENUMS.TWILIO_AUTH],
+        ['Enter your Twilio NUMBER:', ENUMS.TWILIO_NUMBER]
+    ]
+    for ([question, envVar] of questions) {
+        var response = ui.prompt(question);
+        if (response.getSelectedButton() == ui.Button.OK) {
+            setEnvVar(envVar, response.getResponseText())
+        } else {
+            throw ('Cancelling Twilio setup.')
+        }
+    }
+}
+
+function sendText_() {
+    var contactSheet = getSheet(ENUMS.CONTACTS);
+    var passUrl = contactSheet.getRange(getValidSheetSelectedRow(contactSheet),
+        getColumnIndexFromString(contactSheet, ENUMS.PASSURL),
+        1,
+        1).getValue()
+    var phoneNumber = contactSheet.getRange(getValidSheetSelectedRow(contactSheet),
+        getColumnIndexFromString(contactSheet, 'phoneNumber'),
+        1,
+        1).getValue()
+    new TwilioService()
+        .sendText(phoneNumber + '',
+            `Please click the link to install the requested PassNinja NFC pass: ${passUrl}`)
 }
 
 /**
@@ -103,7 +146,7 @@ function createPass_() {
     highlightCells(passNinjaContentRange, "success");
     contactSheet.setActiveSelection(passUrlRange)
     autoResizeSheet(contactSheet)
-
+    if (!serial) sendText_()
     return response.getContentText();
 }
 

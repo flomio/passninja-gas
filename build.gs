@@ -15,19 +15,19 @@ var FORM_LOOKUP = {
  * @returns {Sheet} The resulting Google sheet
  */
 function initializeSheet(name, ss) {
-    var sheet = ss.getSheetByName(name) || ss.insertSheet(name)
-    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns())
-    allCells.setBackground(COLORS.GENERIC)
-    allCells.setFontColor(COLORS.TEXT)
-    allCells.setFontFamily("Helvetica Neue")
+    var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
+    allCells.setBackground(COLORS.GENERIC);
+    allCells.setFontColor(COLORS.TEXT);
+    allCells.setFontFamily("Helvetica Neue");
+    allCells.setNumberFormat("@");
 
-    return sheet
+    return sheet;
 }
 
 /** Builds initial contacts sheet
  */
-function buildConfigSheet() {
-    var ss = SpreadsheetApp.getActive();
+function buildConfigSheet(ss) {
     var sheet = initializeSheet(ENUMS.CONFIG, ss)
 
     var headerNames = ["Pass Field", "Constant Value", null, "Contact Field", "Field in Pass?", "Form-Type", "Form Options (comma separated)"]
@@ -38,11 +38,9 @@ function buildConfigSheet() {
     headerRange.setFontWeight('bold')
 
     sheet.getRange(1, 3, sheet.getMaxRows(), 1).setBackground(COLORS.GENERIC)
-    sheet.getRange(2, 1, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
-    sheet.getRange(2, 4, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_CONSTANT).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
-    sheet.getRange(2, 1, 1, 2).setValues([
-        ['passType', '<Your PassType>']
-    ])
+    sheet.getRange(2, 1, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_PASSNINJA).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
+    sheet.getRange(2, 4, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_PASSNINJA).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
+    sheet.getRange(2, 1, 1, 1).setValue('passType')
     sheet.getRange(2, 2, 1, 1).setNote('You must set your passType to create passes.')
 
     // TODO: Implement some kind of protection.  This causes a timeout.
