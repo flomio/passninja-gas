@@ -22,7 +22,7 @@ class PassNinjaService {
     }
 
     updatePass(payload, serial) {
-        return sendRequest(`${this.passesUpdateRoute}/${serial}`, {
+        return sendRequest(`${this.passesUpdateRoute}${serial}`, {
             method: 'put',
             contentType: "application/json",
             payload: JSON.stringify(payload)
