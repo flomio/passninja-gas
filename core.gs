@@ -1,3 +1,11 @@
+/** Creates the necessary demo spreadsheet in the user's spreadsheets.
+ * 
+ */function createSpreadsheet(){
+  var ss = SpreadsheetApp.create('PassNinja Demo Spreadsheet')
+  Utilities.sleep(2000)
+  ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
+}
+
 /** Adds the PassNinja script set as a menu item on load.
  * 
  */
