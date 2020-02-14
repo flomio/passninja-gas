@@ -30,9 +30,10 @@ function addEvent(targetSheet, eventJson) {
 
     insertRow(targetSheet, event, 2, () => {
         autoResizeSheet(targetSheet)
-        flashRange(targetSheet.getRange("A2:E2"), "red", 1, 50);
+        var range = targetSheet.getRange("A2:E2")
+        flashRange(range, "red", 1, 50);
+        targetSheet.setActiveSelection(range)
     });
-
 
     log(log.SUCCESS, 'Succesfully added event.')
     event.push(eventJson.event)
