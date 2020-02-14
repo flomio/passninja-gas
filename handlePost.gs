@@ -28,14 +28,11 @@ function addEvent(targetSheet, eventJson) {
         return { "error": `Invalid event data sent: ${e}` };
     }
 
-    insertRow(targetSheet, event, 2);
-    autoResizeSheet(targetSheet)
+    insertRow(targetSheet, event, 2, () => {
+        autoResizeSheet(targetSheet)
+        flashRange(targetSheet.getRange("A2:E2"), "red", 1, 50);
+    });
 
-    try {
-        flashRange(targetSheet.getRange("A2:E2"), "red", 3, 100);
-    } catch (e) {
-        log(log.ERROR, "There was an error notifying the user", e)
-    }
 
     log(log.SUCCESS, 'Succesfully added event.')
     event.push(eventJson.event)

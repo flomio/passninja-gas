@@ -134,7 +134,9 @@ function createPass_() {
     var serial = serialNumberRange.getValue()
 
     highlightCells(passNinjaContentRange, "loading");
-    passNinjaContentRange.setValues(['Please wait...', 'pass creation', 'in progress'])
+    passNinjaContentRange.setValues([
+        ['Please wait...', 'pass creation', 'in progress']
+    ])
 
     var responseData = serial ? new PassNinjaService().updatePass(payloadJSONString, serial) : new PassNinjaService().createPass(payloadJSONString);
 
