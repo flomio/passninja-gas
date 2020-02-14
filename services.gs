@@ -33,9 +33,9 @@ class PassNinjaService {
 
 class TwilioService {
     constructor() {
-        this.accountSid = getEnvVar('TWILIO_SID');
-        this.authToken = getEnvVar('TWILIO_AUTH');
-        this.phoneNumber = getEnvVar('TWILIO_NUMBER');
+        this.accountSid = getEnvVar(ENUMS.TWILIO_SID);
+        this.authToken = getEnvVar(ENUMS.TWILIO_AUTH);
+        this.phoneNumber = getEnvVar(ENUMS.TWILIO_NUMBER);
         this.baseUrl = 'https://api.twilio.com/2010-04-01';
         this.serviceName = 'TwilioAPI';
         this.phoneNumberRegex = /\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*/gm;
@@ -70,7 +70,7 @@ class TwilioService {
             payload: {
                 "To": to,
                 "Body": body,
-                "From": this.phoneNumber
+                "From": this.formatE164PhoneNumber(this.phoneNumber)
             },
             headers: {
                 "Authorization": "Basic " + Utilities.base64Encode(`${this.accountSid}:${this.authToken}`)
