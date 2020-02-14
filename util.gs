@@ -14,6 +14,7 @@ function setEnvVar(name, value) {
  * @param {Range} rowRange Row range to query
  */
 function getRowPassPayload(ss, rowRange, fieldsData) {
+    rowRange.setNumberFormat("@");
     var fieldsData = getConfigFields();
     var { passType, ...passFieldConstants } = getConfigConstants();
     var rowValues = rowRange.getValues()[0];
