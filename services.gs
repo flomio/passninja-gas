@@ -6,10 +6,10 @@ var sendRequest = (url, options = {}) => {
 
 class PassNinjaService {
     constructor() {
-        this.baseUrl = 'https://passninja.ngrok.io';
+        this.baseUrl = 'https://ec-api.passninja.com';
         this.serviceName = 'PassNinjaAPI';
-        this.passesPostRoute = `${this.baseUrl}/passes`;
-        this.passesUpdateRoute = `${this.baseUrl}/passes`;
+        this.passesPostRoute = `${this.baseUrl}/passes/`;
+        this.passesUpdateRoute = `${this.baseUrl}/passes/`;
     }
 
     createPass(payload) {

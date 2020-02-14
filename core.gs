@@ -140,7 +140,7 @@ function createPass_() {
     SpreadsheetApp.flush();
 
     var responseData = serial ? new PassNinjaService().updatePass(payloadJSONString, serial) : new PassNinjaService().createPass(payloadJSONString);
-
+    log(log.SUCCESS, JSON.stringify(responseData))
     passNinjaContentRange.setValues([
         [responseData.landingUrl,
             responseData.apple.passTypeIdentifier.replace("pass.com.passninja.", ""),
