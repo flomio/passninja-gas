@@ -6,7 +6,9 @@
 
 # Contents
 
+- [`Installation`](#installation)
 - [`Development`](#development)
+- [`Required Setup`](#required-setup)
 - [`Sheet/Form Creation Verification`](#to-verify-sheet-and-form-creation)
 - [`Form Submission Verification`](#to-verify-form-submission)
 - [`POST/GET Verification`](#to-verify-post-and-get-requests)
@@ -20,6 +22,8 @@
 1.  It will ask for permission to run via an OAUTH popup which is required for functionality.
 1.  Check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet <DATE>"`
 1.  Verify it worked when the `PassNinja` menu appears above after the entire sheet is finished loading!
+
+[`^ Back to Top`](#contents)
 
 # DEVELOPMENT
 ## REQUIRED SETUP
@@ -54,15 +58,22 @@ Requires Chrome.
 12. Select the code file Code.gs, and use the 
 13. Now reload the sheet and the PassNinja menu should appear.
 
+[`^ Back to Top`](#contents)
+
 ## To Verify Sheet and Form creation
 1.  `Menu->PassNinja->Create Default Sheet(s)->Create Config Sheet`  This will build the Config sheet where you have to enter passType and at least one field to generate the rest of the sheets.  I used `gas.coupondemo` and fields `fullName`, `phoneNumber`, `email`, `discount` and toggled `fullName` and `discount` to Included in Pass? = "Y". 
 1.  `Menu->PassNinja->Create Default Sheet(s)->Create/Update Sheets From Config` This will build the Sheets: `Form Responses #`, `Events`, `Contacts` and the connected Form (`Menu -> Form -> Edit Form` can help you verify that the form is correct and matches the fields you entered in the `Config` sheet.)
+
+[`^ Back to Top`](#contents)
 
 ## To Verify Form Submission
 1.  Check with `Menu -> Form -> Go to Live Form`
 1.  Enter all the required field information (I made sure all "In Pass?: Y" fields are set as required)
 1.  When it is submitted it will appear on the `Form Responses` sheet and also a new contact will be added to the `Contacts` sheet.  
 1.  This contact will ALSO have an automatically generated pass, so if you sit tight a couple seconds it will appear.
+
+[`^ Back to Top`](#contents)
+
 ## To Verify POST and GET requests
 1.  Once you deploy the Script in the `Script Editor` using `Publish -> Deploy as Web App` and create a new version you should copy the resulting url.
 1.  You can enter this Google Sheets API URL as the cognito user callback url (more information once I talk with @blairexico about this) and it should post the event stream for that pass type to the Events sheet.  See similar instructions here: https://github.com/flomio/passninja-api/pull/238
@@ -87,11 +98,14 @@ curl --location --request POST 'https://script.google.com/macros/s/AKfycby9as7cT
     "id": "#niko@passentry.com#passentry.demo#810ce8e0-1f11-4e29-a35e-cdf326fb90c2"
 }'
 ```
+[`^ Back to Top`](#contents)
 
 ## To Verify Activating Pass Creation from the spreadsheet
 1.  In the Contacts sheet, feel free to click anywhere in a row for a specific contact that has all the required fields filled out.
 1.  Go to `Menu -> PassNinja -> Create A Pass` and the script should run.
 1.  You will see the resulting pass + pass information output into the  contact's fields.
+
+[`^ Back to Top`](#contents)
 
 ## To Verify Rebuilding from Config in an existing built spreadsheet
 1.  You can add a field to the Config sheet or remove one (just press delete while highlighting the four columns in the row).
