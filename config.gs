@@ -43,5 +43,8 @@ var ENUMS = {
     SERIAL: 'serialNumber',
     CONFIG_CONSTANTS: 'config_constants',
     CONFIG_FIELDS: 'config_fields',
-    FIELDS_HASH: 'fieldsHash'
+    FIELDS_HASH: 'fieldsHash',
+    TWILIO_SID: 'twilio_sid',
+    TWILIO_AUTH: 'twilio_auth',
+    TWILIO_NUMBER: 'twilio_number'
 }

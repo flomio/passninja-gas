@@ -32,7 +32,7 @@ function addEvent(targetSheet, eventJson) {
     autoResizeSheet(targetSheet)
 
     try {
-        flashRange(targetSheet.getRange("A2:E2"), "red", 5, 500);
+        flashRange(targetSheet.getRange("A2:E2"), "red", 3, 100);
     } catch (e) {
         log(log.ERROR, "There was an error notifying the user", e)
     }
