@@ -160,13 +160,14 @@ function rowToJson(sheet, data) {
  * @param {string[]} rowData Array of string data to insert in the rows
  * @param {int} [index] Optional index to specify the insertion point
  */
-function insertRow(sheet, rowData, index) {
+function insertRow(sheet, rowData, index, cb) {
     var lock = LockService.getScriptLock();
     lock.waitLock(30000);
     try {
         var index = index || 1;
         sheet.insertRowBefore(index).getRange(index, 1, 1, rowData.length).setValues([rowData]);
         SpreadsheetApp.flush();
+        cb && cb()
     } finally {
         lock.releaseLock();
     }
