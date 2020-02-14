@@ -16,14 +16,12 @@ function createSpreadsheet() {
 function onOpen() {
     var ui = SpreadsheetApp.getUi();
     ui.createMenu('PassNinja')
-        .addItem('Create/Update A Pass', 'createPass_')
-        .addItem('Show Events', 'showEvents_')
-        .addItem('Text passUrl to phoneNumber', 'sendText_')
+        .addSubMenu(ui.createMenu('Selected Row')
+            .addItem('Create/Update Pass', 'createPass_')
+            .addItem('Force Text passUrl to phoneNumber', 'sendText_'))
         .addSeparator()
-        .addSubMenu(ui.createMenu('Create Default Sheet(s)')
-            .addItem('Rebuild Config Sheet', 'menuBuildConfigSheet')
-            .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
-            .addItem('Set Twilio Credentials', 'storeTwilioDetails_'))
+        .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
+        .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
         .addToUi();
 }
 
@@ -80,10 +78,10 @@ function updateFromConfig_() {
     log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`)
 
     if (hash !== fieldsHash) {
-        setEnvVar(ENUMS.FIELDS_HASH, hash)
         catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
         catchError(() => buildContactsSheet(ss, fields.map(f => f[0])), 'Error building Contacts Sheet - ')
         catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ')
+        setEnvVar(ENUMS.FIELDS_HASH, hash)
     } else {
         Browser.msgBox(
             "No Update",
