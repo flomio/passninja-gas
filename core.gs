@@ -3,11 +3,27 @@
  */
 function createSpreadsheet() {
     var ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`)
+
     Utilities.sleep(2000)
+
     ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
+
     buildConfigSheet(ss)
     ss.deleteSheet(ss.getSheetByName('Sheet1'))
-    log(log.STATUS, ss.getSheets().map(sheet => sheet.getName()))
+
+    setEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, ss.getId())
+    setEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, ss.getUrl())
+    
+    // THIS IS FOR SANITY CHECKS
+    var currentUserEmail = Session.getActiveUser().getEmail()
+    var currentSheetOwnerEmail = ss.getOwner().getEmail()
+
+    log(log.STATUS, ss.getSheets().map(sheet => sheet.getName()));
+    log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
+
+    setEnvVar('current_user', currentUserEmail)
+    setEnvVar('spreadsheet_name', ss.getName())
+    setEnvVar('spreadsheet_creator', currentSheetOwnerEmail)
 }
 
 /** Adds the PassNinja script set as a menu item on load.
@@ -22,12 +38,18 @@ function onOpen() {
         .addSeparator()
         .addSubMenu(ui.createMenu('Setup')
             .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
-            .addItem('Set Twilio Credentials', 'storeTwilioDetails_'))
+            .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
+            .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_'))
+        .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
         .addToUi();
 }
 
-function menuBuildConfigSheet() {
-    buildConfigSheet(SpreadsheetApp.getActive())
+function forceUpdateFromConfig_() {
+    updateFromConfig_(true)
+}
+
+function buildConfigSheet_() {
+    buildConfigSheet(getLinkedSpreadsheet())
 }
 
 function storeTwilioDetails_() {
@@ -70,19 +92,19 @@ function sendText_() {
  * @param {Spreadsheet} ss The spreadsheet that contains the conference data.
  * @param {string[]} values Cell values for the spreadsheet range.
  */
-function updateFromConfig_() {
-    var ss = SpreadsheetApp.getActive();
-    var fields = getConfigFields()
-    var constants = getConfigConstants()
+function updateFromConfig_(force = false) {
+    var ss = getLinkedSpreadsheet();
+    var fields = getConfigFields();
+    var constants = getConfigConstants();
     var fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
-    var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants))
-    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`)
+    var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
+    log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
-    if (hash !== fieldsHash) {
-        catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ')
-        catchError(() => buildContactsSheet(ss, fields.map(f => f[0])), 'Error building Contacts Sheet - ')
-        catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ')
-        setEnvVar(ENUMS.FIELDS_HASH, hash)
+    if (!force && hash !== fieldsHash) {
+        catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
+        catchError(() => buildContactsSheet(ss, fields.map(f => f[0])), 'Error building Contacts Sheet - ');
+        catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
+        setEnvVar(ENUMS.FIELDS_HASH, hash);
     } else {
         Browser.msgBox(
             "No Update",
@@ -98,7 +120,7 @@ function updateFromConfig_() {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-    var ss = SpreadsheetApp.getActive();
+    var ss = getLinkedSpreadsheet();
     var sheet = getSheet(ENUMS.CONTACTS)
     var fieldsData = getNamedRange('config_fields', ss).getValues().filter(v => !!v[0])
     var fieldsNames = fieldsData.map(f => f[0])
@@ -119,7 +141,7 @@ function onboardNewPassholderFromForm(e) {
  * @returns {string} The response from the PassNinja API.
  */
 function createPass_() {
-    var ss = SpreadsheetApp.getActive();
+    var ss = getLinkedSpreadsheet();
     var contactSheet = getSheet(ENUMS.CONTACTS);
 
     var passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);

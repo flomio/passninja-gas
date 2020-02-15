@@ -6,7 +6,7 @@ var sendRequest = (url, options = {}) => {
 
 class PassNinjaService {
     constructor() {
-        this.baseUrl = 'https://ec-api.passninja.com';
+        this.baseUrl = 'https://api.passninja.com/v1';
         this.serviceName = 'PassNinjaAPI';
         this.passesPostRoute = `${this.baseUrl}/passes/`;
         this.passesUpdateRoute = `${this.baseUrl}/passes/`;
