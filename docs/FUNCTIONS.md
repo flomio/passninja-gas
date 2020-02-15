@@ -42,7 +42,8 @@ related to the pass via serial number</p>
 <a name="createSpreadsheet"></a>
 
 ## createSpreadsheet()
-Creates the necessary demo spreadsheet in the user's spreadsheets. Spreadsheet is linked via a trigger to the script.
+Creates the necessary demo spreadsheet in the user's spreadsheets.
+ Spreadsheet is linked via a trigger to the script.
 
 **Kind**: global function  
 <a name="onOpen"></a>
@@ -54,7 +55,8 @@ Adds the PassNinja script set as a menu item on load.
 <a name="updateFromConfig_"></a>
 
 ## updateFromConfig\_(ss, values)
-Creates a Google Form that allows respondents to select which conferencesessions they would like to attend, grouped by date and start time.
+Creates a Google Form that allows respondents to select which conference
+sessions they would like to attend, grouped by date and start time.
 
 **Kind**: global function  
 
@@ -85,7 +87,8 @@ Creates a PassNinja pass from the selected row.
 <a name="showEvents_"></a>
 
 ## showEvents\_()
-Pops up a modal with the pass events of the current highlighted rowrelated to the pass via serial number
+Pops up a modal with the pass events of the current highlighted row
+related to the pass via serial number
 
 **Kind**: global function  
 <a name="initializeSheet"></a>

@@ -1,6 +1,17 @@
 ## Functions
 
 <dl>
+<dt><a href="#getLinkedSpreadsheet">getLinkedSpreadsheet()</a> ⇒ <code>Spreadsheet</code></dt>
+<dd><p>Attempts to return the spreadsheet connected to the GAS Script Project.
+ Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
+ If multiple sheets have been programatically created it will only target the most recent.</p>
+</dd>
+<dt><a href="#getEnvVar">getEnvVar(name, throwError)</a> ⇒ <code>string</code> | <code>null</code></dt>
+<dd><p>Returns an Script Project environment variable if found or throws an error.</p>
+</dd>
+<dt><a href="#setEnvVar">setEnvVar(name, value)</a> ⇒ <code>Properties</code></dt>
+<dd><p>Sets an Script Project environment variable.</p>
+</dd>
 <dt><a href="#getRowPassPayload">getRowPassPayload(ss, rowRange)</a></dt>
 <dd><p>Filters out non-pass related row entries and converts to JSON.</p>
 </dd>
@@ -80,6 +91,41 @@ Author:
   KEINOS @ <a href="https://github.com/keinos">https://github.com/keinos</a></p>
 </dd>
 </dl>
+
+<a name="getLinkedSpreadsheet"></a>
+
+## getLinkedSpreadsheet() ⇒ <code>Spreadsheet</code>
+Attempts to return the spreadsheet connected to the GAS Script Project.
+ Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
+ If multiple sheets have been programatically created it will only target the most recent.
+
+**Kind**: global function  
+**Returns**: <code>Spreadsheet</code> - The spreadsheet that is linked to the GAS Script Project.  
+<a name="getEnvVar"></a>
+
+## getEnvVar(name, throwError) ⇒ <code>string</code> \| <code>null</code>
+Returns an Script Project environment variable if found or throws an error.
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The contents of the env variable<code>null</code> - If no env variable is found under that name  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> |  | Name of the env var to query |
+| throwError | <code>boolean</code> | <code>true</code> | Whether to throw an error or return null otherwise |
+
+<a name="setEnvVar"></a>
+
+## setEnvVar(name, value) ⇒ <code>Properties</code>
+Sets an Script Project environment variable.
+
+**Kind**: global function  
+**Returns**: <code>Properties</code> - The Properties store, for chaining  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | Name of the env var to query |
+| value | <code>string</code> | The value you set |
 
 <a name="getRowPassPayload"></a>
 
