@@ -39,8 +39,9 @@ function onOpen() {
         .addSubMenu(ui.createMenu('Setup')
             .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
             .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
-            .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_'))
-        .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
+            .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
+            .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
+        )
         .addToUi();
 }
 

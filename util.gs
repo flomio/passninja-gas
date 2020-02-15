@@ -7,13 +7,17 @@
 function getLinkedSpreadsheet() {
     var fnRunner = [
         [SpreadsheetApp.getActive, []],
-        [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID), false]],
-        [SpreadsheetApp.openByUrl, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL), false]]
+        [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
+        [SpreadsheetApp.openByUrl, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, false)]]
     ]
     var ss = null
     for ([fn, args] of fnRunner) {
+        log(log.STATUS, `Running function ${fn.name} with args ${args}`)
         ss = fn(...args)
-        if (ss) return ss
+        if (ss) {
+          log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`)
+          return ss
+        }
     }
     throw (`No linked/bound spreadsheet connected to GAS Project for user ${Session.getActiveUser().getEmail()}.`)
 }
@@ -105,7 +109,9 @@ function sortSheet(sheet) {
  */
 function getSheet(sheetName) {
     var spreadsheet = getLinkedSpreadsheet();
-    return spreadsheet.getSheetByName(sheetName);
+    var sheet = spreadsheet.getSheetByName(sheetName) 
+    if (!sheet) throw (`Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`)
+    return sheet;
 }
 
 /** Determines whether the selected row is valid
