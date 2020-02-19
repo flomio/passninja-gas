@@ -43,5 +43,5 @@ function addEvent(targetSheet, eventJson) {
 
     log(log.SUCCESS, 'Succesfully added event.')
     event.push(eventJson.event)
-    return { event };
+    return rowToJson(targetSheet, targetSheet.getRange("A2:E2"));
 }
