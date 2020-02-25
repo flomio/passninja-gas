@@ -1,9 +1,46 @@
+/** Attempts to return the spreadsheet connected to the GAS Script Project.
+ *  Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
+ *  If multiple sheets have been programatically created it will only target the most recent.
+ * 
+ * @returns {Spreadsheet} The spreadsheet that is linked to the GAS Script Project.
+ */
+function getLinkedSpreadsheet() {
+    var fnRunner = [
+        [SpreadsheetApp.getActive, []],
+        [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
+        [SpreadsheetApp.openByUrl, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, false)]]
+    ]
+    var ss = null
+    for ([fn, args] of fnRunner) {
+        log(log.STATUS, `Running function ${fn.name} with args ${args}`)
+        ss = fn(...args)
+        if (ss) {
+          log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`)
+          return ss
+        }
+    }
+    throw (`No linked/bound spreadsheet connected to GAS Project for user ${Session.getActiveUser().getEmail()}.`)
+}
+
+/** Returns an Script Project environment variable if found or throws an error.
+ * 
+ * @param {string} name Name of the env var to query
+ * @param {boolean} throwError Whether to throw an error or return null otherwise
+ * @returns {string} The contents of the env variable
+ * @returns {null} If no env variable is found under that name 
+ */
 function getEnvVar(name, throwError = true) {
     var envVar = PropertiesService.getScriptProperties().getProperty(name);
     if (throwError && !envVar) throw (`Script variable ${name} does not exist.`)
     return envVar
 }
 
+/** Sets an Script Project environment variable.
+ * 
+ * @param {string} name Name of the env var to query
+ * @param {string} value The value you set
+ * @returns {Properties} The Properties store, for chaining 
+ */
 function setEnvVar(name, value) {
     return PropertiesService.getScriptProperties().setProperty(name, value);
 }
@@ -37,8 +74,7 @@ function getRowPassPayload(ss, rowRange, fieldsData) {
 /** Returns an object with key:value pairs from the Config sheet
  */
 function getConfigConstants() {
-    var constants = Object.fromEntries(SpreadsheetApp
-        .getActive()
+    var constants = Object.fromEntries(getLinkedSpreadsheet() 
         .getRangeByName(ENUMS.CONFIG_CONSTANTS)
         .getValues()
         .filter(row => !!row[0]))
@@ -49,8 +85,7 @@ function getConfigConstants() {
 /** Returns a list of config field entries
  */
 function getConfigFields() {
-    var fieldsData = SpreadsheetApp
-        .getActive()
+    var fieldsData = getLinkedSpreadsheet()
         .getRangeByName(ENUMS.CONFIG_FIELDS)
         .getValues()
         .filter(row => !!row[0])
@@ -73,8 +108,10 @@ function sortSheet(sheet) {
  * @returns {Sheet} Google Sheet object
  */
 function getSheet(sheetName) {
-    var spreadsheet = SpreadsheetApp.getActive();
-    return spreadsheet.getSheetByName(sheetName);
+    var spreadsheet = getLinkedSpreadsheet();
+    var sheet = spreadsheet.getSheetByName(sheetName) 
+    if (!sheet) throw (`Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`)
+    return sheet;
 }
 
 /** Determines whether the selected row is valid
@@ -290,7 +327,7 @@ function getFileId() {
  * @param {int} timeout The timeout of the toast
  */
 function toast(msg, title, timeout) {
-    var currentSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+    var currentSpreadsheet = getLinkedSpreadsheet()
     currentSpreadsheet.toast(msg, title, timeout);
 }
 

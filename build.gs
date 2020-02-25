@@ -27,7 +27,7 @@ function initializeSheet(name, ss) {
 
 /** Builds initial contacts sheet
  */
-function buildConfigSheet(ss) {
+function buildConfigSheet(ss, force = false) {
     var sheet = initializeSheet(ENUMS.CONFIG, ss)
 
     var headerNames = ["Pass Field", "Constant Value", null, "Contact Field", "Field in Pass?", "Form-Type", "Form Options (comma separated)"]

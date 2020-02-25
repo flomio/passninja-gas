@@ -25,13 +25,13 @@ function addEvent(targetSheet, eventJson) {
             eventJson.event.passJson
         ]
     } catch (e) {
-      insertRow(targetSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, () => {
-          autoResizeSheet(targetSheet)
-          var range = targetSheet.getRange("A2:E2")
-          flashRange(range, "red", 1, 50);
-          targetSheet.setActiveSelection(range)
-      });
-      return { "error": `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}` };
+        insertRow(targetSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, () => {
+            autoResizeSheet(targetSheet)
+            var range = targetSheet.getRange("A2:E2")
+            flashRange(range, "red", 1, 50);
+            targetSheet.setActiveSelection(range)
+        });
+        return { "error": `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}` };
     }
 
     insertRow(targetSheet, event, 2, () => {
@@ -43,5 +43,5 @@ function addEvent(targetSheet, eventJson) {
 
     log(log.SUCCESS, 'Succesfully added event.')
     event.push(eventJson.event)
-    return { event };
+    return rowToJson(targetSheet, targetSheet.getRange("A2:E2"));
 }
