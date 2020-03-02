@@ -7,6 +7,8 @@ var sendRequest = (url, options = {}) => {
 class PassNinjaService {
     constructor() {
         this.baseUrl = 'https://api.passninja.com/v1';
+        this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
+        this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
         this.serviceName = 'PassNinjaAPI';
         this.passesPostRoute = `${this.baseUrl}/passes/`;
         this.passesUpdateRoute = `${this.baseUrl}/passes/`;
@@ -15,6 +17,10 @@ class PassNinjaService {
     createPass(payload) {
         return sendRequest(this.passesPostRoute, {
                 method: 'post',
+                headers: {
+                    "x-account-id": this.accountId,
+                    "x-api-key": this.apiKey 
+                },
                 contentType: "application/json",
                 payload: JSON.stringify(payload)
             },
@@ -24,6 +30,10 @@ class PassNinjaService {
     updatePass(payload, serial) {
         return sendRequest(`${this.passesUpdateRoute}${serial}`, {
             method: 'put',
+            headers: {
+                "x-account-id": this.accountId,
+                "x-api-key": this.apiKey 
+            },
             contentType: "application/json",
             payload: JSON.stringify(payload)
         }, this.serviceName);
