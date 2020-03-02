@@ -6,7 +6,7 @@ var sendRequest = (url, options = {}) => {
 
 class PassNinjaService {
     constructor() {
-        this.baseUrl = 'https://api.passninja.com/v1';
+        this.baseUrl = 'https://api.passninja.com/api-key';
         this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
         this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
         this.serviceName = 'PassNinjaAPI';
