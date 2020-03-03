@@ -19,7 +19,7 @@ function initializeSheet(name, ss) {
     var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
     allCells.setBackground(COLORS.GENERIC);
     allCells.setFontColor(COLORS.TEXT);
-    allCells.setFontFamily("Helvetica Neue");
+    allCells.setFontFamily("Montserrat");
     allCells.setNumberFormat("@");
 
     return sheet;
@@ -30,24 +30,26 @@ function initializeSheet(name, ss) {
 function buildConfigSheet(ss, force = false) {
     var sheet = initializeSheet(ENUMS.CONFIG, ss)
 
-    var headerNames = ["Pass Field", "Constant Value", null, "Contact Field", "Field in Pass?", "Form-Type", "Form Options (comma separated)"]
-    var headerRange = sheet.getRange(1, 1, 1, headerNames.length)
+
+    
+    var headerNames = ["Key              ", "Value             ", null, "Name                  ", "In Template?", "Type      ", "Form Options (comma separated)"]
+    var headerRange = sheet.getRange(6, 1, 1, headerNames.length)
 
     headerRange.setValues([headerNames])
     headerRange.setBackground(COLORS.FIELD_PASSNINJA)
     headerRange.setFontWeight('bold')
 
-    sheet.getRange(1, 3, sheet.getMaxRows(), 1).setBackground(COLORS.GENERIC)
-    sheet.getRange(2, 1, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_PASSNINJA).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
-    sheet.getRange(2, 4, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_PASSNINJA).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
-    sheet.getRange(2, 1, 1, 1).setValue('passType')
-    sheet.getRange(2, 2, 1, 1).setNote('You must set your passType to create passes.')
+    //sheet.getRange(1, 3, sheet.getMaxRows(), 1).setBackground(COLORS.GENERIC)
+    sheet.getRange(1,1,5,7).setBackground(COLORS.FIELD_PASSNINJA)
+    sheet.getRange(6, 3, sheet.getMaxRows(), 1).setBackground(COLORS.FIELD_PASSNINJA).setFontWeight('bold').setFontColor(COLORS.TEXT_ON)
+    sheet.getRange(7, 1, 1, 1).setValue('passType')
+    sheet.getRange(7, 2, 1, 1).setNote('You must specify a passType to create passes.')
 
     // TODO: Implement some kind of protection.  This causes a timeout.
     // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
 
-    ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(2, 1, sheet.getMaxRows(), 2))
-    ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 4, sheet.getMaxRows(), 4))
+    ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(7, 1, sheet.getMaxRows(), 2))
+    ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(7, 4, sheet.getMaxRows(), 4))
 
     var validationInPass = SpreadsheetApp.newDataValidation()
         .requireValueInList(['N', 'Y'], true)
@@ -59,16 +61,35 @@ function buildConfigSheet(ss, force = false) {
         .setAllowInvalid(false)
         .build()
 
-    var fieldInPassRange = sheet.getRange(2, headerNames.indexOf('Field in Pass?') + 1, sheet.getMaxRows(), 1)
+    var fieldInPassRange = sheet.getRange(7, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows(), 1)
     fieldInPassRange.setDataValidation(validationInPass)
     fieldInPassRange.setHorizontalAlignment('center').setValue('N')
 
-    var formTypeRange = sheet.getRange(2, headerNames.indexOf('Form-Type') + 1, sheet.getMaxRows(), 1)
+    var formTypeRange = sheet.getRange(7, headerNames.indexOf('Type      ') + 1, sheet.getMaxRows(), 1)
     formTypeRange.setDataValidation(validationFormType)
     formTypeRange.setHorizontalAlignment('center').setValue('text')
 
     deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet)
     autoResizeSheet(sheet)
+        var titleRange = sheet.getRange(1,1,4,4)
+    
+    titleRange.merge()
+    titleRange.setValue("01 CONFIG")
+    titleRange.setFontSize(36)
+    titleRange.setVerticalAlignment("TOP")
+    
+    sheet.getRange(1,5,4,1).setFontSize(8)
+    sheet.getRange(1,5).setValue("INSTRUCTIONS:")
+    sheet.getRange(2,5).setValue("1) Specify what passType this app will be using under General Setup.")
+    sheet.getRange(3,5).setValue("2) Enter all the custom field names you have in your template.")
+    sheet.getRange(4,5).setValue("3) then, PassNinja... Setup... Create/Update Sheets from Config")
+    sheet.getRange(5,1).setValue("General Setup")
+    sheet.getRange(5,4).setValue("Define fields for the form that will be used to create passes")
+    
+    sheet.getRange(5,1,2,2).setBorder(true, true, true, true, false, false, COLORS.BORDER, null)
+    sheet.getRange(5,4,2,4).setBorder(true, true, true, true, false, false, COLORS.BORDER, null)
+    sheet.getRange(1,1,6,7).setFontColor(COLORS.TITLE_TEXT)
+    sheet.setColumnWidth(3,22)
     log(log.SUCCESS, 'Successfully built/updated Events sheet')
 }
 

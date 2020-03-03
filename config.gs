@@ -6,16 +6,18 @@ log.ERROR = 'ERROR'
 log.STATUS = 'STATUS'
 
 var COLORS = {
-    FIELD_PASSNINJA: '#4A6572',
+    FIELD_PASSNINJA: '#325D79',
     FIELD_CONSTANT: '#F9AA33',
     FIELD_CONTACT: '#F9AA33',
     FIELD_CONFIG: '#BCA136',
     FIELD_PASS: '#829356',
-    GENERIC: '#232F34',
-    TEXT: '#efefef',
+    GENERIC: '#cfe2f3',
+    TEXT: '#666666',
+    TITLE_TEXT: '#EFEFEF',
     TEXT_ON: '#17262A',
     SUCCESS: '#ADFF2F',
-    ERROR: '#FF4500'
+    ERROR: '#FF4500',
+    BORDER: '#D9D9D9' 
 }
 
 var STATUS_LOOKUP = {
