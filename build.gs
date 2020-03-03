@@ -106,6 +106,7 @@ function buildEventsSheet(ss) {
     fieldHeaders.setValues([fieldsNames])
     fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA)
     fieldHeaders.setFontWeight('bold')
+    fieldHeaders.setFontColor(COLORS.TITLE_TEXT)
 
     deleteUnusedColumns(fieldsNames.length + 1, sheet.getMaxColumns(), sheet)
 
@@ -124,7 +125,8 @@ function buildContactsSheet(ss, fieldsNames) {
     fieldHeaders.setValues([fieldsNames])
     fieldHeaders.setBackground(COLORS.FIELD_PASS)
     fieldHeaders.setFontWeight('bold')
-
+    fieldHeaders.setFontColor(COLORS.TITLE_TEXT)
+    
     var passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL]
     var passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length)
     passNinjaHeaders.setValues([passNinjaFields])
