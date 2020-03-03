@@ -20,17 +20,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "build:docs && git add ."
+      "pre-commit": "yarn build:docs || yarn lint:fix"
     }
-  },
-  "lint-staged": {
-    "**/*.*": [
-      "yarn gs2js",
-      "prettier --write",
-      "git add",
-      "yarn js2gs"
-    ]
   },
   "repository": {
     "type": "git",
