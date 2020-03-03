@@ -39,6 +39,7 @@ function onOpen() {
         .addSubMenu(ui.createMenu('Setup')
             .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
             .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
+            .addItem('Set PassNinja Credentials', 'storePassNinjaDetails_')
             .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
             .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
         )
@@ -67,6 +68,23 @@ function storeTwilioDetails_() {
             setEnvVar(envVar, response.getResponseText())
         } else {
             throw ('Cancelling Twilio setup.')
+        }
+    }
+}
+
+function storePassNinjaDetails_() {
+    var ui = SpreadsheetApp.getUi();
+
+    var questions = [
+        ['Enter your PassNinja Account ID:', ENUMS.PASSNINJA_ACCOUNT_ID],
+        ['Enter your PassNinja Api Key:', ENUMS.PASSNINJA_API_KEY]
+    ]
+    for ([question, envVar] of questions) {
+        var response = ui.prompt(question);
+        if (response.getSelectedButton() == ui.Button.OK) {
+            setEnvVar(envVar, response.getResponseText())
+        } else {
+            throw ('Cancelling PassNinja account setup.')
         }
     }
 }

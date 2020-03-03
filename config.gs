@@ -51,6 +51,8 @@ var ENUMS = {
     TWILIO_SID: 'twilio_sid',
     TWILIO_AUTH: 'twilio_auth',
     TWILIO_NUMBER: 'twilio_number',
+    PASSNINJA_ACCOUNT_ID: 'accountId',
+    PASSNINJA_API_KEY: 'apiKey',
     CURRENT_SPREADSHEET_ID: 'current_spreadsheet_id',
     CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url'
 }
