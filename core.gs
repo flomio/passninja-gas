@@ -31,6 +31,11 @@ function createSpreadsheet() {
   setEnvVar('current_user', currentUserEmail);
   setEnvVar('spreadsheet_name', ss.getName());
   setEnvVar('spreadsheet_creator', currentSheetOwnerEmail);
+  MailApp.sendEmail(
+    Session.getActiveUser().getEmail(),
+    'Your PassNinja Spreadsheet',
+    `Here is the link to your spreadsheet ${ss.getUrl()}`
+  );
 }
 
 /** Custom Trigger: adds the PassNinja script set as a menu item on load.
@@ -39,21 +44,23 @@ function createSpreadsheet() {
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
+    .addSubMenu(ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_'))
+    .addSeparator()
+    .addSubMenu(ui.createMenu('Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
+    .addSeparator()
     .addSubMenu(
       ui
-        .createMenu('Selected Row')
-        .addItem('Create/Update Pass', 'createPass_')
-        .addItem('Force Text passUrl to phoneNumber', 'sendText_')
+        .createMenu('Add Credentials')
+        .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
+        .addItem('Set PassNinja Credentials', 'storePassNinjaDetails_')
     )
     .addSeparator()
     .addSubMenu(
       ui
-        .createMenu('Setup')
-        .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
-        .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
-        .addItem('Set PassNinja Credentials', 'storePassNinjaDetails_')
+        .createMenu('Overrides')
         .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
         .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
+        .addItem('Force Text passUrl to phoneNumber', 'sendText_')
     )
     .addToUi();
 }
@@ -99,7 +106,7 @@ function storePassNinjaDetails_() {
     if (response.getSelectedButton() == ui.Button.OK) {
       setEnvVar(envVar, response.getResponseText());
     } else {
-      throw 'Cancelling PassNinja account setup.';
+      throw new ScriptError('Cancelling PassNinja account setup.');
     }
   }
 }
@@ -114,7 +121,7 @@ function storePassNinjaDetails_() {
 function updateFromConfig_(force = false) {
   var ss = getLinkedSpreadsheet();
   var fields = getConfigFields();
-  var fields = fields.map(f => f[0]);
+  var fieldNames = fields.map(f => f[0]);
   var constants = getConfigConstants();
   var fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
@@ -122,7 +129,7 @@ function updateFromConfig_(force = false) {
 
   if (!force && hash !== fieldsHash) {
     catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
-    catchError(() => buildContactsSheet(ss, fields), 'Error building Contacts Sheet - ');
+    catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
     catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
     setEnvVar(ENUMS.FIELDS_HASH, hash);
   } else {
@@ -187,7 +194,8 @@ function createPass_() {
   } catch (err) {
     passNinjaContentRange.setValues(originalContent);
     highlightCells(passNinjaContentRange, 'error');
-    throw err;
+    passNinjaContentRange.setValues(['Error', 'Did you set your', 'PassNinja Credentials?']);
+    throw new ScriptError('Ran into problem creating a pass', err);
   }
   log(log.SUCCESS, JSON.stringify(responseData));
   passNinjaContentRange.setValues([
