@@ -1,0 +1,57 @@
+{
+  "name": "passninja-guestlist-gas",
+  "version": "1.0.0",
+  "description": "A repository for the PassNinja Google Apps Script demo to demonstrate PassNinja API functionality.",
+  "main": "core.gs",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "js2gs": "for f in *.js; do mv -- \"$f\" \"${f%.js}.gs\"; done",
+    "gs2js": "for f in *.gs; do mv -- \"$f\" \"${f%.gs}.js\"; done",
+    "lint:fix": "yarn gs2js && yarn lint:fix:prettier && yarn js2gs || yarn js2gs",
+    "lint:fix:prettier": "prettier --write \"**/*.*\"",
+    "lint": "yarn gs2js && yarn lint:prettier && yarn js2gs || yarn js2gs",
+    "lint:prettier": "prettier --check \"**/*.*\"",
+    "build:docs:utils": "jsdoc2md --files util.js config.js > docs/UTILS.md",
+    "build:docs:api": "jsdoc2md --files handleGet.js handlePost.js > docs/API.md",
+    "build:docs:fns": "jsdoc2md --files core.js build.js services.js> docs/FUNCTIONS.md",
+    "build:docs": "yarn gs2js && yarn build:docs:utils && yarn build:docs:api && yarn build:docs:fns && yarn js2gs || yarn js2gs"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "build:docs && git add ."
+    }
+  },
+  "lint-staged": {
+    "**/*.*": [
+      "yarn gs2js",
+      "prettier --write",
+      "git add",
+      "yarn js2gs"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flomio/passninja-guestlist-gas.git"
+  },
+  "keywords": [
+    "gas",
+    "google",
+    "apps",
+    "script",
+    "GoogleApps",
+    "PassNinja",
+    "Flomio"
+  ],
+  "author": "PassNinja",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flomio/passninja-guestlist-gas/issues"
+  },
+  "homepage": "https://github.com/flomio/passninja-guestlist-gas#readme",
+  "devDependencies": {
+    "jsdoc-to-markdown": "^5.0.3"
+  }
+}

@@ -75,21 +75,11 @@ function buildConfigSheet(ss, force = false) {
     .setAllowInvalid(false)
     .build();
 
-  var fieldInPassRange = sheet.getRange(
-    2,
-    headerNames.indexOf('Field in Pass?') + 1,
-    sheet.getMaxRows(),
-    1
-  );
+  var fieldInPassRange = sheet.getRange(2, headerNames.indexOf('Field in Pass?') + 1, sheet.getMaxRows(), 1);
   fieldInPassRange.setDataValidation(validationInPass);
   fieldInPassRange.setHorizontalAlignment('center').setValue('N');
 
-  var formTypeRange = sheet.getRange(
-    2,
-    headerNames.indexOf('Form-Type') + 1,
-    sheet.getMaxRows(),
-    1
-  );
+  var formTypeRange = sheet.getRange(2, headerNames.indexOf('Form-Type') + 1, sheet.getMaxRows(), 1);
   formTypeRange.setDataValidation(validationFormType);
   formTypeRange.setHorizontalAlignment('center').setValue('text');
 
@@ -137,11 +127,7 @@ function buildContactsSheet(ss, fieldsNames) {
   passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA);
   passNinjaHeaders.setFontWeight('bold');
 
-  deleteUnusedColumns(
-    passNinjaFields.length + fieldsNames.length + 1,
-    sheet.getMaxColumns(),
-    sheet
-  );
+  deleteUnusedColumns(passNinjaFields.length + fieldsNames.length + 1, sheet.getMaxColumns(), sheet);
 
   log(log.SUCCESS, 'Successfully built/updated Contacts sheet');
   return sheet;
@@ -168,9 +154,7 @@ function buildContactsForm(ss, sheet, fieldData) {
   var triggers = ScriptApp.getProjectTriggers();
   if (
     !triggers.filter(
-      t =>
-        t.getHandlerFunction() === 'onboardNewPassholderFromForm' &&
-        t.getTriggerSourceId() === ss.getId()
+      t => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
     ).length
   ) {
     ScriptApp.newTrigger('onboardNewPassholderFromForm')

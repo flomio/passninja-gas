@@ -26,10 +26,7 @@ function createSpreadsheet() {
     log.STATUS,
     ss.getSheets().map(sheet => sheet.getName())
   );
-  log(
-    log.STATUS,
-    `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`
-  );
+  log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
 
   setEnvVar('current_user', currentUserEmail);
   setEnvVar('spreadsheet_name', ss.getName());
@@ -54,20 +51,17 @@ function onOpen() {
         .createMenu('Setup')
         .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
         .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
+        .addItem('Set PassNinja Credentials', 'storePassNinjaDetails_')
         .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
         .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
     )
     .addToUi();
 }
 
-/** Menu command to force update the sheets the config if nothing has changed.
- */
 function forceUpdateFromConfig_() {
   updateFromConfig_(true);
 }
 
-/** Menu command to force create the config sheet if it needs to be recreated.
- */
 function buildConfigSheet_() {
   buildConfigSheet(getLinkedSpreadsheet());
 }
@@ -93,7 +87,26 @@ function storeTwilioDetails_() {
   }
 }
 
-/** Menu command to update the Contacts Sheet, Events Sheet and Contacts Form from the Config Sheet
+function storePassNinjaDetails_() {
+  var ui = SpreadsheetApp.getUi();
+
+  var questions = [
+    ['Enter your PassNinja Account ID:', ENUMS.PASSNINJA_ACCOUNT_ID],
+    ['Enter your PassNinja Api Key:', ENUMS.PASSNINJA_API_KEY]
+  ];
+  for ([question, envVar] of questions) {
+    var response = ui.prompt(question);
+    if (response.getSelectedButton() == ui.Button.OK) {
+      setEnvVar(envVar, response.getResponseText());
+    } else {
+      throw 'Cancelling PassNinja account setup.';
+    }
+  }
+}
+
+/**
+ * Creates a Google Form that allows respondents to select which conference
+ * sessions they would like to attend, grouped by date and start time.
  *
  * @param {Spreadsheet} ss The spreadsheet that contains the conference data.
  * @param {string[]} values Cell values for the spreadsheet range.
@@ -101,32 +114,19 @@ function storeTwilioDetails_() {
 function updateFromConfig_(force = false) {
   var ss = getLinkedSpreadsheet();
   var fields = getConfigFields();
+  var fields = fields.map(f => f[0]);
   var constants = getConfigConstants();
   var fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
   log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
   if (!force && hash !== fieldsHash) {
-    catchError(() => buildEventsSheet(ss), 'Error building Events  Form - ');
-    catchError(
-      () =>
-        buildContactsSheet(
-          ss,
-          fields.map(f => f[0])
-        ),
-      'Error building Contacts Sheet - '
-    );
-    catchError(
-      () => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields),
-      'Error building Contacts Form - '
-    );
+    catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
+    catchError(() => buildContactsSheet(ss, fields), 'Error building Contacts Sheet - ');
+    catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
     setEnvVar(ENUMS.FIELDS_HASH, hash);
   } else {
-    Browser.msgBox(
-      'No Update',
-      "The Config sheet's field data has not changed, not updating.",
-      Browser.Buttons.OK
-    );
+    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
   }
 }
 
@@ -207,7 +207,7 @@ function createPass_() {
   return response.getContentText();
 }
 
-/** Sends a text to the current row using the TwilioServce and stored Script Properties.
+/** Sends a text to the current row using the TwilioService and stored Script Properties.
  *  NOTE: only works if the header 'phoneNumber' is present
  * @returns {ServiceError} If the response from TwilioService is non 2xx.
  * @returns {Error} If an unexpected error occurred running TwilioService.
@@ -218,24 +218,14 @@ function sendText_() {
     twilio = new TwilioService();
     var contactSheet = getSheet(ENUMS.CONTACTS);
     var passUrl = contactSheet
-      .getRange(
-        getValidSheetSelectedRow(contactSheet),
-        getColumnIndexFromString(contactSheet, ENUMS.PASSURL),
-        1,
-        1
-      )
+      .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
       .getValue();
     var phoneNumber = contactSheet
-      .getRange(
-        getValidSheetSelectedRow(contactSheet),
-        getColumnIndexFromString(contactSheet, 'phoneNumber'),
-        1,
-        1
-      )
+      .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, 'phoneNumber'), 1, 1)
       .getValue();
   } catch (err) {
     if (err instanceof CredentialsError) {
-      log(log.ERROR, 'Twilio auth was not set up...ignoring sendText_ attempt.');
+      log(log.ERROR, 'Twilio auth was not set up...ignoring sendText attempt.');
       return;
     }
     throw new CredentialsError(
@@ -245,10 +235,7 @@ function sendText_() {
   }
 
   try {
-    twilio.sendText(
-      phoneNumber + '',
-      `Please click the link to install the requested PassNinja NFC pass: ${passUrl}`
-    );
+    twilio.sendText(phoneNumber + '', `Please click the link to install the requested PassNinja NFC pass: ${passUrl}`);
   } catch (err) {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;

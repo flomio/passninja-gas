@@ -1,9 +1,7 @@
 var sendRequest = (url, options = {}, serviceName) => {
   log(
     log.STATUS,
-    `Attempting to ${options.method.toUpperCase()} ${url} with payload: ${JSON.stringify(
-      options.payload
-    )}`
+    `Attempting to ${options.method.toUpperCase()} ${url} with payload: ${JSON.stringify(options.payload)}`
   );
   options.muteHttpExceptions = true;
   response = UrlFetchApp.fetch(url, { ...options });
@@ -20,7 +18,9 @@ var sendRequest = (url, options = {}, serviceName) => {
 
 class PassNinjaService {
   constructor() {
-    this.baseUrl = 'https://api.passninja.com/v1';
+    this.baseUrl = 'https://api.passninja.com/api-key';
+    this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
+    this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
     this.serviceName = 'PassNinjaAPI';
     this.passesPostRoute = `${this.baseUrl}/passes/`;
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
@@ -31,6 +31,10 @@ class PassNinjaService {
       this.passesPostRoute,
       {
         method: 'post',
+        headers: {
+          'x-account-id': this.accountId,
+          'x-api-key': this.apiKey
+        },
         contentType: 'application/json',
         payload: JSON.stringify(payload)
       },
@@ -43,6 +47,10 @@ class PassNinjaService {
       `${this.passesUpdateRoute}${serial}`,
       {
         method: 'put',
+        headers: {
+          'x-account-id': this.accountId,
+          'x-api-key': this.apiKey
+        },
         contentType: 'application/json',
         payload: JSON.stringify(payload)
       },
@@ -98,10 +106,7 @@ class TwilioService {
 
   sendText(to, body) {
     if (body.length > 160)
-      throw new ServiceError(
-        this.serviceName,
-        `${this.serviceName}: The text should be limited to 160 characters`
-      );
+      throw new ServiceError(this.serviceName, `${this.serviceName}: The text should be limited to 160 characters`);
     var options = {
       method: 'post',
       payload: {

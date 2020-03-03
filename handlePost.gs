@@ -4,9 +4,7 @@
  */
 function doPost(e) {
   var response = addEvent(getSheet(ENUMS.EVENTS), e.postData.contents);
-  return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(
-    ContentService.MimeType.JSON
-  );
+  return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
 
 /** Adds a PassNinja event to a new row in the target spreadsheet
@@ -31,9 +29,7 @@ function addEvent(targetSheet, eventJson) {
       flashRange(range, 'red', 1, 50);
       targetSheet.setActiveSelection(range);
     });
-    return {
-      error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}`
-    };
+    return { error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}` };
   }
 
   insertRow(targetSheet, event, 2, () => {
@@ -43,7 +39,7 @@ function addEvent(targetSheet, eventJson) {
     targetSheet.setActiveSelection(range);
   });
 
-  log(log.SUCCESS, 'Succesfully added event.');
+  log(log.SUCCESS, 'Successfully added event.');
   event.push(eventJson.event);
   return rowToJson(targetSheet, targetSheet.getRange('A2:E2'));
 }

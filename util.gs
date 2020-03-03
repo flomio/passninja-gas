@@ -34,8 +34,7 @@ function getLinkedSpreadsheet() {
  */
 function getEnvVar(name, throwError = true) {
   var envVar = PropertiesService.getScriptProperties().getProperty(name);
-  if (throwError && !envVar)
-    throw new ScriptError('UTILS', `Script variable ${name} does not exist.`);
+  if (throwError && !envVar) throw new ScriptError('UTILS', `Script variable ${name} does not exist.`);
   return envVar;
 }
 
@@ -84,8 +83,7 @@ function getConfigConstants() {
       .getValues()
       .filter(row => !!row[0])
   );
-  if (!constants.passType)
-    throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
+  if (!constants.passType) throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
   return constants;
 }
 
@@ -96,8 +94,7 @@ function getConfigFields() {
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter(row => !!row[0]);
-  if (!fieldsData.length)
-    throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
+  if (!fieldsData.length) throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
   return fieldsData;
 }
 
@@ -118,8 +115,7 @@ function sortSheet(sheet) {
 function getSheet(sheetName) {
   var spreadsheet = getLinkedSpreadsheet();
   var sheet = spreadsheet.getSheetByName(sheetName);
-  if (!sheet)
-    throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
+  if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
   return sheet;
 }
 
@@ -170,16 +166,7 @@ function highlightCells(cells, status, value) {
   if (value) cells.setValue(value);
   var statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
-    cells.setBorder(
-      true,
-      true,
-      true,
-      true,
-      true,
-      true,
-      statusColors.border,
-      SpreadsheetApp.BorderStyle.SOLID
-    );
+    cells.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
   if (statusColors.background) cells.setBackground(statusColors.background);
   if (statusColors.color) cells.setFontColor(statusColors.color);
   if (statusColors.bold) cells.setFontWeight('bold');
@@ -318,9 +305,7 @@ function clearFormDestinationSheet(form) {
   var destinationSheet = getFormDestinationSheet(form);
   form.removeDestination();
   form.deleteAllResponses();
-  destinationSheet.setName(
-    `${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`
-  );
+  destinationSheet.setName(`${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`);
   destinationSheet.hideSheet();
 }
 
@@ -378,8 +363,7 @@ function parseName(input) {
   var result = {};
 
   if (fullName.length > 0) {
-    var nameTokens =
-      fullName.match(/[A-ZÁ-ÚÑÜ][a-zá-úñü]+|([aeodlsz]+\s+)+[A-ZÁ-ÚÑÜ][a-zá-úñü]+/g) || [];
+    var nameTokens = fullName.match(/[A-ZÁ-ÚÑÜ][a-zá-úñü]+|([aeodlsz]+\s+)+[A-ZÁ-ÚÑÜ][a-zá-úñü]+/g) || [];
 
     if (nameTokens.length > 3) {
       result.name = nameTokens.slice(0, 2).join(' ');
@@ -427,11 +411,7 @@ function catchError(fn, errorMsg) {
  */
 function MD5(input, isShortMode) {
   var txtHash = '';
-  var rawHash = Utilities.computeDigest(
-    Utilities.DigestAlgorithm.MD5,
-    input,
-    Utilities.Charset.UTF_8
-  );
+  var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, input, Utilities.Charset.UTF_8);
   var isShortMode = isShortMode == true ? true : false;
 
   if (!isShortMode) {
