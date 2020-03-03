@@ -84,9 +84,7 @@ class TwilioService {
         .split('')
         .filter(c => c.match(/[0-9x]/g))
         .join('');
-    return isValidPhoneNumber(formattedPhoneNumber)
-      ? formattedPhoneNumber
-      : null;
+    return isValidPhoneNumber(formattedPhoneNumber) ? formattedPhoneNumber : null;
   }
 
   /* Validates number to rough E164 standard:
@@ -112,9 +110,7 @@ class TwilioService {
         From: this.formatE164PhoneNumber(this.phoneNumber)
       },
       headers: {
-        Authorization:
-          'Basic ' +
-          Utilities.base64Encode(`${this.accountSid}:${this.authToken}`)
+        Authorization: 'Basic ' + Utilities.base64Encode(`${this.accountSid}:${this.authToken}`)
       }
     };
     return sendRequest(this.postRoute, options, this.serviceName);

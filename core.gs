@@ -3,9 +3,7 @@
  *  Spreadsheet is linked via a trigger to the script.
  */
 function createSpreadsheet() {
-  var ss = SpreadsheetApp.create(
-    `PassNinja Demo Spreadsheet - ${new Date().toISOString()}`
-  );
+  var ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
   Utilities.sleep(2000);
 
@@ -57,10 +55,7 @@ function onOpen() {
         .addItem('Create/Update Sheets From Config', 'updateFromConfig_')
         .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
         .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
-        .addItem(
-          'Force Create/Update Sheets From Config',
-          'forceUpdateFromConfig_'
-        )
+        .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
     )
     .addToUi();
 }
@@ -109,10 +104,7 @@ function updateFromConfig_(force = false) {
   var constants = getConfigConstants();
   var fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   var hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  log(
-    log.STATUS,
-    `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`
-  );
+  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
   if (!force && hash !== fieldsHash) {
     catchError(() => buildEventsSheet(ss), 'Error building Events  Form - ');
@@ -171,49 +163,21 @@ function createPass_() {
   var ss = getLinkedSpreadsheet();
   var contactSheet = getSheet(ENUMS.CONTACTS);
 
-  var passNinjaColumnStart = getColumnIndexFromString(
-    contactSheet,
-    ENUMS.PASSURL
-  );
-  var serialNumberColumnIndex = getColumnIndexFromString(
-    contactSheet,
-    ENUMS.SERIAL
-  );
+  var passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
+  var serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   var rowNumber = getValidSheetSelectedRow(contactSheet);
 
-  var rowRange = contactSheet.getRange(
-    rowNumber,
-    1,
-    1,
-    passNinjaColumnStart - 1
-  );
-  var passNinjaContentRange = contactSheet.getRange(
-    rowNumber,
-    passNinjaColumnStart,
-    1,
-    3
-  );
-  var passUrlRange = contactSheet.getRange(
-    rowNumber,
-    passNinjaColumnStart,
-    1,
-    1
-  );
-  var serialNumberRange = contactSheet.getRange(
-    rowNumber,
-    serialNumberColumnIndex,
-    1,
-    1
-  );
+  var rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
+  var passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
+  var passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
+  var serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
 
   var payloadJSONString = getRowPassPayload(ss, rowRange);
   var serial = serialNumberRange.getValue();
 
   var originalContent = passNinjaContentRange.getValues();
   highlightCells(passNinjaContentRange, 'loading');
-  passNinjaContentRange.setValues([
-    ['Please wait...', 'pass creation', 'in progress']
-  ]);
+  passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress']]);
   SpreadsheetApp.flush();
 
   try {
@@ -271,10 +235,7 @@ function sendText_() {
       .getValue();
   } catch (err) {
     if (err instanceof CredentialsError) {
-      log(
-        log.ERROR,
-        'Twilio auth was not set up...ignoring sendText_ attempt.'
-      );
+      log(log.ERROR, 'Twilio auth was not set up...ignoring sendText_ attempt.');
       return;
     }
     throw new CredentialsError(

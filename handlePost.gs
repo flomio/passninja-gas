@@ -25,17 +25,12 @@ function addEvent(targetSheet, eventJson) {
       eventJson.event.passJson
     ];
   } catch (e) {
-    insertRow(
-      targetSheet,
-      ['Error parsing event:', 'ERROR', '', '', eventJson],
-      2,
-      () => {
-        autoResizeSheet(targetSheet);
-        var range = targetSheet.getRange('A2:E2');
-        flashRange(range, 'red', 1, 50);
-        targetSheet.setActiveSelection(range);
-      }
-    );
+    insertRow(targetSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, () => {
+      autoResizeSheet(targetSheet);
+      var range = targetSheet.getRange('A2:E2');
+      flashRange(range, 'red', 1, 50);
+      targetSheet.setActiveSelection(range);
+    });
     return {
       error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}`
     };

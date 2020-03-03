@@ -6,9 +6,9 @@
 function doGet(request) {
   var serialNumber = request.parameter.serialNumber;
   clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS), serialNumber);
-  return ContentService.createTextOutput(
-    JSON.stringify(clientData)
-  ).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(clientData)).setMimeType(
+    ContentService.MimeType.JSON
+  );
 }
 
 /** Creates a JSON object from the first found match of the given serial number.
@@ -23,11 +23,7 @@ function rowToJSONFromSerial(sheet, serialNumber) {
     .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
     .getValues();
 
-  var matchIndex = findMatchIndexAtColumn(
-    serialNumberColumnData,
-    serialNumberColumn,
-    serialNumber
-  );
+  var matchIndex = findMatchIndexAtColumn(serialNumberColumnData, serialNumberColumn, serialNumber);
 
   if (matchIndex === -1) return {};
   return rowToJson(sheet, serialNumberColumnData[matchIndex]);

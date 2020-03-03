@@ -16,12 +16,7 @@ var FORM_LOOKUP = {
  */
 function initializeSheet(name, ss) {
   var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
-  var allCells = sheet.getRange(
-    1,
-    1,
-    sheet.getMaxRows(),
-    sheet.getMaxColumns()
-  );
+  var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
   allCells.setBackground(COLORS.GENERIC);
   allCells.setFontColor(COLORS.TEXT);
   allCells.setFontFamily('Helvetica Neue');
@@ -62,21 +57,13 @@ function buildConfigSheet(ss, force = false) {
     .setFontWeight('bold')
     .setFontColor(COLORS.TEXT_ON);
   sheet.getRange(2, 1, 1, 1).setValue('passType');
-  sheet
-    .getRange(2, 2, 1, 1)
-    .setNote('You must set your passType to create passes.');
+  sheet.getRange(2, 2, 1, 1).setNote('You must set your passType to create passes.');
 
   // TODO: Implement some kind of protection.  This causes a timeout.
   // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
 
-  ss.setNamedRange(
-    ENUMS.CONFIG_CONSTANTS,
-    sheet.getRange(2, 1, sheet.getMaxRows(), 2)
-  );
-  ss.setNamedRange(
-    ENUMS.CONFIG_FIELDS,
-    sheet.getRange(2, 4, sheet.getMaxRows(), 4)
-  );
+  ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(2, 1, sheet.getMaxRows(), 2));
+  ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(2, 4, sheet.getMaxRows(), 4));
 
   var validationInPass = SpreadsheetApp.newDataValidation()
     .requireValueInList(['N', 'Y'], true)
@@ -119,13 +106,7 @@ function buildConfigSheet(ss, force = false) {
 function buildEventsSheet(ss) {
   var sheet = initializeSheet(ENUMS.EVENTS, ss);
 
-  var fieldsNames = [
-    'eventDate',
-    'eventType',
-    'passType',
-    'serialNumber',
-    'eventData'
-  ];
+  var fieldsNames = ['eventDate', 'eventType', 'passType', 'serialNumber', 'eventData'];
   var fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length);
   fieldHeaders.setValues([fieldsNames]);
   fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
@@ -151,12 +132,7 @@ function buildContactsSheet(ss, fieldsNames) {
   fieldHeaders.setFontWeight('bold');
 
   var passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL];
-  var passNinjaHeaders = sheet.getRange(
-    1,
-    fieldsNames.length + 1,
-    1,
-    passNinjaFields.length
-  );
+  var passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length);
   passNinjaHeaders.setValues([passNinjaFields]);
   passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA);
   passNinjaHeaders.setFontWeight('bold');

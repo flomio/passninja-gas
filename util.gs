@@ -8,10 +8,7 @@ function getLinkedSpreadsheet() {
   var fnRunner = [
     [SpreadsheetApp.getActive, []],
     [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
-    [
-      SpreadsheetApp.openByUrl,
-      [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, false)]
-    ]
+    [SpreadsheetApp.openByUrl, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, false)]]
   ];
   var ss = null;
   for ([fn, args] of fnRunner) {
@@ -62,10 +59,7 @@ function getRowPassPayload(ss, rowRange, fieldsData) {
   var fieldsData = getConfigFields();
   var { passType, ...passFieldConstants } = getConfigConstants();
   var rowValues = rowRange.getValues()[0];
-  log(
-    log.STATUS,
-    `Working on row #${rowRange.getRow()} with values [${rowValues}]`
-  );
+  log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`);
   var postData = {
     passType,
     pass: passFieldConstants
@@ -74,10 +68,7 @@ function getRowPassPayload(ss, rowRange, fieldsData) {
   for (i = 0; i < rowValues.length; i++) {
     var [fieldName, fieldIncluded] = fieldsData[i];
     if (fieldIncluded === 'Y') {
-      log(
-        log.SUCCESS,
-        `Added (${fieldName}: ${rowValues[i]}) to POST payload.`
-      );
+      log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`);
       postData.pass[fieldName] = rowValues[i];
     }
   }
@@ -94,10 +85,7 @@ function getConfigConstants() {
       .filter(row => !!row[0])
   );
   if (!constants.passType)
-    throw new ScriptError(
-      'UTILS',
-      'You must enter a passType in the Config sheet.'
-    );
+    throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
   return constants;
 }
 
@@ -109,10 +97,7 @@ function getConfigFields() {
     .getValues()
     .filter(row => !!row[0]);
   if (!fieldsData.length)
-    throw new ScriptError(
-      'UTILS',
-      'You must enter at least one field in the Config sheet.'
-    );
+    throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
   return fieldsData;
 }
 
@@ -134,10 +119,7 @@ function getSheet(sheetName) {
   var spreadsheet = getLinkedSpreadsheet();
   var sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet)
-    throw new ScriptError(
-      'UTILS',
-      `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`
-    );
+    throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
   return sheet;
 }
 
@@ -337,9 +319,7 @@ function clearFormDestinationSheet(form) {
   form.removeDestination();
   form.deleteAllResponses();
   destinationSheet.setName(
-    `${destinationSheet.getName()}_${new Date()
-      .toISOString()
-      .replace(/[:]/g, '.')}`
+    `${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`
   );
   destinationSheet.hideSheet();
 }
@@ -399,9 +379,7 @@ function parseName(input) {
 
   if (fullName.length > 0) {
     var nameTokens =
-      fullName.match(
-        /[A-ZÁ-ÚÑÜ][a-zá-úñü]+|([aeodlsz]+\s+)+[A-ZÁ-ÚÑÜ][a-zá-úñü]+/g
-      ) || [];
+      fullName.match(/[A-ZÁ-ÚÑÜ][a-zá-úñü]+|([aeodlsz]+\s+)+[A-ZÁ-ÚÑÜ][a-zá-úñü]+/g) || [];
 
     if (nameTokens.length > 3) {
       result.name = nameTokens.slice(0, 2).join(' ');
