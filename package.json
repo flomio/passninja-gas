@@ -52,6 +52,7 @@
   },
   "homepage": "https://github.com/flomio/passninja-guestlist-gas#readme",
   "devDependencies": {
+    "husky": "^4.2.3",
     "jsdoc-to-markdown": "^5.0.3"
   }
 }
