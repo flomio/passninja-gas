@@ -4,11 +4,9 @@
  * @returns {object} Standard response with a JavaScript text body
  */
 function doGet(request) {
-    var serialNumber = request.parameter.serialNumber;
-    clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS), serialNumber);
-    return ContentService.createTextOutput(
-        JSON.stringify(clientData)
-    ).setMimeType(ContentService.MimeType.JSON);
+  var serialNumber = request.parameter.serialNumber;
+  clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS), serialNumber);
+  return ContentService.createTextOutput(JSON.stringify(clientData)).setMimeType(ContentService.MimeType.JSON);
 }
 
 /** Creates a JSON object from the first found match of the given serial number.
@@ -18,17 +16,11 @@ function doGet(request) {
  * @returns {object} The resulting match or an empty object if no match is found
  */
 function rowToJSONFromSerial(sheet, serialNumber) {
-    var serialNumberColumn = getColumnIndexFromString(sheet, "serialNumber") - 1;
-    var serialNumberColumnData = sheet
-        .getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn())
-        .getValues();
+  var serialNumberColumn = getColumnIndexFromString(sheet, 'serialNumber') - 1;
+  var serialNumberColumnData = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
 
-    var matchIndex = findMatchIndexAtColumn(
-        serialNumberColumnData,
-        serialNumberColumn,
-        serialNumber
-    );
+  var matchIndex = findMatchIndexAtColumn(serialNumberColumnData, serialNumberColumn, serialNumber);
 
-    if (matchIndex === -1) return {};
-    return rowToJson(sheet, serialNumberColumnData[matchIndex]);
+  if (matchIndex === -1) return {};
+  return rowToJson(sheet, serialNumberColumnData[matchIndex]);
 }

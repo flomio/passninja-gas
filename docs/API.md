@@ -19,8 +19,7 @@
 <a name="doGet"></a>
 
 ## doGet(e) ⇒ <code>object</code>
-Returns the corresponding user entry in the Contacts sheet
- matching the serialNumber query parameter
+Returns the corresponding user entry in the Contacts sheet matching the serialNumber query parameter
 
 **Kind**: global function  
 **Returns**: <code>object</code> - Standard response with a JavaScript text body  

@@ -2,36 +2,45 @@
 
 <dl>
 <dt><a href="#createSpreadsheet">createSpreadsheet()</a></dt>
-<dd><p>Creates the necessary demo spreadsheet in the user&#39;s spreadsheets.
+<dd><p><del><em>--</em></del> RUN ME FIRST <del><em>--</em></del>
+ Creates the necessary demo spreadsheet in the user&#39;s spreadsheets.
  Spreadsheet is linked via a trigger to the script.</p>
 </dd>
 <dt><a href="#onOpen">onOpen()</a></dt>
-<dd><p>Adds the PassNinja script set as a menu item on load.</p>
+<dd><p>Custom Trigger: adds the PassNinja script set as a menu item on load.</p>
+</dd>
+<dt><a href="#storeTwilioDetails_">storeTwilioDetails_()</a> ⇒ <code>ServiceError</code></dt>
+<dd><p>Menu command to stores the Twilio auth details into the Script Properties permanently..</p>
 </dd>
 <dt><a href="#updateFromConfig_">updateFromConfig_(ss, values)</a></dt>
 <dd><p>Creates a Google Form that allows respondents to select which conference
 sessions they would like to attend, grouped by date and start time.</p>
 </dd>
 <dt><a href="#onboardNewPassholderFromForm">onboardNewPassholderFromForm(e)</a> ⇒ <code>string</code></dt>
-<dd><p>Inputs a new user&#39;s data from a form submit event and triggers a pass creation.</p>
+<dd><p>Custom Trigger: inputs a new user&#39;s data from a form submit event and triggers a pass creation.</p>
 </dd>
-<dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code></dt>
-<dd><p>Creates a PassNinja pass from the selected row.</p>
+<dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code> | <code>ServiceError</code></dt>
+<dd><p>Menu command to create a PassNinja pass from the selected row.</p>
+</dd>
+<dt><a href="#sendText_">sendText_()</a> ⇒ <code>ServiceError</code> | <code>Error</code></dt>
+<dd><p>Sends a text to the current row using the TwilioService and stored Script Properties.
+ NOTE: only works if the header &#39;phoneNumber&#39; is present</p>
 </dd>
 <dt><a href="#showEvents_">showEvents_()</a></dt>
-<dd><p>Pops up a modal with the pass events of the current highlighted row
-related to the pass via serial number</p>
+<dd><p>Menu command to pop up a modal with the pass events
+ of the current highlighted row related to the pass via serial number
+ NOT IMPLEMENTED YET</p>
 </dd>
 <dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
 </dd>
 <dt><a href="#buildConfigSheet">buildConfigSheet()</a></dt>
-<dd><p>Builds initial contacts sheet</p>
+<dd><p>Builds initial config sheet</p>
 </dd>
 <dt><a href="#buildEventsSheet">buildEventsSheet(ss, fieldsNames)</a></dt>
 <dd><p>Builds a events sheet based on the user config sheet</p>
 </dd>
-<dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a></dt>
+<dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Builds a contacts sheet based on the user config sheet</p>
 </dd>
 <dt><a href="#buildContactsForm">buildContactsForm(ss, sheet, fieldData)</a></dt>
@@ -42,21 +51,26 @@ related to the pass via serial number</p>
 <a name="createSpreadsheet"></a>
 
 ## createSpreadsheet()
-Creates the necessary demo spreadsheet in the user's spreadsheets.
- Spreadsheet is linked via a trigger to the script.
+~*--*~ RUN ME FIRST ~*--*~ Creates the necessary demo spreadsheet in the user's spreadsheets. Spreadsheet is linked via a trigger to the script.
 
 **Kind**: global function  
 <a name="onOpen"></a>
 
 ## onOpen()
-Adds the PassNinja script set as a menu item on load.
+Custom Trigger: adds the PassNinja script set as a menu item on load.
 
 **Kind**: global function  
+<a name="storeTwilioDetails_"></a>
+
+## storeTwilioDetails\_() ⇒ <code>ServiceError</code>
+Menu command to stores the Twilio auth details into the Script Properties permanently..
+
+**Kind**: global function  
+**Returns**: <code>ServiceError</code> - If setup is cancelled.  
 <a name="updateFromConfig_"></a>
 
 ## updateFromConfig\_(ss, values)
-Creates a Google Form that allows respondents to select which conference
-sessions they would like to attend, grouped by date and start time.
+Creates a Google Form that allows respondents to select which conferencesessions they would like to attend, grouped by date and start time.
 
 **Kind**: global function  
 
@@ -68,7 +82,7 @@ sessions they would like to attend, grouped by date and start time.
 <a name="onboardNewPassholderFromForm"></a>
 
 ## onboardNewPassholderFromForm(e) ⇒ <code>string</code>
-Inputs a new user's data from a form submit event and triggers a pass creation.
+Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
 
 **Kind**: global function  
 **Returns**: <code>string</code> - "Lock Timeout" if the contact sheet queries cause a timeout  
@@ -79,16 +93,22 @@ Inputs a new user's data from a form submit event and triggers a pass creation.
 
 <a name="createPass_"></a>
 
-## createPass\_() ⇒ <code>string</code>
-Creates a PassNinja pass from the selected row.
+## createPass\_() ⇒ <code>string</code> \| <code>ServiceError</code>
+Menu command to create a PassNinja pass from the selected row.
 
 **Kind**: global function  
-**Returns**: <code>string</code> - The response from the PassNinja API.  
+**Returns**: <code>string</code> - The response from the PassNinja API.<code>ServiceError</code> - If the response from PassNinjaService is non 2xx.  
+<a name="sendText_"></a>
+
+## sendText\_() ⇒ <code>ServiceError</code> \| <code>Error</code>
+Sends a text to the current row using the TwilioService and stored Script Properties. NOTE: only works if the header 'phoneNumber' is present
+
+**Kind**: global function  
+**Returns**: <code>ServiceError</code> - If the response from TwilioService is non 2xx.<code>Error</code> - If an unexpected error occurred running TwilioService.  
 <a name="showEvents_"></a>
 
 ## showEvents\_()
-Pops up a modal with the pass events of the current highlighted row
-related to the pass via serial number
+Menu command to pop up a modal with the pass events of the current highlighted row related to the pass via serial number NOT IMPLEMENTED YET
 
 **Kind**: global function  
 <a name="initializeSheet"></a>
@@ -107,7 +127,7 @@ Creates a default PassNinja formatted Google sheet on the given spreadsheet
 <a name="buildConfigSheet"></a>
 
 ## buildConfigSheet()
-Builds initial contacts sheet
+Builds initial config sheet
 
 **Kind**: global function  
 <a name="buildEventsSheet"></a>
@@ -124,10 +144,11 @@ Builds a events sheet based on the user config sheet
 
 <a name="buildContactsSheet"></a>
 
-## buildContactsSheet(ss, fieldsNames)
+## buildContactsSheet(ss, fieldsNames) ⇒ <code>Sheet</code>
 Builds a contacts sheet based on the user config sheet
 
 **Kind**: global function  
+**Returns**: <code>Sheet</code> - The resulting Contacts sheet that was created.  
 
 | Param | Type | Description |
 | --- | --- | --- |

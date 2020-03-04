@@ -1,0 +1,9 @@
+## file extensions
+*.*
+!*.css
+!*.gs
+!*.js
+!*.yml
+*.json
+*.md
+*.mdx
