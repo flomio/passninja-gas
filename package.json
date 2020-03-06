@@ -20,7 +20,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn build:docs || yarn lint:fix"
+      "pre-commit": "yarn build:docs || yarn lint:fix || git add ."
     }
   },
   "repository": {

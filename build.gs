@@ -1,4 +1,4 @@
-var FORM_LOOKUP = {
+const FORM_LOOKUP = {
   checkbox: 'addCheckboxItem',
   date: 'addDateItem',
   datetime: 'addDateTimeItem',
@@ -15,8 +15,8 @@ var FORM_LOOKUP = {
  * @returns {Sheet} The resulting Google sheet
  */
 function initializeSheet(name, ss) {
-    var sheet = ss.getSheetByName(name) || ss.insertSheet(name);
-    var allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
+    const sheet = ss.getSheetByName(name) || ss.insertSheet(name);
+    const allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
     allCells.setBackground(COLORS.GENERIC);
     allCells.setFontColor(COLORS.TEXT);
     allCells.setFontFamily("Montserrat");
@@ -28,12 +28,9 @@ function initializeSheet(name, ss) {
 /** Builds initial config sheet
  */
 function buildConfigSheet(ss, force = false) {
-    var sheet = initializeSheet(ENUMS.CONFIG, ss)
-
-
-    
-    var headerNames = ["Key              ", "Value             ", null, "Name                  ", "In Template?", "Type      ", "Form Options (comma separated)"]
-    var headerRange = sheet.getRange(6, 1, 1, headerNames.length)
+    const sheet = initializeSheet(ENUMS.CONFIG, ss)
+    const headerNames = ["Key              ", "Value             ", null, "Name                  ", "In Template?", "Type      ", "Form Options (comma separated)"]
+    const headerRange = sheet.getRange(6, 1, 1, headerNames.length)
 
     headerRange.setValues([headerNames])
     headerRange.setBackground(COLORS.FIELD_PASSNINJA)
@@ -51,27 +48,27 @@ function buildConfigSheet(ss, force = false) {
     ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(7, 1, sheet.getMaxRows(), 2))
     ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(7, 4, sheet.getMaxRows(), 4))
 
-    var validationInPass = SpreadsheetApp.newDataValidation()
+    const validationInPass = SpreadsheetApp.newDataValidation()
         .requireValueInList(['N', 'Y'], true)
         .setAllowInvalid(false)
         .build()
 
-    var validationFormType = SpreadsheetApp.newDataValidation()
+    const validationFormType = SpreadsheetApp.newDataValidation()
         .requireValueInList(['text', 'date', 'datetime', 'time', 'duration'], true)
         .setAllowInvalid(false)
         .build()
 
-    var fieldInPassRange = sheet.getRange(7, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows(), 1)
+    const fieldInPassRange = sheet.getRange(7, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows(), 1)
     fieldInPassRange.setDataValidation(validationInPass)
     fieldInPassRange.setHorizontalAlignment('center').setValue('N')
 
-    var formTypeRange = sheet.getRange(7, headerNames.indexOf('Type      ') + 1, sheet.getMaxRows(), 1)
+    const formTypeRange = sheet.getRange(7, headerNames.indexOf('Type      ') + 1, sheet.getMaxRows(), 1)
     formTypeRange.setDataValidation(validationFormType)
     formTypeRange.setHorizontalAlignment('center').setValue('text')
 
     deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet)
     autoResizeSheet(sheet)
-        var titleRange = sheet.getRange(1,1,4,4)
+    const titleRange = sheet.getRange(1,1,4,4)
     
     titleRange.merge()
     titleRange.setValue("01 CONFIG")
@@ -99,10 +96,10 @@ function buildConfigSheet(ss, force = false) {
  * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
  */
 function buildEventsSheet(ss) {
-  var sheet = initializeSheet(ENUMS.EVENTS, ss);
+  const sheet = initializeSheet(ENUMS.EVENTS, ss);
 
-    var fieldsNames = ["eventDate", "eventType", "passType", "serialNumber", "eventData"]
-    var fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
+    const fieldsNames = ["eventDate", "eventType", "passType", "serialNumber", "eventData"]
+    const fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
     fieldHeaders.setValues([fieldsNames])
     fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA)
     fieldHeaders.setFontWeight('bold')
@@ -120,16 +117,16 @@ function buildEventsSheet(ss) {
  * @returns {Sheet} The resulting Contacts sheet that was created.
  */
 function buildContactsSheet(ss, fieldsNames) {
-  var sheet = initializeSheet(ENUMS.CONTACTS, ss);
+  const sheet = initializeSheet(ENUMS.CONTACTS, ss);
 
-    var fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
+    const fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length)
     fieldHeaders.setValues([fieldsNames])
     fieldHeaders.setBackground(COLORS.FIELD_PASS)
     fieldHeaders.setFontWeight('bold')
     fieldHeaders.setFontColor(COLORS.TITLE_TEXT)
     
-    var passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL]
-    var passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length)
+    const passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL]
+    const passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length)
     passNinjaHeaders.setValues([passNinjaFields])
     passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA)
     passNinjaHeaders.setFontWeight('bold')
@@ -147,7 +144,7 @@ function buildContactsSheet(ss, fieldsNames) {
  * @param {string[]} fieldData The fields that the user has entered in the config
  */
 function buildContactsForm(ss, sheet, fieldData) {
-  var form;
+  let form;
   try {
     form = FormApp.openByUrl(ss.getFormUrl());
     clearFormDestinationSheet(form);
@@ -158,7 +155,7 @@ function buildContactsForm(ss, sheet, fieldData) {
     clearForm(form);
   }
 
-  var triggers = ScriptApp.getProjectTriggers();
+  const triggers = ScriptApp.getProjectTriggers();
   if (
     !triggers.filter(
       t => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
@@ -172,7 +169,7 @@ function buildContactsForm(ss, sheet, fieldData) {
   }
 
   for (field of fieldData) {
-    var [fieldName, includeInPass, fieldType, fieldOptions] = field;
+    let [fieldName, includeInPass, fieldType, fieldOptions] = field;
     if (!fieldType) fieldType = 'text';
     form[FORM_LOOKUP[fieldType]]()
       .setTitle(fieldName)

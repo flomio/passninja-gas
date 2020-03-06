@@ -1,11 +1,11 @@
-var print = Logger.log;
-var log = (eventType, msg, ...args) => print(eventType + ': ' + msg, ...args);
+const print = Logger.log;
+const log = (eventType, msg, ...args) => print(eventType + ': ' + msg, ...args);
 log.SUCCESS = 'SUCCESS';
 log.WARNING = 'WARNING';
 log.ERROR = 'ERROR';
 log.STATUS = 'STATUS';
 
-var COLORS = {
+const COLORS = {
     FIELD_PASSNINJA: '#325D79',
     FIELD_CONSTANT: '#F9AA33',
     FIELD_CONTACT: '#F9AA33',
@@ -20,7 +20,7 @@ var COLORS = {
     BORDER: '#D9D9D9' 
 }
 
-var STATUS_LOOKUP = {
+const STATUS_LOOKUP = {
   success: {
     border: '#008000',
     color: '#000000',
@@ -40,7 +40,7 @@ var STATUS_LOOKUP = {
   }
 };
 
-var ENUMS = {
+const ENUMS = {
   CONFIG: 'Config',
   CONTACTS: 'Contacts',
   EVENTS: 'Events',

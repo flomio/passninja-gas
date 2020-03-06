@@ -5,14 +5,13 @@
  * @returns {Spreadsheet} The spreadsheet that is linked to the GAS Script Project.
  */
 function getLinkedSpreadsheet() {
-  var fnRunner = [
+  const fnRunner = [
     [SpreadsheetApp.getActive, []],
     [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
     [SpreadsheetApp.openByUrl, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, false)]]
   ];
-  var ss = null;
+  let ss = null;
   for ([fn, args] of fnRunner) {
-    log(log.STATUS, `Running function ${fn.name} with args ${args}`);
     ss = fn(...args);
     if (ss) {
       log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`);
@@ -33,7 +32,7 @@ function getLinkedSpreadsheet() {
  * @returns {null} If no env variable is found under that name
  */
 function getEnvVar(name, throwError = true) {
-  var envVar = PropertiesService.getScriptProperties().getProperty(name);
+  const envVar = PropertiesService.getScriptProperties().getProperty(name);
   if (throwError && !envVar) throw new ScriptError('UTILS', `Script variable ${name} does not exist.`);
   return envVar;
 }
@@ -53,19 +52,19 @@ function setEnvVar(name, value) {
  * @param {Spreadsheet} ss Spreadsheet to query for Config NamedRange
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(ss, rowRange, fieldsData) {
+function getRowPassPayload(ss, rowRange) {
   rowRange.setNumberFormat('@');
-  var fieldsData = getConfigFields();
-  var { passType, ...passFieldConstants } = getConfigConstants();
-  var rowValues = rowRange.getValues()[0];
+  const fieldsData = getConfigFields();
+  const { passType, ...passFieldConstants } = getConfigConstants();
+  const rowValues = rowRange.getValues()[0];
   log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`);
-  var postData = {
+  const postData = {
     passType,
     pass: passFieldConstants
   };
 
   for (i = 0; i < rowValues.length; i++) {
-    var [fieldName, fieldIncluded] = fieldsData[i];
+    const [fieldName, fieldIncluded] = fieldsData[i];
     if (fieldIncluded === 'Y') {
       log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`);
       postData.pass[fieldName] = rowValues[i];
@@ -77,7 +76,7 @@ function getRowPassPayload(ss, rowRange, fieldsData) {
 /** Returns an object with key:value pairs from the Config sheet
  */
 function getConfigConstants() {
-  var constants = Object.fromEntries(
+  const constants = Object.fromEntries(
     getLinkedSpreadsheet()
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
@@ -90,7 +89,7 @@ function getConfigConstants() {
 /** Returns a list of config field entries
  */
 function getConfigFields() {
-  var fieldsData = getLinkedSpreadsheet()
+  const fieldsData = getLinkedSpreadsheet()
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter(row => !!row[0]);
@@ -103,7 +102,7 @@ function getConfigFields() {
  * @param {Sheet} sheet The Google sheet to sort
  */
 function sortSheet(sheet) {
-  var range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn());
+  const range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn());
   range.sort({ column: 1, ascending: false });
 }
 
@@ -113,8 +112,8 @@ function sortSheet(sheet) {
  * @returns {Sheet} Google Sheet object
  */
 function getSheet(sheetName) {
-  var spreadsheet = getLinkedSpreadsheet();
-  var sheet = spreadsheet.getSheetByName(sheetName);
+  const spreadsheet = getLinkedSpreadsheet();
+  const sheet = spreadsheet.getSheetByName(sheetName);
   if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
   return sheet;
 }
@@ -126,8 +125,8 @@ function getSheet(sheetName) {
  * @returns {boolean} If the selected row is invalid
  */
 function getValidSheetSelectedRow(sheet) {
-  var selectedRow = sheet.getActiveCell().getRow();
-  var rowNumber = Number(selectedRow);
+  const selectedRow = sheet.getActiveCell().getRow();
+  const rowNumber = Number(selectedRow);
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
     throw new ScriptError('UTILS', `Row ${selectedRow} is not valid.`);
     return false;
@@ -164,7 +163,7 @@ function deleteUnusedColumns(min, max, sheet) {
  */
 function highlightCells(cells, status, value) {
   if (value) cells.setValue(value);
-  var statusColors = STATUS_LOOKUP[status];
+  const statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
     cells.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
   if (statusColors.background) cells.setBackground(statusColors.background);
@@ -178,8 +177,8 @@ function highlightCells(cells, status, value) {
  * @param {string[]} data Array of string data representing a row
  */
 function rowToJson(sheet, data) {
-  var obj = {};
-  var keys = getHeaders(sheet);
+  const obj = {};
+  const keys = getHeaders(sheet);
 
   for (var i = 0; i < data.length; i++) {
     obj[keys[i]] = data[i];
@@ -195,10 +194,10 @@ function rowToJson(sheet, data) {
  * @param {int} [index] Optional index to specify the insertion point
  */
 function insertRow(sheet, rowData, index, cb) {
-  var lock = LockService.getScriptLock();
+  const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    var index = index || 1;
+    const index = index || 1;
     sheet
       .insertRowBefore(index)
       .getRange(index, 1, 1, rowData.length)
@@ -218,7 +217,7 @@ function insertRow(sheet, rowData, index, cb) {
  * @returns {int} Query match index or -1 if not found
  */
 function findMatchIndexAtColumn(arr, column, query) {
-  var matchIndex = -1;
+  let matchIndex = -1;
   for (i = 1; i < arr.length; ++i) {
     if (arr[i][column] == query) {
       matchIndex = i;
@@ -235,7 +234,7 @@ function findMatchIndexAtColumn(arr, column, query) {
  * @returns {int} The first found column index, -1 if not found
  */
 function getColumnIndexFromString(sheet, searchTerm) {
-  var headers = getHeaders(sheet);
+  const headers = getHeaders(sheet);
   for (var i = 0; i < headers.length; i++) {
     if (headers[i] == searchTerm) return i + 1;
   }
@@ -269,7 +268,7 @@ function getNamedRange(name, ss) {
  * @param {Form} form The Google Form to clear
  */
 function clearForm(form) {
-  var items = form.getItems();
+  const items = form.getItems();
   while (items.length > 0) {
     form.deleteItem(items.pop());
   }
@@ -302,7 +301,7 @@ function getFormDestinationSheet(form) {
  * @returns {null} If no matching sheet is linked.
  */
 function clearFormDestinationSheet(form) {
-  var destinationSheet = getFormDestinationSheet(form);
+  const destinationSheet = getFormDestinationSheet(form);
   form.removeDestination();
   form.deleteAllResponses();
   destinationSheet.setName(`${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`);
@@ -314,9 +313,9 @@ function clearFormDestinationSheet(form) {
  * @returns {string} - The file ID or undefined if not found.
  */
 function getFileId() {
-  var files = DriveApp.getFiles();
+  const files = DriveApp.getFiles();
   while (files.hasNext()) {
-    var file = files.next();
+    const file = files.next();
     if (file.getName() == DriveApp.getFileById(current.getId())) {
       return file.getId();
     }
@@ -330,7 +329,7 @@ function getFileId() {
  * @param {int} timeout The timeout of the toast
  */
 function toast(msg, title, timeout) {
-  var currentSpreadsheet = getLinkedSpreadsheet();
+  const currentSpreadsheet = getLinkedSpreadsheet();
   currentSpreadsheet.toast(msg, title, timeout);
 }
 
@@ -343,7 +342,7 @@ function toast(msg, title, timeout) {
  * @param {int} timeout The timeout (in ms) for the flashes
  */
 function flashRange(range, flashColor, numFlashes, timeout) {
-  var originalBgColor = range.getBackground();
+  const originalBgColor = range.getBackground();
   for (var i = 0; i < numFlashes; i++) {
     range.setBackground(flashColor);
     SpreadsheetApp.flush();
@@ -359,8 +358,8 @@ function flashRange(range, flashColor, numFlashes, timeout) {
  * @returns {object} Object with the keys: name, lastName and secondLastName
  */
 function parseName(input) {
-  var fullName = input || '';
-  var result = {};
+  const fullName = input || '';
+  const result = {};
 
   if (fullName.length > 0) {
     var nameTokens = fullName.match(/[A-ZÁ-ÚÑÜ][a-zá-úñü]+|([aeodlsz]+\s+)+[A-ZÁ-ÚÑÜ][a-zá-úñü]+/g) || [];
@@ -410,13 +409,12 @@ function catchError(fn, errorMsg) {
  *
  */
 function MD5(input, isShortMode) {
-  var txtHash = '';
-  var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, input, Utilities.Charset.UTF_8);
-  var isShortMode = isShortMode == true ? true : false;
+  let txtHash = '';
+  const rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, input, Utilities.Charset.UTF_8);
 
   if (!isShortMode) {
     for (i = 0; i < rawHash.length; i++) {
-      var hashVal = rawHash[i];
+      let hashVal = rawHash[i];
       if (hashVal < 0) hashVal += 256;
       if (hashVal.toString(16).length == 1) txtHash += '0';
       txtHash += hashVal.toString(16);

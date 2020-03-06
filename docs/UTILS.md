@@ -95,7 +95,9 @@ Author:
 <a name="getLinkedSpreadsheet"></a>
 
 ## getLinkedSpreadsheet() ⇒ <code>Spreadsheet</code>
-Attempts to return the spreadsheet connected to the GAS Script Project. Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet If multiple sheets have been programatically created it will only target the most recent.
+Attempts to return the spreadsheet connected to the GAS Script Project.
+ Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
+ If multiple sheets have been programatically created it will only target the most recent.
 
 **Kind**: global function  
 **Returns**: <code>Spreadsheet</code> - The spreadsheet that is linked to the GAS Script Project.  
@@ -235,7 +237,8 @@ Creates an object from a sheet's first row headers as keys with the values from 
 <a name="insertRow"></a>
 
 ## insertRow(sheet, rowData, [index])
-Inserts a row Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
+Inserts a row
+ Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
 
 **Kind**: global function  
 
@@ -356,7 +359,8 @@ Toasts the user at the current spreadsheet
 <a name="flashRange"></a>
 
 ## flashRange(range, flashColor, numFlashes, timeout)
-Flashes a row of a sheet Note: the range will end overridden with the top left's background color.
+Flashes a row of a sheet
+ Note: the range will end overridden with the top left's background color.
 
 **Kind**: global function  
 
@@ -394,7 +398,11 @@ Runs the function and catches then throws any error and logs it.
 <a name="MD5"></a>
 
 ## MD5(input, isShortMode) ⇒ <code>string</code>
-You can get a MD5 hash value and even a 4digit short Hash value of a string.Latest version:  https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763dAuthor:  KEINOS @ https://github.com/keinos
+You can get a MD5 hash value and even a 4digit short Hash value of a string.
+Latest version:
+  https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d
+Author:
+  KEINOS @ https://github.com/keinos
 
 **Kind**: global function  
 **Returns**: <code>string</code> - The hashed input  
