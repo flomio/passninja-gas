@@ -7,8 +7,8 @@
         "doc": "docs"
     },
     "scripts": {
-        "js2gs": "for f in src/*.js; do mv -- \"$f\" \"src/${f%.js}.gs\"; done",
-        "gs2js": "for f in src/*.gs; do mv -- \"$f\" \"src/${f%.gs}.js\"; done",
+        "js2gs": "for f in src/*.js; do mv -- \"$f\" \"${f%.js}.gs\"; done",
+        "gs2js": "for f in src/*.gs; do mv -- \"$f\" \"${f%.gs}.js\"; done",
         "lint:fix": "yarn js2gs || yarn gs2js && yarn lint:fix:prettier && yarn js2gs || yarn js2gs",
         "lint:fix:prettier": "prettier --write \"**/*.*\"",
         "lint": "yarn js2gs || yarn gs2js && yarn lint:prettier && yarn js2gs || yarn js2gs",

@@ -1,6 +1,16 @@
 ## Functions
 
 <dl>
+<dt><a href="#findMatchIndexAtColumn">findMatchIndexAtColumn(arr, column, query)</a> ⇒ <code>int</code></dt>
+<dd><p>Returns the index of the matching query in the 2D array at column index.</p>
+</dd>
+<dt><a href="#MD5">MD5(input, isShortMode)</a> ⇒ <code>string</code></dt>
+<dd><p>You can get a MD5 hash value and even a 4digit short Hash value of a string.
+Latest version:
+  <a href="https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d">https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d</a>
+Author:
+  KEINOS @ <a href="https://github.com/keinos">https://github.com/keinos</a></p>
+</dd>
 <dt><a href="#getLinkedSpreadsheet">getLinkedSpreadsheet()</a> ⇒ <code>Spreadsheet</code></dt>
 <dd><p>Attempts to return the spreadsheet connected to the GAS Script Project.
  Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
@@ -46,9 +56,6 @@
 <dd><p>Inserts a row
  Ref: <a href="https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top">https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top</a></p>
 </dd>
-<dt><a href="#findMatchIndexAtColumn">findMatchIndexAtColumn(arr, column, query)</a> ⇒ <code>int</code></dt>
-<dd><p>Returns the index of the matching query in the 2D array at column index.</p>
-</dd>
 <dt><a href="#getColumnIndexFromString">getColumnIndexFromString(sheet, searchTerm)</a> ⇒ <code>int</code></dt>
 <dd><p>Returns first found matching column (searches first row of the sheet)</p>
 </dd>
@@ -77,27 +84,47 @@
 <dd><p>Flashes a row of a sheet
  Note: the range will end overridden with the top left&#39;s background color.</p>
 </dd>
-<dt><a href="#parseName">parseName(input)</a> ⇒ <code>object</code></dt>
-<dd><p>Takes in a name and parses to an object with a name, lastName and secondLast Name</p>
-</dd>
 <dt><a href="#catchError">catchError(error, msg)</a></dt>
 <dd><p>Runs the function and catches then throws any error and logs it.</p>
 </dd>
-<dt><a href="#MD5">MD5(input, isShortMode)</a> ⇒ <code>string</code></dt>
-<dd><p>You can get a MD5 hash value and even a 4digit short Hash value of a string.
-Latest version:
-  <a href="https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d">https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d</a>
-Author:
-  KEINOS @ <a href="https://github.com/keinos">https://github.com/keinos</a></p>
-</dd>
 </dl>
+
+<a name="findMatchIndexAtColumn"></a>
+
+## findMatchIndexAtColumn(arr, column, query) ⇒ <code>int</code>
+Returns the index of the matching query in the 2D array at column index.
+
+**Kind**: global function  
+**Returns**: <code>int</code> - Query match index or -1 if not found  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| arr | <code>array</code> | 2D Array to query |
+| column | <code>int</code> | Index at second level to query |
+| query | <code>string</code> | Query term |
+
+<a name="MD5"></a>
+
+## MD5(input, isShortMode) ⇒ <code>string</code>
+You can get a MD5 hash value and even a 4digit short Hash value of a string.
+Latest version:
+  https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d
+Author:
+  KEINOS @ https://github.com/keinos
+
+**Kind**: global function  
+**Returns**: <code>string</code> - The hashed input  
+**Customfunction**:   
+
+| Param | Type | Description |
+| --- | --- | --- |
+| input | <code>string</code> | The value to hash. |
+| isShortMode | <code>boolean</code> | Set true for 4 digit shortend hash, else returns usual MD5 hash. |
 
 <a name="getLinkedSpreadsheet"></a>
 
 ## getLinkedSpreadsheet() ⇒ <code>Spreadsheet</code>
-Attempts to return the spreadsheet connected to the GAS Script Project.
- Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
- If multiple sheets have been programatically created it will only target the most recent.
+Attempts to return the spreadsheet connected to the GAS Script Project. Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet If multiple sheets have been programatically created it will only target the most recent.
 
 **Kind**: global function  
 **Returns**: <code>Spreadsheet</code> - The spreadsheet that is linked to the GAS Script Project.  
@@ -237,8 +264,7 @@ Creates an object from a sheet's first row headers as keys with the values from 
 <a name="insertRow"></a>
 
 ## insertRow(sheet, rowData, [index])
-Inserts a row
- Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
+Inserts a row Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
 
 **Kind**: global function  
 
@@ -247,20 +273,6 @@ Inserts a row
 | sheet | <code>Sheet</code> | Google Sheet to insert row data into |
 | rowData | <code>Array.&lt;string&gt;</code> | Array of string data to insert in the rows |
 | [index] | <code>int</code> | Optional index to specify the insertion point |
-
-<a name="findMatchIndexAtColumn"></a>
-
-## findMatchIndexAtColumn(arr, column, query) ⇒ <code>int</code>
-Returns the index of the matching query in the 2D array at column index.
-
-**Kind**: global function  
-**Returns**: <code>int</code> - Query match index or -1 if not found  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| arr | <code>array</code> | 2D Array to query |
-| column | <code>int</code> | Index at second level to query |
-| query | <code>string</code> | Query term |
 
 <a name="getColumnIndexFromString"></a>
 
@@ -359,8 +371,7 @@ Toasts the user at the current spreadsheet
 <a name="flashRange"></a>
 
 ## flashRange(range, flashColor, numFlashes, timeout)
-Flashes a row of a sheet
- Note: the range will end overridden with the top left's background color.
+Flashes a row of a sheet Note: the range will end overridden with the top left's background color.
 
 **Kind**: global function  
 
@@ -370,18 +381,6 @@ Flashes a row of a sheet
 | flashColor | <code>string</code> | Valid Google SpreadSheet color to flash |
 | numFlashes | <code>int</code> | Number of times to flash the range |
 | timeout | <code>int</code> | The timeout (in ms) for the flashes |
-
-<a name="parseName"></a>
-
-## parseName(input) ⇒ <code>object</code>
-Takes in a name and parses to an object with a name, lastName and secondLast Name
-
-**Kind**: global function  
-**Returns**: <code>object</code> - Object with the keys: name, lastName and secondLastName  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| input | <code>string</code> | Raw name |
 
 <a name="catchError"></a>
 
@@ -394,22 +393,4 @@ Runs the function and catches then throws any error and logs it.
 | --- | --- | --- |
 | error | <code>string</code> | Error to log |
 | msg | <code>string</code> | The extra message to add |
-
-<a name="MD5"></a>
-
-## MD5(input, isShortMode) ⇒ <code>string</code>
-You can get a MD5 hash value and even a 4digit short Hash value of a string.
-Latest version:
-  https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d
-Author:
-  KEINOS @ https://github.com/keinos
-
-**Kind**: global function  
-**Returns**: <code>string</code> - The hashed input  
-**Customfunction**:   
-
-| Param | Type | Description |
-| --- | --- | --- |
-| input | <code>string</code> | The value to hash. |
-| isShortMode | <code>boolean</code> | Set true for 4 digit shortend hash, else returns usual MD5 hash. |
 

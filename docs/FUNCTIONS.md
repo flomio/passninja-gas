@@ -26,11 +26,6 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dd><p>Sends a text to the current row using the TwilioService and stored Script Properties.
  NOTE: only works if the header &#39;phoneNumber&#39; is present</p>
 </dd>
-<dt><a href="#showEvents_">showEvents_()</a></dt>
-<dd><p>Menu command to pop up a modal with the pass events
- of the current highlighted row related to the pass via serial number
- NOT IMPLEMENTED YET</p>
-</dd>
 <dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
 </dd>
@@ -109,14 +104,6 @@ Sends a text to the current row using the TwilioService and stored Script Proper
 
 **Kind**: global function  
 **Returns**: <code>ServiceError</code> - If the response from TwilioService is non 2xx.<code>CredentialsError</code> - If the credentials from TwilioService are not set up.<code>Error</code> - If an unexpected error occurred running TwilioService.  
-<a name="showEvents_"></a>
-
-## showEvents\_()
-Menu command to pop up a modal with the pass events
- of the current highlighted row related to the pass via serial number
- NOT IMPLEMENTED YET
-
-**Kind**: global function  
 <a name="initializeSheet"></a>
 
 ## initializeSheet(name, ss) ⇒ <code>Sheet</code>
