@@ -18,10 +18,18 @@ var sendRequest = (url, options = {}, serviceName) => {
 
 class PassNinjaService {
   constructor() {
-    this.baseUrl = 'https://api.passninja.com/api-key';
-    this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
-    this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
     this.serviceName = 'PassNinjaAPI';
+    try {
+      this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
+      this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
+    } catch (err) {
+      if (err instanceof ScriptError)
+        throw new CredentialsError(
+          this.serviceName,
+          `${this.serviceName}: PassNinja API credentials have not been set up.`
+        );
+    }
+    this.baseUrl = 'https://api.passninja.com/api-key';
     this.passesPostRoute = `${this.baseUrl}/passes/`;
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
   }
@@ -63,8 +71,8 @@ class TwilioService {
   constructor() {
     this.serviceName = 'TwilioAPI';
     this.baseUrl = 'https://api.twilio.com/2010-04-01';
-    this.postRoute = `${this.baseUrl}/Accounts/${this.accountSid}/Messages.json`;
-    this.phoneNumberRegex = /\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*/gm;
+    this.phoneNumberRegex = /\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*/m;
+    this.formattedPhoneNumberRegex = /^\+[1-9]\d{1,14}$/;
     try {
       this.accountSid = getEnvVar(ENUMS.TWILIO_SID);
       this.authToken = getEnvVar(ENUMS.TWILIO_AUTH);
@@ -76,6 +84,7 @@ class TwilioService {
           `${this.serviceName}: Twilio API credentials have not been set up.`
         );
     }
+    this.postRoute = `${this.baseUrl}/Accounts/${this.accountSid}/Messages.json`;
   }
 
   /* Formats number to rough E164 standard:
@@ -85,29 +94,18 @@ class TwilioService {
    * @returns {null} If phone number is not valid.
    */
   formatE164PhoneNumber(rawPhoneNumber) {
-    if (this.isValidPhoneNumber(rawPhoneNumber)) return rawPhoneNumber;
-    var formattedPhoneNumber =
-      '+' +
-      rawPhoneNumber
-        .split('')
-        .filter(c => c.match(/[0-9x]/g))
-        .join('');
-    return isValidPhoneNumber(formattedPhoneNumber) ? formattedPhoneNumber : null;
-  }
-
-  /* Validates number to rough E164 standard:
-   * https://www.twilio.com/docs/glossary/what-e164
-   * @params {string} formattedPhoneNumber The raw phone number string input
-   * @returns {boolean} Whether or not the phone number in E164 format
-   */
-  isValidPhoneNumber(formattedPhoneNumber) {
-    return !!formattedPhoneNumber.match(/^\+[1-9]\d{1,14}$/g);
+    if (this.formattedPhoneNumberRegex.test(rawPhoneNumber)) return rawPhoneNumber;
+    const formattedPhoneNumber = `+${rawPhoneNumber}`
+      .split('')
+      .filter(c => c.match(/[0-9x]/g))
+      .join('');
+    return this.formattedPhoneNumberRegex.test(formattedPhoneNumber) ? formattedPhoneNumber : null;
   }
 
   sendText(to, body) {
     if (body.length > 160)
       throw new ServiceError(this.serviceName, `${this.serviceName}: The text should be limited to 160 characters`);
-    var options = {
+    const options = {
       method: 'post',
       payload: {
         To: to,

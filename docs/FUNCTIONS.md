@@ -22,14 +22,9 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code> | <code>ServiceError</code></dt>
 <dd><p>Menu command to create a PassNinja pass from the selected row.</p>
 </dd>
-<dt><a href="#sendText_">sendText_()</a> ⇒ <code>ServiceError</code> | <code>Error</code></dt>
+<dt><a href="#sendText_">sendText_()</a> ⇒ <code>ServiceError</code> | <code>CredentialsError</code> | <code>Error</code></dt>
 <dd><p>Sends a text to the current row using the TwilioService and stored Script Properties.
  NOTE: only works if the header &#39;phoneNumber&#39; is present</p>
-</dd>
-<dt><a href="#showEvents_">showEvents_()</a></dt>
-<dd><p>Menu command to pop up a modal with the pass events
- of the current highlighted row related to the pass via serial number
- NOT IMPLEMENTED YET</p>
 </dd>
 <dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
@@ -51,7 +46,9 @@ sessions they would like to attend, grouped by date and start time.</p>
 <a name="createSpreadsheet"></a>
 
 ## createSpreadsheet()
-~*--*~ RUN ME FIRST ~*--*~ Creates the necessary demo spreadsheet in the user's spreadsheets. Spreadsheet is linked via a trigger to the script.
+~*--*~ RUN ME FIRST ~*--*~
+ Creates the necessary demo spreadsheet in the user's spreadsheets.
+ Spreadsheet is linked via a trigger to the script.
 
 **Kind**: global function  
 <a name="onOpen"></a>
@@ -70,7 +67,8 @@ Menu command to stores the Twilio auth details into the Script Properties perman
 <a name="updateFromConfig_"></a>
 
 ## updateFromConfig\_(ss, values)
-Creates a Google Form that allows respondents to select which conferencesessions they would like to attend, grouped by date and start time.
+Creates a Google Form that allows respondents to select which conference
+sessions they would like to attend, grouped by date and start time.
 
 **Kind**: global function  
 
@@ -100,17 +98,12 @@ Menu command to create a PassNinja pass from the selected row.
 **Returns**: <code>string</code> - The response from the PassNinja API.<code>ServiceError</code> - If the response from PassNinjaService is non 2xx.  
 <a name="sendText_"></a>
 
-## sendText\_() ⇒ <code>ServiceError</code> \| <code>Error</code>
-Sends a text to the current row using the TwilioService and stored Script Properties. NOTE: only works if the header 'phoneNumber' is present
+## sendText\_() ⇒ <code>ServiceError</code> \| <code>CredentialsError</code> \| <code>Error</code>
+Sends a text to the current row using the TwilioService and stored Script Properties.
+ NOTE: only works if the header 'phoneNumber' is present
 
 **Kind**: global function  
-**Returns**: <code>ServiceError</code> - If the response from TwilioService is non 2xx.<code>Error</code> - If an unexpected error occurred running TwilioService.  
-<a name="showEvents_"></a>
-
-## showEvents\_()
-Menu command to pop up a modal with the pass events of the current highlighted row related to the pass via serial number NOT IMPLEMENTED YET
-
-**Kind**: global function  
+**Returns**: <code>ServiceError</code> - If the response from TwilioService is non 2xx.<code>CredentialsError</code> - If the credentials from TwilioService are not set up.<code>Error</code> - If an unexpected error occurred running TwilioService.  
 <a name="initializeSheet"></a>
 
 ## initializeSheet(name, ss) ⇒ <code>Sheet</code>

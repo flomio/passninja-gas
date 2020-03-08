@@ -3,7 +3,7 @@
  * @returns {object} Standard response with a JavaScript text body
  */
 function doPost(e) {
-  var response = addEvent(getSheet(ENUMS.EVENTS), e.postData.contents);
+  const response = addEvent(getSheet(ENUMS.EVENTS), e.postData.contents);
   return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -15,7 +15,7 @@ function doPost(e) {
 function addEvent(targetSheet, eventJson) {
   try {
     eventJson = JSON.parse(eventJson);
-    var event = [
+    const event = [
       eventJson.date,
       eventJson.event.type,
       eventJson.event.passType,
