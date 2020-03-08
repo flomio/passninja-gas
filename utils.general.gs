@@ -16,6 +16,15 @@ function findMatchIndexAtColumn(arr, column, query) {
   return matchIndex;
 }
 
+/** Returns whether or not any non zero length string values are present in the nested arrays
+ *
+ * @param {array} arr Column[row] nested 2D array
+ * @returns {boolean} Whether or not any values are present in the collection.
+ */
+function rangeValuesExist(rangeValues){
+  return rangeValues.reduce((acc, f) => acc || !!f.filter(g=>g.length).length, false)
+}
+
 /** You can get a MD5 hash value and even a 4digit short Hash value of a string.
  * Latest version:
  *   https://gist.github.com/KEINOS/78cc23f37e55e848905fc4224483763d

@@ -21,7 +21,7 @@ function buildConfigSheet(ss, force = false) {
   const sheet = initializeSheet(ENUMS.CONFIG, ss);
   const headerNames = [
     'Key              ',
-    'Value             ',
+    'Value                    ',
     null,
     'Name                  ',
     'In Template?',
@@ -34,7 +34,6 @@ function buildConfigSheet(ss, force = false) {
   headerRange.setBackground(COLORS.FIELD_PASSNINJA);
   headerRange.setFontWeight('bold');
 
-  //sheet.getRange(1, 3, sheet.getMaxRows(), 1).setBackground(COLORS.GENERIC)
   sheet.getRange(1, 1, 5, 7).setBackground(COLORS.FIELD_PASSNINJA);
   sheet
     .getRange(6, 3, sheet.getMaxRows(), 1)
@@ -132,6 +131,7 @@ function buildContactsSheet(ss, fieldsNames) {
   passNinjaHeaders.setValues([passNinjaFields]);
   passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA);
   passNinjaHeaders.setFontWeight('bold');
+  passNinjaHeaders.setFontColor(COLORS.TITLE_TEXT);
 
   deleteUnusedColumns(passNinjaFields.length + fieldsNames.length + 1, sheet.getMaxColumns(), sheet);
 

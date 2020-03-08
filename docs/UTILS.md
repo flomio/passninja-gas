@@ -4,6 +4,9 @@
 <dt><a href="#findMatchIndexAtColumn">findMatchIndexAtColumn(arr, column, query)</a> ⇒ <code>int</code></dt>
 <dd><p>Returns the index of the matching query in the 2D array at column index.</p>
 </dd>
+<dt><a href="#rangeValuesExist">rangeValuesExist(arr)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Returns whether or not any non zero length string values are present in the nested arrays</p>
+</dd>
 <dt><a href="#MD5">MD5(input, isShortMode)</a> ⇒ <code>string</code></dt>
 <dd><p>You can get a MD5 hash value and even a 4digit short Hash value of a string.
 Latest version:
@@ -102,6 +105,18 @@ Returns the index of the matching query in the 2D array at column index.
 | arr | <code>array</code> | 2D Array to query |
 | column | <code>int</code> | Index at second level to query |
 | query | <code>string</code> | Query term |
+
+<a name="rangeValuesExist"></a>
+
+## rangeValuesExist(arr) ⇒ <code>boolean</code>
+Returns whether or not any non zero length string values are present in the nested arrays
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - Whether or not any values are present in the collection.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| arr | <code>array</code> | Column[row] nested 2D array |
 
 <a name="MD5"></a>
 

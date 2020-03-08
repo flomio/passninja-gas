@@ -7,6 +7,7 @@ function createSpreadsheet() {
 
   Utilities.sleep(2000);
 
+  ScriptApp.getProjectTriggers().forEach(trigger=>ScriptApp.deleteTrigger(trigger))
   ScriptApp.newTrigger('onOpen')
     .forSpreadsheet(ss)
     .onOpen()
@@ -195,8 +196,9 @@ function createPass_() {
       ? new PassNinjaService().updatePass(payloadJSONString, serial)
       : new PassNinjaService().createPass(payloadJSONString);
   } catch (err) {
-    passNinjaContentRange.setValues(originalContent);
+    passNinjaContentRange.setValues(rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'],['PassNinja Credentials?'],['']]]);
     highlightCells(passNinjaContentRange, 'error');
+    autoResizeSheet(contactSheet);
     throw err;
   }
   log(log.SUCCESS, JSON.stringify(responseData));
