@@ -6,26 +6,32 @@
 
 # Contents
 
-- [`Installation`](#installation)
-- [`Development`](#development)
-- [`Required Setup`](#required-setup)
-- [`Sheet/Form Creation Verification`](#to-verify-sheet-and-form-creation)
-- [`Form Submission Verification`](#to-verify-form-submission)
-- [`POST/GET Verification`](#to-verify-post-and-get-requests)
-- [`Pass Creation Verification`](#to-verify-activating-pass-creation-from-the-spreadsheet)
-- [`Sheet/Form Rebuilding Verification`](#to-verify-rebuilding-from-config-in-an-existing-built-spreadsheet)
-- [`Documentation`](#documentation)
+- [Contents](#contents)
+- [INSTALLATION](#installation)
+- [CONTRIBUTING](#contributing)
+  - [REQUIRED SETUP](#required-setup)
+- [FUNCTIONALITY](#functionality)
+  - [To Verify Sheet and Form creation](#to-verify-sheet-and-form-creation)
+  - [To Verify Form Submission](#to-verify-form-submission)
+  - [To Verify POST and GET requests](#to-verify-post-and-get-requests)
+  - [To Verify Activating Pass Creation from the spreadsheet](#to-verify-activating-pass-creation-from-the-spreadsheet)
+  - [To Verify Rebuilding from Config in an existing built spreadsheet](#to-verify-rebuilding-from-config-in-an-existing-built-spreadsheet)
+- [Documentation](#documentation)
+  - [API Endpoints](#api-endpoints)
+  - [Functions](#functions)
+  - [Utilities](#utilities)
+      - [Generated with jsdoc2md](#generated-with-jsdoc2md)
 
 # INSTALLATION
 1.  Ask PassNinja to share this personal Google Apps Script (GAS) Project with you
 1.  Open the GAS Project and open the `core.gs` file then run the `createSpreadsheet` function from `Menu->Run->Run function->createSpreadsheet`
-1.  If this is your first time running it: it will ask for permission to run via an OAUTH popup which is required for functionality.
-1.  Check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet - <ISO DATE>"`
+1.  If this is your first time running it: it will ask for permission to run via a Google OAUTH popup which is required for functionality.
+1.  Check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet - <ISO DATE>"`.  After the script is finished it will also email you and pop up with the link upon completion.
 1.  Verify it worked when the `PassNinja` menu appears above after the entire sheet is finished loading!
 
 [`^ Back to Top`](#contents)
 
-# DEVELOPMENT
+# CONTRIBUTING
 ## REQUIRED SETUP
 Requires Chrome.
 1. Request access to the flomio/passninja-guestlist-gas Github repository from your passninja contact.
@@ -60,6 +66,7 @@ Requires Chrome.
 
 [`^ Back to Top`](#contents)
 
+# FUNCTIONALITY
 ## To Verify Sheet and Form creation
 1.  `Menu->PassNinja->Create Default Sheet(s)->Create Config Sheet`  This will build the Config sheet where you have to enter passType and at least one field to generate the rest of the sheets.  I used `gas.coupondemo` and fields `fullName`, `phoneNumber`, `email`, `discount` and toggled `fullName` and `discount` to Included in Pass? = "Y". 
 1.  `Menu->PassNinja->Create Default Sheet(s)->Create/Update Sheets From Config` This will build the Sheets: `Form Responses #`, `Events`, `Contacts` and the connected Form (`Menu -> Form -> Edit Form` can help you verify that the form is correct and matches the fields you entered in the `Config` sheet.)

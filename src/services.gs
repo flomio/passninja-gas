@@ -21,7 +21,7 @@ class PassNinjaService {
     this.serviceName = 'PassNinjaAPI';
     try {
       this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
-      this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);   
+      this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
     } catch (err) {
       if (err instanceof ScriptError)
         throw new CredentialsError(
@@ -72,7 +72,7 @@ class TwilioService {
     this.serviceName = 'TwilioAPI';
     this.baseUrl = 'https://api.twilio.com/2010-04-01';
     this.phoneNumberRegex = /\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*/m;
-    this.formattedPhoneNumberRegex = /^\+[1-9]\d{1,14}$/
+    this.formattedPhoneNumberRegex = /^\+[1-9]\d{1,14}$/;
     try {
       this.accountSid = getEnvVar(ENUMS.TWILIO_SID);
       this.authToken = getEnvVar(ENUMS.TWILIO_AUTH);
@@ -96,9 +96,9 @@ class TwilioService {
   formatE164PhoneNumber(rawPhoneNumber) {
     if (this.formattedPhoneNumberRegex.test(rawPhoneNumber)) return rawPhoneNumber;
     const formattedPhoneNumber = `+${rawPhoneNumber}`
-        .split('')
-        .filter(c => c.match(/[0-9x]/g))
-        .join('');
+      .split('')
+      .filter(c => c.match(/[0-9x]/g))
+      .join('');
     return this.formattedPhoneNumberRegex.test(formattedPhoneNumber) ? formattedPhoneNumber : null;
   }
 

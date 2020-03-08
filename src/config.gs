@@ -6,19 +6,19 @@ log.ERROR = 'ERROR';
 log.STATUS = 'STATUS';
 
 const COLORS = {
-    FIELD_PASSNINJA: '#325D79',
-    FIELD_CONSTANT: '#F9AA33',
-    FIELD_CONTACT: '#F9AA33',
-    FIELD_CONFIG: '#BCA136',
-    FIELD_PASS: '#829356',
-    GENERIC: '#cfe2f3',
-    TEXT: '#666666',
-    TITLE_TEXT: '#EFEFEF',
-    TEXT_ON: '#17262A',
-    SUCCESS: '#ADFF2F',
-    ERROR: '#FF4500',
-    BORDER: '#D9D9D9' 
-}
+  FIELD_PASSNINJA: '#325D79',
+  FIELD_CONSTANT: '#F9AA33',
+  FIELD_CONTACT: '#F9AA33',
+  FIELD_CONFIG: '#BCA136',
+  FIELD_PASS: '#829356',
+  GENERIC: '#cfe2f3',
+  TEXT: '#666666',
+  TITLE_TEXT: '#EFEFEF',
+  TEXT_ON: '#17262A',
+  SUCCESS: '#ADFF2F',
+  ERROR: '#FF4500',
+  BORDER: '#D9D9D9'
+};
 
 const STATUS_LOOKUP = {
   success: {
@@ -57,4 +57,14 @@ const ENUMS = {
   PASSNINJA_API_KEY: 'apiKey',
   CURRENT_SPREADSHEET_ID: 'current_spreadsheet_id',
   CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url'
+};
+
+const FORM_LOOKUP = {
+  checkbox: 'addCheckboxItem',
+  date: 'addDateItem',
+  datetime: 'addDateTimeItem',
+  time: 'addTimeItem',
+  duration: 'addDurationItem',
+  multiplechoice: 'addMultipleChoiceItem',
+  text: 'addTextItem'
 };

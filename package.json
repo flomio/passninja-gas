@@ -1,49 +1,58 @@
 {
-  "name": "passninja-guestlist-gas",
-  "version": "1.0.0",
-  "description": "A repository for the PassNinja Google Apps Script demo to demonstrate PassNinja API functionality.",
-  "main": "core.gs",
-  "directories": {
-    "doc": "docs"
-  },
-  "scripts": {
-    "js2gs": "for f in *.js; do mv -- \"$f\" \"${f%.js}.gs\"; done",
-    "gs2js": "for f in *.gs; do mv -- \"$f\" \"${f%.gs}.js\"; done",
-    "lint:fix": "yarn js2gs || yarn gs2js && yarn lint:fix:prettier && yarn js2gs || yarn js2gs",
-    "lint:fix:prettier": "prettier --write \"**/*.*\"",
-    "lint": "yarn js2gs || yarn gs2js && yarn lint:prettier && yarn js2gs || yarn js2gs",
-    "lint:prettier": "prettier --check \"**/*.*\"",
-    "build:docs:utils": "jsdoc2md --files util.js config.js > docs/UTILS.md",
-    "build:docs:api": "jsdoc2md --files handleGet.js handlePost.js > docs/API.md",
-    "build:docs:fns": "jsdoc2md --files core.js build.js services.js> docs/FUNCTIONS.md",
-    "build:docs": "yarn js2gs || yarn gs2js && yarn build:docs:utils && yarn build:docs:api && yarn build:docs:fns && yarn js2gs || yarn js2gs"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn build:docs || yarn lint:fix || git add ."
+    "name": "passninja-guestlist-gas",
+    "version": "1.0.0",
+    "description": "A repository for the PassNinja Google Apps Script demo to demonstrate PassNinja API functionality.",
+    "main": "core.gs",
+    "directories": {
+        "doc": "docs"
+    },
+    "scripts": {
+        "js2gs": "for f in src/*.js; do mv -- \"$f\" \"src/${f%.js}.gs\"; done",
+        "gs2js": "for f in src/*.gs; do mv -- \"$f\" \"src/${f%.gs}.js\"; done",
+        "lint:fix": "yarn js2gs || yarn gs2js && yarn lint:fix:prettier && yarn js2gs || yarn js2gs",
+        "lint:fix:prettier": "prettier --write \"**/*.*\"",
+        "lint": "yarn js2gs || yarn gs2js && yarn lint:prettier && yarn js2gs || yarn js2gs",
+        "lint:prettier": "prettier --check \"**/*.*\"",
+        "build:docs:utils": "jsdoc2md --files src/utils.general.js src/utils.sheet.js src/config.js > docs/UTILS.md",
+        "build:docs:api": "jsdoc2md --files src/handleGet.js src/handlePost.js > docs/API.md",
+        "build:docs:fns": "jsdoc2md --files src/core.js src/build.js src/services.js > docs/FUNCTIONS.md",
+        "build:docs": "yarn js2gs || yarn gs2js && yarn build:docs:utils && yarn build:docs:api && yarn build:docs:fns && yarn js2gs || yarn js2gs"
+    },
+    "husky": {
+        "hooks": {
+            "pre-commit": "yarn build:docs || yarn lint:fix || git add ."
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/flomio/passninja-guestlist-gas.git"
+    },
+    "keywords": [
+        "gas",
+        "google",
+        "apps",
+        "script",
+        "GoogleApps",
+        "PassNinja",
+        "Flomio",
+        "nfc",
+        "scanners",
+        "near-field",
+        "near",
+        "field",
+        "communication"
+    ],
+    "author": "PassNinja",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/flomio/passninja-guestlist-gas/issues"
+    },
+    "homepage": "https://github.com/flomio/passninja-guestlist-gas#readme",
+    "devDependencies": {
+        "husky": "^4.2.3",
+        "jsdoc-to-markdown": "^5.0.3"
+    },
+    "dependencies": {
+        "jest": "^25.1.0"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/flomio/passninja-guestlist-gas.git"
-  },
-  "keywords": [
-    "gas",
-    "google",
-    "apps",
-    "script",
-    "GoogleApps",
-    "PassNinja",
-    "Flomio"
-  ],
-  "author": "PassNinja",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/flomio/passninja-guestlist-gas/issues"
-  },
-  "homepage": "https://github.com/flomio/passninja-guestlist-gas#readme",
-  "devDependencies": {
-    "husky": "^4.2.3",
-    "jsdoc-to-markdown": "^5.0.3"
-  }
 }

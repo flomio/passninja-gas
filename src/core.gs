@@ -21,7 +21,7 @@ function createSpreadsheet() {
   // POST CREATION VERIFICATION SETTINGS/LOGS FOLLOW:
   const currentUserEmail = Session.getActiveUser().getEmail();
   const currentSheetOwnerEmail = ss.getOwner().getEmail();
-  const spreadsheetUrl = ss.getUrl()
+  const spreadsheetUrl = ss.getUrl();
 
   log(
     log.STATUS,
@@ -37,7 +37,7 @@ function createSpreadsheet() {
     'Your PassNinja Spreadsheet',
     `Here is the link to your spreadsheet ${spreadsheetUrl}`
   );
-  throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`)
+  throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`);
 }
 
 /** Custom Trigger: adds the PassNinja script set as a menu item on load.
@@ -197,7 +197,7 @@ function createPass_() {
   } catch (err) {
     passNinjaContentRange.setValues(originalContent);
     highlightCells(passNinjaContentRange, 'error');
-    throw err
+    throw err;
   }
   log(log.SUCCESS, JSON.stringify(responseData));
   passNinjaContentRange.setValues([
@@ -251,21 +251,4 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
-}
-
-/** Menu command to pop up a modal with the pass events
- *  of the current highlighted row related to the pass via serial number
- *  NOT IMPLEMENTED YET
- */
-function showEvents_() {
-  const contactSheet = getSheet(ENUMS.CONTACTS);
-  const rowNumber = getValidSheetSelectedRow(contactSheet);
-  const row = contactSheet.getRange(rowNumber, 1, 1, 12);
-  const rowValues = row.getValues();
-  const serialNumber = rowRange[0][12];
-  const html = '<p>' + serialNumber + '<p>';
-  const htmlOutput = HtmlService.createHtmlOutput(html)
-    .setWidth(550)
-    .setHeight(300);
-  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Pass Events');
 }
