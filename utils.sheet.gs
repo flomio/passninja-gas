@@ -197,10 +197,10 @@ function insertRow(sheet, rowData, index, cb) {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    const index = index || 1;
+    const rowIndex = index || 1;
     sheet
-      .insertRowBefore(index)
-      .getRange(index, 1, 1, rowData.length)
+      .insertRowBefore(rowIndex)
+      .getRange(rowIndex, 1, 1, rowData.length)
       .setValues([rowData]);
     SpreadsheetApp.flush();
     cb && cb();

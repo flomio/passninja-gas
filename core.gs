@@ -126,18 +126,19 @@ function updateFromConfig_(force = false) {
   const fields = getConfigFields();
   const fieldNames = fields.map(f => f[0]);
   const constants = getConfigConstants();
-  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
-  const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
+//  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
+ // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
+ // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
-  if (!force && hash !== fieldsHash) {
+//  if (!force && hash !== fieldsHash) {
     catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
+    catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
     catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
     catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
-    setEnvVar(ENUMS.FIELDS_HASH, hash);
-  } else {
-    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
-  }
+ //   setEnvVar(ENUMS.FIELDS_HASH, hash);
+//  } else {
+//    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
+//  }
 }
 
 /** Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.

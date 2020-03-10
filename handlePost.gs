@@ -13,19 +13,32 @@ function doPost(e) {
  * @return {boolean} If the action completed successfully
  */
 function addEvent(targetSheet, eventJson) {
+  let event;
+ 
   try {
     eventJson = JSON.parse(eventJson);
-    const event = [
+     if (eventJson.reader) {
+     event = [
+       eventJson.data.timeStamp,
+       "APPLE_SCAN",
+       eventJson.passTypeIdentifier.replace('pass.com.passninja.',''),
+       eventJson.data.message,
+       JSON.stringify(eventJson.data)
+       ]
+     processScanEvent(eventJson.data)
+     } else {
+     event = [
       eventJson.date,
       eventJson.event.type,
       eventJson.event.passType,
       eventJson.event.serialNumber,
-      eventJson.event.passJson
+      JSON.stringify(eventJson.event.passJson)
     ];
+    }
   } catch (e) {
     insertRow(targetSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, () => {
       autoResizeSheet(targetSheet);
-      var range = targetSheet.getRange('A2:E2');
+      let range = targetSheet.getRange('A2:E2');
       flashRange(range, 'red', 1, 50);
       targetSheet.setActiveSelection(range);
     });
@@ -40,6 +53,43 @@ function addEvent(targetSheet, eventJson) {
   });
 
   log(log.SUCCESS, 'Successfully added event.');
-  event.push(eventJson.event);
-  return rowToJson(targetSheet, targetSheet.getRange('A2:E2'));
+return {data: event}
+       
+  //return rowToJson(targetSheet, targetSheet.getRange('A2:E2'));
 }
+
+function processScanEvent(eventJson) {
+  const sheet = getSheet(ENUMS.SCANNERS)
+ // get serialNumber of scanner
+ // find that scanner in scanner sheet
+ // if no scanner, make scan in events RED .. or something?
+ // if match, do validity checks.    
+  
+      var columnValues = sheet.getRange(2, getColumnIndexFromString(sheet, serialNumber), sheet.getLastRow()).getValues(); //1st is header row
+    var searchResult = columnValues.findIndex(eventJson.reader.serialNumber)+2; //Row Index - 2
+
+    if(searchResult != -1)
+    {
+        //searchResult + 2 is row index.
+        let range = sheet.getRange(searchResult, 1, 1, sheet.getLastColumn())
+        
+        // if provisioned = true 
+        // and if time between values in. 6 and 7
+        // and if attachedPassSerial is blank
+        // and if status = UNLOCKED (?)
+        // send LOCK REQUEST to scanner URL
+        // on success (on fail change nothing), add serialnumber to column 5 (attachedSerialNumber)
+        // putPass with locker Number (add that field to pass)
+        // else if status = LOCKED
+        // send UNLOCK REQUEST to scanner
+        // on success (on fail change nothing), remove serialnumber to column 5
+        // putPass with locker Number set to '-'
+        // DONE :-)
+        //{
+        //  "request": "lock"
+        //}  
+
+      //response is a 200 OK if all is well or..       
+    } else
+    {//scanner not found logic}
+    }}

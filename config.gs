@@ -44,6 +44,7 @@ const ENUMS = {
   CONFIG: 'Config',
   CONTACTS: 'Contacts',
   EVENTS: 'Events',
+  SCANNERS: 'Scanners',
   PASSURL: 'passUrl',
   PASSTYPE: 'passType',
   SERIAL: 'serialNumber',

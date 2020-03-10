@@ -111,6 +111,24 @@ function buildEventsSheet(ss) {
   log(log.SUCCESS, 'Successfully built/updated Events sheet');
 }
 
+/** Builds a scanners sheet based on the user config sheet
+ *
+ * @param {Spreadsheet} ss The container spreadsheet
+ * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
+ */
+function buildScannersSheet(ss) {
+  const sheet = initializeSheet(ENUMS.SCANNERS, ss);
+  const fieldsNames = ['serialNumber', 'deviceAuthorized', 'activeHourStart', 'activeHourEnd', 'unitPrice', 'deviceNumber', 'deviceStatus','currentPassSerial'];
+  const fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length);
+  fieldHeaders.setValues([fieldsNames]);
+  fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
+  fieldHeaders.setFontWeight('bold');
+  fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
+
+  deleteUnusedColumns(fieldsNames.length + 1, sheet.getMaxColumns(), sheet);
+
+  log(log.SUCCESS, 'Successfully built/updated Scanners sheet');
+}
 /** Builds a contacts sheet based on the user config sheet
  *
  * @param {Spreadsheet} ss The container spreadsheet
