@@ -50,7 +50,7 @@ class PassNinjaService {
     );
   }
 
-  updatePass(payload, serial) {
+  putPass(payload, serial) {
     return sendRequest(
       `${this.passesUpdateRoute}${serial}`,
       {
@@ -64,6 +64,27 @@ class PassNinjaService {
       },
       this.serviceName
     );
+  }
+}
+
+class PassNinjaScannerService {
+  constructor() {
+    this.serviceName = 'PassNinjaScannerAPI';
+    this.baseUrl = 'nada';
+    this.passesPostRoute = `${this.baseUrl}/passes/`;
+  }
+
+  notifyScanner(payload) {
+    return {statusCode: 200}
+    // return sendRequest(
+    //   this.passesPostRoute,
+    //   {
+    //     method: 'post',
+    //     contentType: 'application/json',
+    //     payload: JSON.stringify(payload)
+    //   },
+    //   this.serviceName
+    // );
   }
 }
 

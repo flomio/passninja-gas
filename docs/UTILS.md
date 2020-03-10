@@ -25,7 +25,7 @@ Author:
 <dt><a href="#setEnvVar">setEnvVar(name, value)</a> ⇒ <code>Properties</code></dt>
 <dd><p>Sets an Script Project environment variable.</p>
 </dd>
-<dt><a href="#getRowPassPayload">getRowPassPayload(ss, rowRange)</a></dt>
+<dt><a href="#getRowPassPayload">getRowPassPayload(rowRange)</a></dt>
 <dd><p>Filters out non-pass related row entries and converts to JSON.</p>
 </dd>
 <dt><a href="#getConfigConstants">getConfigConstants()</a></dt>
@@ -139,7 +139,9 @@ Author:
 <a name="getLinkedSpreadsheet"></a>
 
 ## getLinkedSpreadsheet() ⇒ <code>Spreadsheet</code>
-Attempts to return the spreadsheet connected to the GAS Script Project. Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet If multiple sheets have been programatically created it will only target the most recent.
+Attempts to return the spreadsheet connected to the GAS Script Project.
+ Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
+ If multiple sheets have been programatically created it will only target the most recent.
 
 **Kind**: global function  
 **Returns**: <code>Spreadsheet</code> - The spreadsheet that is linked to the GAS Script Project.  
@@ -171,14 +173,13 @@ Sets an Script Project environment variable.
 
 <a name="getRowPassPayload"></a>
 
-## getRowPassPayload(ss, rowRange)
+## getRowPassPayload(rowRange)
 Filters out non-pass related row entries and converts to JSON.
 
 **Kind**: global function  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ss | <code>Spreadsheet</code> | Spreadsheet to query for Config NamedRange |
 | rowRange | <code>Range</code> | Row range to query |
 
 <a name="getConfigConstants"></a>
@@ -279,7 +280,8 @@ Creates an object from a sheet's first row headers as keys with the values from 
 <a name="insertRow"></a>
 
 ## insertRow(sheet, rowData, [index])
-Inserts a row Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
+Inserts a row
+ Ref: https://stackoverflow.com/questions/28295056/google-apps-script-appendrow-to-the-top
 
 **Kind**: global function  
 
@@ -386,7 +388,8 @@ Toasts the user at the current spreadsheet
 <a name="flashRange"></a>
 
 ## flashRange(range, flashColor, numFlashes, timeout)
-Flashes a row of a sheet Note: the range will end overridden with the top left's background color.
+Flashes a row of a sheet
+ Note: the range will end overridden with the top left's background color.
 
 **Kind**: global function  
 

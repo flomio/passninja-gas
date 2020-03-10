@@ -46,12 +46,12 @@ function getEnvVar(name, throwError = true) {
 function setEnvVar(name, value) {
   return PropertiesService.getScriptProperties().setProperty(name, value);
 }
+
 /** Filters out non-pass related row entries and converts to JSON.
  *
- * @param {Spreadsheet} ss Spreadsheet to query for Config NamedRange
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(ss, rowRange) {
+function getRowPassPayload(rowRange) {
   rowRange.setNumberFormat('@');
   const fieldsData = getConfigFields();
   const { passType, ...passFieldConstants } = getConfigConstants();
@@ -115,8 +115,6 @@ function getSheet(sheetName) {
   if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
   return sheet;
 }
-
-
 
 /** Determines whether the selected row is valid
  *
@@ -332,7 +330,6 @@ function flashRange(range, flashColor, numFlashes, timeout) {
     SpreadsheetApp.flush();
   }
 }
-
 
 /** Runs the function and catches then throws any error and logs it.
  *
