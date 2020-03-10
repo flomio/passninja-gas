@@ -75,7 +75,7 @@ class PassNinjaScannerService {
   }
 
   notifyScanner(payload) {
-    return {statusCode: 200}
+    return { statusCode: 200 };
     // return sendRequest(
     //   this.passesPostRoute,
     //   {

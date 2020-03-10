@@ -230,13 +230,15 @@ function createPass_() {
  */
 function sendText_() {
   let twilio;
+  let phoneNumber;
+  let passUrl;
   try {
     twilio = new TwilioService();
     const contactSheet = getSheet(ENUMS.CONTACTS);
-    const passUrl = contactSheet
+    passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
       .getValue();
-    const phoneNumber = contactSheet
+    phoneNumber = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, 'phoneNumber'), 1, 1)
       .getValue();
   } catch (err) {

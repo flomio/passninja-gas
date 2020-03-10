@@ -118,7 +118,7 @@ function buildEventsSheet(ss) {
  */
 function buildScannersSheet(ss) {
   const sheet = initializeSheet(ENUMS.SCANNERS, ss);
-  
+
   const fieldHeaders = sheet.getRange(1, 1, 1, SCANNERS_FIELDS.length);
   fieldHeaders.setValues([SCANNERS_FIELDS]);
   fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
