@@ -69,6 +69,7 @@ function getRowPassPayload(rowRange) {
       postData.pass[fieldName] = rowValues[i];
     }
   }
+  log(log.SUCCESS, postData)
   return postData;
 }
 

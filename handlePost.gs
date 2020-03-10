@@ -25,7 +25,7 @@ function addEvent(targetSheet, eventJson) {
                 eventJson.data.message,
                 JSON.stringify(eventJson.data)
             ];
-            processScanEvent(eventJson.data);
+            processScanEvent(eventJson);
         } else {
             event = [
                 eventJson.date,
@@ -82,46 +82,72 @@ function addEvent(targetSheet, eventJson) {
  */
 async function processScanEvent(eventJson) {
     const sheet = getSheet(ENUMS.SCANNERS);
-    // get serialNumber of scanner
-    // find that scanner in scanner sheet
-    // if no scanner, make scan in events RED .. or something?
-    // if match, do validity checks.
     const startingRow = 2
     const columnValues = sheet.getRange(startingRow, getColumnIndexFromString(sheet, 'serialNumber'), sheet.getLastRow()).getValues();
-    const matchIndex = columnValues.findIndex(eventJson.reader.serialNumber) + startingRow;
+    const matchIndex = columnValues.map(e=>e[0]).indexOf(eventJson.reader.serial_number);
 
     if (matchIndex != -1) {
-        let range = sheet.getRange(matchIndex, 1, 1, sheet.getLastColumn());
+        let range = sheet.getRange(matchIndex + startingRow, 1, 1, sheet.getLastColumn());
 
-        let serialNumberCellRange = sheet.getRange(matchIndex, getColumnIndexFromString(sheet, 'attachedPassSerial'));
-        const [serial, id, status, provisioned, passSerial, start, end, price] = range.getValues()[0]
+        let serialNumberCellRange = sheet.getRange(matchIndex + startingRow, getColumnIndexFromString(sheet, 'attachedPassSerial'));
+
+        const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0]
         // const now = new Date()
 
-        if (provisioned && !passSerial.length) { // && start < now && now < end ) {
+        if (provisioned /*&& !attachedPassSerial.length*/) { // && start < now && now < end ) {
             await new PassNinjaScannerService().notifyScanner({
-                request: status === 'UNLOCKED' ? 'LOCK' : 'UNLOCK'
+                request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE'
             })
-
+            
             const contactSheet = getSheet(ENUMS.CONTACTS)
-            const contactPassSerials = sheet.getRange(startingRow, getColumnIndexFromString(contactSheet, 'serialNumber'), sheet.getLastRow()).getValues();
-            const serialMatchIndex = contactPassSerials.findIndex(passSerial) + startingRow;
-            const contactRange = contactSheet.getRange(serialMatchIndex, 1, 1, contactSheet.getLastColumn());
-            const passJSON = getRowPassPayload(contactRange)
-
-            if (status === 'UNLOCKED') {
-                serialNumberCellRange.setValue(passSerial)
-                passJson.lockerNumber = id
+            const contactPassSerials = contactSheet.getRange(startingRow, getColumnIndexFromString(contactSheet, 'serialNumber'), contactSheet.getLastRow()).getValues();
+            const serialMatchIndex = contactPassSerials.map(e=>e[0]).indexOf(eventJson.data.message)
+  
+          if (serialMatchIndex != -1) {
+            const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
+            const contactRange = contactSheet.getRange(serialMatchIndex + startingRow, 1, 1, passNinjaColumnStart -1)
+            const passJson = getRowPassPayload(contactRange)
+  
+            if (status === 'AVAILABLE') {
+                serialNumberCellRange.setValue(eventJson.data.message)
+                passJson.pass.lockerNumber = id
+                sheet.getRange(matchIndex + startingRow, getColumnIndexFromString(sheet, 'status')).setValue("RESERVED")
+                // need to set locker # in contacts
             } else {
                 serialNumberCellRange.setValue('')
-                passJson.lockerNumber = 'unassigned'
+                passJson.pass.lockerNumber = 'unassigned'
+                sheet.getRange(matchIndex + startingRow, getColumnIndexFromString(sheet, 'status')).setValue("AVAILABLE")
             }
 
-            new PassNinjaService().putPass(passJSON, eventJson.data.message)
+            const putResponse = new PassNinjaService().putPass(passJson, eventJson.data.message)
+            log(log.STATUS, JSON.stringify(putResponse))
             eventJson.data.serialNumber
+          } else {/*die*/}
+          
         }
     } else {
         // Scanner not found logic
         // Add new scanner to the sheet?
-        log(log.ERROR, eventJson)
+        sheet.getRange(6,1).setValue(eventJson)
     }
+ }
+
+function testPost() {
+const payload = {
+  "reader": {
+    "type": "FloBlePlus",
+    "serial_number": "RR464-0017564",
+    "firmware": "ACR1255U-J1 SWV 3.00.05"
+  },
+  "uuid": "358bb260-62e2-11ea-a4c8-136282d9f83b",
+  "type": "apple-pay",
+  "passTypeIdentifier": "pass.com.passninja.ripped.beta",
+  "data": {
+    "timeStamp": "2020-03-10T15:17:04.789Z",
+    "message": "3bdc8ba0-aade-4d0d-84d6-38abe4ff4baa"
+  }
+}
+
+processScanEvent(payload)
+
 }

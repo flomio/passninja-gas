@@ -29,7 +29,7 @@ class PassNinjaService {
           `${this.serviceName}: PassNinja API credentials have not been set up.`
         );
     }
-    this.baseUrl = 'https://api.passninja.com/api-key';
+    this.baseUrl = 'https://api.passninja.com/v1';
     this.passesPostRoute = `${this.baseUrl}/passes/`;
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
   }
