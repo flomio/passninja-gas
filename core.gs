@@ -47,7 +47,10 @@ function createSpreadsheet() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
-    .addSubMenu(ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_'))
+    .addSubMenu(ui.createMenu('Selected Row')
+                .addItem('Create/Update Pass', 'createPass_')
+                .addItem('Run Mock Scan', 'mockScan_')
+               )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
     .addSeparator()
@@ -258,4 +261,37 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
+}
+
+
+
+function mockScan_() {  
+  let scannerSerialNumber;
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt('Please enter a scanner serial number or leave blank for default (RR464-0017564)');
+  if (response.getSelectedButton() == ui.Button.OK) {
+    scannerSerialNumber = response.getResponseText() || 'RR464-0017564'
+  } else {
+    throw new ScriptError('Cancelling mock scan.');
+  }
+  const contactSheet = getSheet(ENUMS.CONTACTS);
+  const rowNumber = getValidSheetSelectedRow(contactSheet);
+  const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
+  const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
+  
+  const payload = {
+    reader: {
+      type: 'FloBlePlus',
+      serial_number: scannerSerialNumber,
+      firmware: 'ACR1255U-J1 SWV 3.00.05'
+    },
+    uuid: Utilities.getUuid(),
+    type: 'apple-pay',
+    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
+    data: {
+      timeStamp: '2020-03-10T15:17:04.789Z',
+      message: serialNumberRange.getValue()
+    }
+  };
+  processScanEvent(payload);
 }

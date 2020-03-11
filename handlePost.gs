@@ -79,7 +79,7 @@ function addEvent(targetSheet, eventJson) {
  *    }
  *}
  */
-async function processScanEvent(eventJson) {
+function processScanEvent(eventJson) {
   const sheet = getSheet(ENUMS.SCANNERS);
   const startingRow = 2;
   const columnValues = sheet
@@ -96,11 +96,18 @@ async function processScanEvent(eventJson) {
     );
 
     const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
-    // const now = new Date()
-
-    if (provisioned /*&& !attachedPassSerial.length*/) {
-      // && start < now && now < end ) {
-      await new PassNinjaScannerService().notifyScanner({
+    if (status === "RESERVED" && attachedPassSerial !== eventJson.data.message){
+      throw new ScriptError('Requested resource is already in use by another pass.')
+    }
+    const eventTimestamp = new Date(eventJson.data.timeStamp)
+    const eventTime = eventTimestamp.getHours() * 60 + eventTimestamp.getMinutes()
+    const [startHours, startMinutes] = start.split(':')
+    const [endHours, endMinutes] = end.split(':')
+    const startTime = parseInt(startHours) * 60 + parseInt(startMinutes)
+    const endTime = parseInt(endHours) * 60 + parseInt(endMinutes)
+    
+    if (provisioned && startTime <= eventTime && eventTime <= endTime) {
+      new PassNinjaScannerService().notifyScanner({
         request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE'
       });
 
@@ -141,20 +148,19 @@ async function processScanEvent(eventJson) {
 }
 
 function testPost() {
-  const payload = {
-    reader: {
-      type: 'FloBlePlus',
-      serial_number: 'RR464-0017564',
-      firmware: 'ACR1255U-J1 SWV 3.00.05'
-    },
-    uuid: '358bb260-62e2-11ea-a4c8-136282d9f83b',
-    type: 'apple-pay',
-    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
-    data: {
-      timeStamp: '2020-03-10T15:17:04.789Z',
-      message: '3bdc8ba0-aade-4d0d-84d6-38abe4ff4baa'
-    }
-  };
-
-  processScanEvent(payload);
+const payload = {
+  "reader": {
+    "type": "FloBlePlus",
+    "serial_number": "RR464-0017564",
+    "firmware": "ACR1255U-J1 SWV 3.00.05"
+  },
+  "uuid": "358bb260-62e2-11ea-a4c8-136282d9f83b",
+  "type": "apple-pay",
+  "passTypeIdentifier": "pass.com.passninja.ripped.beta",
+  "data": {
+    "timeStamp": "2020-03-10T15:17:04.789Z",
+    "message": "3bdc8ba0-aade-4d0d-84d6-38abe4ff4baa"
+  }
+}
+processScanEvent(payload)
 }
