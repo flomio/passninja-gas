@@ -46,12 +46,12 @@ function getEnvVar(name, throwError = true) {
 function setEnvVar(name, value) {
   return PropertiesService.getScriptProperties().setProperty(name, value);
 }
+
 /** Filters out non-pass related row entries and converts to JSON.
  *
- * @param {Spreadsheet} ss Spreadsheet to query for Config NamedRange
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(ss, rowRange) {
+function getRowPassPayload(rowRange) {
   rowRange.setNumberFormat('@');
   const fieldsData = getConfigFields();
   const { passType, ...passFieldConstants } = getConfigConstants();
@@ -69,6 +69,7 @@ function getRowPassPayload(ss, rowRange) {
       postData.pass[fieldName] = rowValues[i];
     }
   }
+  log(log.SUCCESS, postData);
   return postData;
 }
 
@@ -115,8 +116,6 @@ function getSheet(sheetName) {
   if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
   return sheet;
 }
-
-
 
 /** Determines whether the selected row is valid
  *
@@ -197,10 +196,10 @@ function insertRow(sheet, rowData, index, cb) {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
-    const index = index || 1;
+    const rowIndex = index || 1;
     sheet
-      .insertRowBefore(index)
-      .getRange(index, 1, 1, rowData.length)
+      .insertRowBefore(rowIndex)
+      .getRange(rowIndex, 1, 1, rowData.length)
       .setValues([rowData]);
     SpreadsheetApp.flush();
     cb && cb();
@@ -332,7 +331,6 @@ function flashRange(range, flashColor, numFlashes, timeout) {
     SpreadsheetApp.flush();
   }
 }
-
 
 /** Runs the function and catches then throws any error and logs it.
  *

@@ -35,6 +35,9 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dt><a href="#buildEventsSheet">buildEventsSheet(ss, fieldsNames)</a></dt>
 <dd><p>Builds a events sheet based on the user config sheet</p>
 </dd>
+<dt><a href="#buildScannersSheet">buildScannersSheet(ss, fieldsNames)</a></dt>
+<dd><p>Builds a scanners sheet based on the user config sheet</p>
+</dd>
 <dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Builds a contacts sheet based on the user config sheet</p>
 </dd>
@@ -127,6 +130,18 @@ Builds initial config sheet
 
 ## buildEventsSheet(ss, fieldsNames)
 Builds a events sheet based on the user config sheet
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The container spreadsheet |
+| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+
+<a name="buildScannersSheet"></a>
+
+## buildScannersSheet(ss, fieldsNames)
+Builds a scanners sheet based on the user config sheet
 
 **Kind**: global function  
 

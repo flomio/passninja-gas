@@ -7,7 +7,7 @@ function createSpreadsheet() {
 
   Utilities.sleep(2000);
 
-  ScriptApp.getProjectTriggers().forEach(trigger=>ScriptApp.deleteTrigger(trigger))
+  ScriptApp.getProjectTriggers().forEach(trigger => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen')
     .forSpreadsheet(ss)
     .onOpen()
@@ -47,7 +47,12 @@ function createSpreadsheet() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
-    .addSubMenu(ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_'))
+    .addSubMenu(
+      ui
+        .createMenu('Selected Row')
+        .addItem('Create/Update Pass', 'createPass_')
+        .addItem('Run Mock Scan', 'mockScan_')
+    )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
     .addSeparator()
@@ -126,18 +131,19 @@ function updateFromConfig_(force = false) {
   const fields = getConfigFields();
   const fieldNames = fields.map(f => f[0]);
   const constants = getConfigConstants();
-  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
-  const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
+  //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
+  // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
+  // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
-  if (!force && hash !== fieldsHash) {
-    catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
-    catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
-    catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
-    setEnvVar(ENUMS.FIELDS_HASH, hash);
-  } else {
-    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
-  }
+  //  if (!force && hash !== fieldsHash) {
+  catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
+  catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
+  catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
+  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
+  //   setEnvVar(ENUMS.FIELDS_HASH, hash);
+  //  } else {
+  //    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
+  //  }
 }
 
 /** Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
@@ -182,7 +188,7 @@ function createPass_() {
   const passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
 
-  const payloadJSONString = getRowPassPayload(ss, rowRange);
+  const payloadJSONString = getRowPassPayload(rowRange);
   const serial = serialNumberRange.getValue();
 
   const originalContent = passNinjaContentRange.getValues();
@@ -193,10 +199,12 @@ function createPass_() {
   let responseData;
   try {
     responseData = serial
-      ? new PassNinjaService().updatePass(payloadJSONString, serial)
+      ? new PassNinjaService().putPass(payloadJSONString, serial)
       : new PassNinjaService().createPass(payloadJSONString);
   } catch (err) {
-    passNinjaContentRange.setValues(rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'],['PassNinja Credentials?'],['']]]);
+    passNinjaContentRange.setValues(
+      rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'], ['PassNinja Credentials?'], ['']]]
+    );
     highlightCells(passNinjaContentRange, 'error');
     autoResizeSheet(contactSheet);
     throw err;
@@ -227,13 +235,15 @@ function createPass_() {
  */
 function sendText_() {
   let twilio;
+  let phoneNumber;
+  let passUrl;
   try {
     twilio = new TwilioService();
     const contactSheet = getSheet(ENUMS.CONTACTS);
-    const passUrl = contactSheet
+    passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
       .getValue();
-    const phoneNumber = contactSheet
+    phoneNumber = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, 'phoneNumber'), 1, 1)
       .getValue();
   } catch (err) {
@@ -253,4 +263,35 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
+}
+
+function mockScan_() {
+  let scannerSerialNumber;
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.prompt('Please enter a scanner serial number or leave blank for default (RR464-0017564)');
+  if (response.getSelectedButton() == ui.Button.OK) {
+    scannerSerialNumber = response.getResponseText() || 'RR464-0017564';
+  } else {
+    throw new ScriptError('Cancelling mock scan.');
+  }
+  const contactSheet = getSheet(ENUMS.CONTACTS);
+  const rowNumber = getValidSheetSelectedRow(contactSheet);
+  const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
+  const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
+
+  const payload = {
+    reader: {
+      type: 'FloBlePlus',
+      serial_number: scannerSerialNumber,
+      firmware: 'ACR1255U-J1 SWV 3.00.05'
+    },
+    uuid: Utilities.getUuid(),
+    type: 'apple-pay',
+    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
+    data: {
+      timeStamp: '2020-03-10T15:17:04.789Z',
+      message: serialNumberRange.getValue()
+    }
+  };
+  processScanEvent(payload);
 }

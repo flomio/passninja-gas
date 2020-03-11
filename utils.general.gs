@@ -21,8 +21,8 @@ function findMatchIndexAtColumn(arr, column, query) {
  * @param {array} arr Column[row] nested 2D array
  * @returns {boolean} Whether or not any values are present in the collection.
  */
-function rangeValuesExist(rangeValues){
-  return rangeValues.reduce((acc, f) => acc || !!f.filter(g=>g.length).length, false)
+function rangeValuesExist(rangeValues) {
+  return rangeValues.reduce((acc, f) => acc || !!f.filter(g => g.length).length, false);
 }
 
 /** You can get a MD5 hash value and even a 4digit short Hash value of a string.

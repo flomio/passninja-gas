@@ -44,6 +44,7 @@ const ENUMS = {
   CONFIG: 'Config',
   CONTACTS: 'Contacts',
   EVENTS: 'Events',
+  SCANNERS: 'Scanners',
   PASSURL: 'passUrl',
   PASSTYPE: 'passType',
   SERIAL: 'serialNumber',
@@ -68,3 +69,14 @@ const FORM_LOOKUP = {
   multiplechoice: 'addMultipleChoiceItem',
   text: 'addTextItem'
 };
+
+const SCANNERS_FIELDS = [
+  'serialNumber',
+  'id',
+  'status',
+  'provisioned',
+  'attachedPassSerial',
+  'activeHourStart',
+  'activeHourEnd',
+  'unitPrice'
+];
