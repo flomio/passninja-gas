@@ -107,10 +107,14 @@ function processScanEvent(eventJson) {
     const endTime = parseInt(endHours) * 60 + parseInt(endMinutes);
 
     if (provisioned && startTime <= eventTime && eventTime <= endTime) {
+      
+      if(eventJson.reader.serial_number !== "RR464-0017564") {
       const scannerResponse = new PassNinjaScannerService().notifyScanner({
         "request": status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE'
       });
-      log(log.STATUS, scannerResponse)
+              log(log.STATUS, scannerResponse)
+      }
+
       const contactSheet = getSheet(ENUMS.CONTACTS);
       const contactPassSerials = contactSheet
         .getRange(startingRow, getColumnIndexFromString(contactSheet, 'serialNumber'), contactSheet.getLastRow())
