@@ -47,10 +47,12 @@ function createSpreadsheet() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
-    .addSubMenu(ui.createMenu('Selected Row')
-                .addItem('Create/Update Pass', 'createPass_')
-                .addItem('Run Mock Scan', 'mockScan_')
-               )
+    .addSubMenu(
+      ui
+        .createMenu('Selected Row')
+        .addItem('Create/Update Pass', 'createPass_')
+        .addItem('Run Mock Scan', 'mockScan_')
+    )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
     .addSeparator()
@@ -263,14 +265,12 @@ function sendText_() {
   }
 }
 
-
-
-function mockScan_() {  
+function mockScan_() {
   let scannerSerialNumber;
   const ui = SpreadsheetApp.getUi();
   const response = ui.prompt('Please enter a scanner serial number or leave blank for default (RR464-0017564)');
   if (response.getSelectedButton() == ui.Button.OK) {
-    scannerSerialNumber = response.getResponseText() || 'RR464-0017564'
+    scannerSerialNumber = response.getResponseText() || 'RR464-0017564';
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
@@ -278,7 +278,7 @@ function mockScan_() {
   const rowNumber = getValidSheetSelectedRow(contactSheet);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
-  
+
   const payload = {
     reader: {
       type: 'FloBlePlus',
