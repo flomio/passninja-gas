@@ -54,19 +54,19 @@ function addEvent(spreadsheet, eventJson) {
 
   if (scan) {
     const processResponse = processScanEvent(spreadsheet, eventJson);
-    insertRow(
-      sheet,
-      [
-        new Date().toUTCString(),
-        'SCAN_RESPONSE',
-        eventJson.passTypeIdentifier.replace('pass.com.passninja.', ''),
-        eventJson.data.message,
-        ,
-        JSON.stringify(processResponse)
-      ],
-      2,
-      callback
-    );
+//    insertRow(
+//      sheet,
+//      [
+//        new Date().toUTCString(),
+//        'SCAN_RESPONSE',
+//        eventJson.passTypeIdentifier.replace('pass.com.passninja.', ''),
+//        eventJson.data.message,
+//        ,
+//        JSON.stringify(processResponse)
+//      ],
+//      2,
+//      callback
+//    );
   }
 
   insertRow(sheet, event, 2, callback);

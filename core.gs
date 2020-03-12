@@ -192,7 +192,7 @@ function createPass_() {
   const serial = serialNumberRange.getValue();
 
   const originalContent = passNinjaContentRange.getValues();
-  highlightCells(passNinjaContentRange, 'loading');
+  highlightRange(passNinjaContentRange, 'loading');
   passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress']]);
   SpreadsheetApp.flush();
 
@@ -205,7 +205,7 @@ function createPass_() {
     passNinjaContentRange.setValues(
       rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'], ['PassNinja Credentials?'], ['']]]
     );
-    highlightCells(passNinjaContentRange, 'error');
+    highlightRange(passNinjaContentRange, 'error');
     autoResizeSheet(contactSheet);
     throw err;
   }
@@ -218,7 +218,7 @@ function createPass_() {
     ]
   ]);
 
-  highlightCells(passNinjaContentRange, 'success');
+  highlightRange(passNinjaContentRange, 'success');
   contactSheet.setActiveSelection(passUrlRange);
   autoResizeSheet(contactSheet);
 
