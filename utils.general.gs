@@ -1,15 +1,3 @@
-class GSpreadsheet {
-  constructor () {
-    this._internal = getLinkedSpreadsheet()
-    log(log.STATUS, this._internal)
-  }
-}
-
-function test(){
-  new GSpreadsheet()
-}
-
-
 /** Returns the index of the matching query in the 2D array at column index.
  *
  * @param {array} arr 2D Array to query

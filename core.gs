@@ -239,7 +239,7 @@ function sendText_() {
   let passUrl;
   try {
     twilio = new TwilioService();
-    const ss = getLinkedSpreadsheet()
+    const ss = getLinkedSpreadsheet();
     const contactSheet = getSheet(ENUMS.CONTACTS, ss);
     passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
@@ -275,12 +275,12 @@ function mockScan_() {
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
-  const ss = new VSpreadsheet()
+  const ss = new VSpreadsheet();
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
-  log(log.WARNING, serialNumberRange.getValue())
+  log(log.WARNING, serialNumberRange.getValue());
 
   const payload = {
     reader: {
@@ -297,5 +297,5 @@ function mockScan_() {
     }
   };
   addEvent(ss, JSON.stringify(payload));
-  ss.flush()
+  ss.flush();
 }

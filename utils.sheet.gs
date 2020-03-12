@@ -100,11 +100,11 @@ function getAllFuncs(toCheck) {
   var props = [];
   var obj = toCheck;
   do {
-      props = props.concat(Object.getOwnPropertyNames(obj));
-  } while (obj = Object.getPrototypeOf(obj));
+    props = props.concat(Object.getOwnPropertyNames(obj));
+  } while ((obj = Object.getPrototypeOf(obj)));
 
-  return props.sort().filter(function(e, i, arr) { 
-     if (e!=arr[i+1] && typeof toCheck[e] == 'function') return true;
+  return props.sort().filter(function(e, i, arr) {
+    if (e != arr[i + 1] && typeof toCheck[e] == 'function') return true;
   });
 }
 
@@ -199,7 +199,7 @@ function insertRow(sheet, rowData, index, cb) {
   lock.waitLock(30000);
   try {
     const rowIndex = index || 1;
-    log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex+1} columns ${1}-${1+rowData.length}`)
+    log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex + 1} columns ${1}-${1 + rowData.length}`);
     sheet
       .insertRowBefore(rowIndex)
       .getRange(rowIndex, 1, 1, rowData.length)
@@ -219,10 +219,10 @@ function insertRow(sheet, rowData, index, cb) {
  */
 function getColumnIndexFromString(sheet, searchTerm) {
   const headers = getHeaders(sheet);
-  log(log.STATUS, `Got headers: ${headers}`)
+  log(log.STATUS, `Got headers: ${headers}`);
   for (var i = 0; i < headers.length; i++) {
     if (headers[i] == searchTerm) {
-      log(log.STATUS, `Header ${searchTerm} found at column ${i+1}`)
+      log(log.STATUS, `Header ${searchTerm} found at column ${i + 1}`);
       return i + 1;
     }
   }
@@ -250,7 +250,6 @@ function getNamedRange(name, ss) {
     .filter(e => e.getName() === name)[0]
     .getRange();
 }
-
 
 /** Flashes a row of a sheet
  *  Note: the range will end overridden with the top left's background color.

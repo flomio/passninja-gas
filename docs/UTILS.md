@@ -34,9 +34,6 @@ Author:
 <dt><a href="#getConfigFields">getConfigFields()</a></dt>
 <dd><p>Returns a list of config field entries</p>
 </dd>
-<dt><a href="#sortSheet">sortSheet(sheet)</a></dt>
-<dd><p>Sorts the specified sheet</p>
-</dd>
 <dt><a href="#getSheet">getSheet(sheetName)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Returns the requested Google Sheet by name</p>
 </dd>
@@ -49,7 +46,7 @@ Author:
 <dt><a href="#deleteUnusedColumns">deleteUnusedColumns(min, max)</a></dt>
 <dd><p>Deletes all columns from min-&gt;max on the given sheet</p>
 </dd>
-<dt><a href="#highlightCells">highlightCells(cells, status, [value])</a></dt>
+<dt><a href="#highlightRange">highlightRange(range, status, [value])</a></dt>
 <dd><p>Highlights a given range via custom status presets</p>
 </dd>
 <dt><a href="#rowToJson">rowToJson(sheet, data)</a></dt>
@@ -68,6 +65,10 @@ Author:
 <dt><a href="#getNamedRange">getNamedRange(name, ss)</a> ⇒ <code>Range</code></dt>
 <dd><p>Gets the named range of the given spreadsheet</p>
 </dd>
+<dt><a href="#flashRange">flashRange(range, flashColor, numFlashes, timeout)</a></dt>
+<dd><p>Flashes a row of a sheet
+ Note: the range will end overridden with the top left&#39;s background color.</p>
+</dd>
 <dt><a href="#clearForm">clearForm(form)</a></dt>
 <dd><p>Clears all previous form items from a form</p>
 </dd>
@@ -76,19 +77,6 @@ Author:
 </dd>
 <dt><a href="#clearFormDestinationSheet">clearFormDestinationSheet(form, ss)</a> ⇒ <code>null</code></dt>
 <dd><p>Deletes and returns the data from the previous form response sheet</p>
-</dd>
-<dt><a href="#getFileId">getFileId()</a> ⇒ <code>string</code></dt>
-<dd><p>Returns the file ID of the current spreadsheet.</p>
-</dd>
-<dt><a href="#toast">toast(msg, title, timeout)</a></dt>
-<dd><p>Toasts the user at the current spreadsheet</p>
-</dd>
-<dt><a href="#flashRange">flashRange(range, flashColor, numFlashes, timeout)</a></dt>
-<dd><p>Flashes a row of a sheet
- Note: the range will end overridden with the top left&#39;s background color.</p>
-</dd>
-<dt><a href="#catchError">catchError(error, msg)</a></dt>
-<dd><p>Runs the function and catches then throws any error and logs it.</p>
 </dd>
 </dl>
 
@@ -194,17 +182,6 @@ Returns an object with key:value pairs from the Config sheet
 Returns a list of config field entries
 
 **Kind**: global function  
-<a name="sortSheet"></a>
-
-## sortSheet(sheet)
-Sorts the specified sheet
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| sheet | <code>Sheet</code> | The Google sheet to sort |
-
 <a name="getSheet"></a>
 
 ## getSheet(sheetName) ⇒ <code>Sheet</code>
@@ -252,16 +229,16 @@ Deletes all columns from min->max on the given sheet
 | min | <code>int</code> | The starting column index |
 | max | <code>int</code> | The final column index |
 
-<a name="highlightCells"></a>
+<a name="highlightRange"></a>
 
-## highlightCells(cells, status, [value])
+## highlightRange(range, status, [value])
 Highlights a given range via custom status presets
 
 **Kind**: global function  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| cells | <code>Range</code> | That you want to highlight |
+| range | <code>Range</code> | That you want to highlight |
 | status | <code>string</code> | The type of higlighting you want to apply |
 | [value] | <code>string</code> | Value to set the cell contents to |
 
@@ -329,6 +306,21 @@ Gets the named range of the given spreadsheet
 | name | <code>string</code> | The name of the named range to query |
 | ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
 
+<a name="flashRange"></a>
+
+## flashRange(range, flashColor, numFlashes, timeout)
+Flashes a row of a sheet
+ Note: the range will end overridden with the top left's background color.
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| range | <code>Range</code> | Range to flash across |
+| flashColor | <code>string</code> | Valid Google SpreadSheet color to flash |
+| numFlashes | <code>int</code> | Number of times to flash the range |
+| timeout | <code>int</code> | The timeout (in ms) for the flashes |
+
 <a name="clearForm"></a>
 
 ## clearForm(form)
@@ -364,51 +356,4 @@ Deletes and returns the data from the previous form response sheet
 | --- | --- | --- |
 | form | <code>Form</code> | A Google Form |
 | ss | <code>Spreadsheet</code> | The Google spreadsheet to relink to |
-
-<a name="getFileId"></a>
-
-## getFileId() ⇒ <code>string</code>
-Returns the file ID of the current spreadsheet.
-
-**Kind**: global function  
-**Returns**: <code>string</code> - - The file ID or undefined if not found.  
-<a name="toast"></a>
-
-## toast(msg, title, timeout)
-Toasts the user at the current spreadsheet
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| msg | <code>string</code> | The message to sent |
-| title | <code>string</code> | The title of the toast |
-| timeout | <code>int</code> | The timeout of the toast |
-
-<a name="flashRange"></a>
-
-## flashRange(range, flashColor, numFlashes, timeout)
-Flashes a row of a sheet
- Note: the range will end overridden with the top left's background color.
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| range | <code>Range</code> | Range to flash across |
-| flashColor | <code>string</code> | Valid Google SpreadSheet color to flash |
-| numFlashes | <code>int</code> | Number of times to flash the range |
-| timeout | <code>int</code> | The timeout (in ms) for the flashes |
-
-<a name="catchError"></a>
-
-## catchError(error, msg)
-Runs the function and catches then throws any error and logs it.
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| error | <code>string</code> | Error to log |
-| msg | <code>string</code> | The extra message to add |
 
