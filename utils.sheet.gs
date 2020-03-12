@@ -52,7 +52,6 @@ function setEnvVar(name, value) {
  * @param {Range} rowRange Row range to query
  */
 function getRowPassPayload(rowRange) {
-  rowRange.setNumberFormat('@');
   const fieldsData = getConfigFields();
   const { passType, ...passFieldConstants } = getConfigConstants();
   const rowValues = rowRange.getValues()[0];
@@ -96,13 +95,17 @@ function getConfigFields() {
   if (!fieldsData.length) throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
   return fieldsData;
 }
-/** Sorts the specified sheet
- *
- * @param {Sheet} sheet The Google sheet to sort
- */
-function sortSheet(sheet) {
-  const range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn());
-  range.sort({ column: 1, ascending: false });
+
+function getAllFuncs(toCheck) {
+  var props = [];
+  var obj = toCheck;
+  do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+  } while (obj = Object.getPrototypeOf(obj));
+
+  return props.sort().filter(function(e, i, arr) { 
+     if (e!=arr[i+1] && typeof toCheck[e] == 'function') return true;
+  });
 }
 
 /** Returns the requested Google Sheet by name
@@ -110,10 +113,9 @@ function sortSheet(sheet) {
  * @param {string} sheetName Name of the sheet you want to get back
  * @returns {Sheet} Google Sheet object
  */
-function getSheet(sheetName) {
-  const spreadsheet = getLinkedSpreadsheet();
-  const sheet = spreadsheet.getSheetByName(sheetName);
-  if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
+function getSheet(sheetName, ss) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${ss}`);
   return sheet;
 }
 
@@ -156,18 +158,18 @@ function deleteUnusedColumns(min, max, sheet) {
 
 /** Highlights a given range via custom status presets
  *
- * @param {Range} cells That you want to highlight
+ * @param {Range} range That you want to highlight
  * @param {string} status The type of higlighting you want to apply
  * @param {string} [value] Value to set the cell contents to
  */
-function highlightCells(cells, status, value) {
-  if (value) cells.setValue(value);
+function highlightRange(range, status, value) {
+  if (value) range.setValue(value);
   const statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
-    cells.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
-  if (statusColors.background) cells.setBackground(statusColors.background);
-  if (statusColors.color) cells.setFontColor(statusColors.color);
-  if (statusColors.bold) cells.setFontWeight('bold');
+    range.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
+  if (statusColors.background) range.setBackground(statusColors.background);
+  if (statusColors.color) range.setFontColor(statusColors.color);
+  if (statusColors.bold) range.setFontWeight('bold');
 }
 
 /** Creates an object from a sheet's first row headers as keys with the values from the data object.
@@ -197,6 +199,7 @@ function insertRow(sheet, rowData, index, cb) {
   lock.waitLock(30000);
   try {
     const rowIndex = index || 1;
+    log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex+1} columns ${1}-${1+rowData.length}`)
     sheet
       .insertRowBefore(rowIndex)
       .getRange(rowIndex, 1, 1, rowData.length)
@@ -216,8 +219,12 @@ function insertRow(sheet, rowData, index, cb) {
  */
 function getColumnIndexFromString(sheet, searchTerm) {
   const headers = getHeaders(sheet);
+  log(log.STATUS, `Got headers: ${headers}`)
   for (var i = 0; i < headers.length; i++) {
-    if (headers[i] == searchTerm) return i + 1;
+    if (headers[i] == searchTerm) {
+      log(log.STATUS, `Header ${searchTerm} found at column ${i+1}`)
+      return i + 1;
+    }
   }
   return -1;
 }
@@ -242,6 +249,26 @@ function getNamedRange(name, ss) {
     .getNamedRanges()
     .filter(e => e.getName() === name)[0]
     .getRange();
+}
+
+
+/** Flashes a row of a sheet
+ *  Note: the range will end overridden with the top left's background color.
+ *
+ * @param {Range} range Range to flash across
+ * @param {string} flashColor Valid Google SpreadSheet color to flash
+ * @param {int} numFlashes Number of times to flash the range
+ * @param {int} timeout The timeout (in ms) for the flashes
+ */
+function flashRange(range, flashColor, numFlashes, timeout) {
+  const originalBgColor = range.getBackground();
+  for (var i = 0; i < numFlashes; i++) {
+    range.setBackground(flashColor);
+    SpreadsheetApp.flush();
+    Utilities.sleep(timeout);
+    range.setBackground(originalBgColor);
+    SpreadsheetApp.flush();
+  }
 }
 
 /** Clears all previous form items from a form
@@ -287,61 +314,4 @@ function clearFormDestinationSheet(form) {
   form.deleteAllResponses();
   destinationSheet.setName(`${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`);
   destinationSheet.hideSheet();
-}
-
-/** Returns the file ID of the current spreadsheet.
- *
- * @returns {string} - The file ID or undefined if not found.
- */
-function getFileId() {
-  const files = DriveApp.getFiles();
-  while (files.hasNext()) {
-    const file = files.next();
-    if (file.getName() == DriveApp.getFileById(current.getId())) {
-      return file.getId();
-    }
-  }
-}
-
-/** Toasts the user at the current spreadsheet
- *
- * @param {string} msg The message to sent
- * @param {string} title The title of the toast
- * @param {int} timeout The timeout of the toast
- */
-function toast(msg, title, timeout) {
-  const currentSpreadsheet = getLinkedSpreadsheet();
-  currentSpreadsheet.toast(msg, title, timeout);
-}
-/** Flashes a row of a sheet
- *  Note: the range will end overridden with the top left's background color.
- *
- * @param {Range} range Range to flash across
- * @param {string} flashColor Valid Google SpreadSheet color to flash
- * @param {int} numFlashes Number of times to flash the range
- * @param {int} timeout The timeout (in ms) for the flashes
- */
-function flashRange(range, flashColor, numFlashes, timeout) {
-  const originalBgColor = range.getBackground();
-  for (var i = 0; i < numFlashes; i++) {
-    range.setBackground(flashColor);
-    SpreadsheetApp.flush();
-    Utilities.sleep(timeout);
-    range.setBackground(originalBgColor);
-    SpreadsheetApp.flush();
-  }
-}
-
-/** Runs the function and catches then throws any error and logs it.
- *
- * @param {string} error Error to log
- * @param {string} msg The extra message to add
- */
-function catchError(fn, errorMsg) {
-  try {
-    return fn();
-  } catch (e) {
-    log(log.ERROR, errorMsg, e);
-    throw new ScriptError('BUILD', errorMsg, e);
-  }
 }

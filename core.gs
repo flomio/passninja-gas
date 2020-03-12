@@ -139,7 +139,7 @@ function updateFromConfig_(force = false) {
   catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
   catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
   catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
-  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
+  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields), 'Error building Contacts Form - ');
   //   setEnvVar(ENUMS.FIELDS_HASH, hash);
   //  } else {
   //    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
@@ -153,7 +153,7 @@ function updateFromConfig_(force = false) {
  */
 function onboardNewPassholderFromForm(e) {
   const ss = getLinkedSpreadsheet();
-  const sheet = getSheet(ENUMS.CONTACTS);
+  const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
     .filter(v => !!v[0]);
@@ -177,7 +177,7 @@ function onboardNewPassholderFromForm(e) {
  */
 function createPass_() {
   const ss = getLinkedSpreadsheet();
-  const contactSheet = getSheet(ENUMS.CONTACTS);
+  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
 
   const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
@@ -239,7 +239,8 @@ function sendText_() {
   let passUrl;
   try {
     twilio = new TwilioService();
-    const contactSheet = getSheet(ENUMS.CONTACTS);
+    const ss = getLinkedSpreadsheet()
+    const contactSheet = getSheet(ENUMS.CONTACTS, ss);
     passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
       .getValue();
@@ -274,10 +275,12 @@ function mockScan_() {
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
-  const contactSheet = getSheet(ENUMS.CONTACTS);
+  const ss = new VSpreadsheet()
+  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
+  log(log.WARNING, serialNumberRange.getValue())
 
   const payload = {
     reader: {
@@ -293,5 +296,6 @@ function mockScan_() {
       message: serialNumberRange.getValue()
     }
   };
-  processScanEvent(payload);
+  addEvent(ss, JSON.stringify(payload));
+  ss.flush()
 }

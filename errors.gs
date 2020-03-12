@@ -37,3 +37,17 @@ class CredentialsError extends PassNinjaGASError {
     super((code = 'CREDS'), ...params);
   }
 }
+
+/** Runs the function and catches then throws any error and logs it.
+ *
+ * @param {string} error Error to log
+ * @param {string} msg The extra message to add
+ */
+function catchError(fn, errorMsg) {
+  try {
+    return fn();
+  } catch (e) {
+    log(log.ERROR, errorMsg, e);
+    throw new ScriptError('BUILD', errorMsg, e);
+  }
+}

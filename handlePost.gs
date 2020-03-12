@@ -3,19 +3,29 @@
  * @returns {object} Standard response with a JavaScript text body
  */
 function doPost(e) {
-  const response = addEvent(getSheet(ENUMS.EVENTS), e.postData.contents);
+  const spreadsheet = new VSpreadsheet()
+  const response = addEvent(spreadsheet, e.postData.contents);
   return ContentService.createTextOutput(JSON.stringify(response)).setMimeType(ContentService.MimeType.JSON);
 }
 
 /** Adds a PassNinja event to a new row in the target spreadsheet
- * @param {Sheet} targetSheet Sheet to insert the event into
+ * @param {Sheet} sheet Sheet to insert the event into
  * @param {object} eventJson JSON representation of the PassNinja event
  * @return {boolean} If the action completed successfully
  */
-function addEvent(targetSheet, eventJson) {
+function addEvent(spreadsheet, eventJson) {
   let event;
-
-  try {
+  let scan=false;
+  const sheet = getSheet(ENUMS.EVENTS, spreadsheet)
+  const callback = () => {
+    spreadsheet.flush()
+    autoResizeSheet(sheet._internal);
+    var range = sheet._internal.getRange('A2:E2');
+    flashRange(range, 'red', 2, 50);
+    sheet.setActiveSelection(range);
+  }
+    
+ try {
     eventJson = JSON.parse(eventJson);
     if (eventJson.reader) {
       event = [
@@ -25,7 +35,7 @@ function addEvent(targetSheet, eventJson) {
         eventJson.data.message,
         JSON.stringify(eventJson.data)
       ];
-      processScanEvent(eventJson);
+      scan = true;
     } else {
       event = [
         eventJson.date,
@@ -35,31 +45,24 @@ function addEvent(targetSheet, eventJson) {
         JSON.stringify(eventJson.event.passJson)
       ];
     }
-  } catch (e) {
-    insertRow(targetSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, () => {
-      autoResizeSheet(targetSheet);
-      let range = targetSheet.getRange('A2:E2');
-      flashRange(range, 'red', 1, 50);
-      targetSheet.setActiveSelection(range);
-    });
-    return {
-      error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}`
-    };
-  }
+ } catch (e) {
+   insertRow(sheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2, callback);
+   return {
+     error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}`
+   };
+ }
+ 
+ if (scan) {
+   const processResponse = processScanEvent(spreadsheet, eventJson);
+   insertRow(sheet, [new Date().toUTCString(), 'SCAN_RESPONSE', eventJson.passTypeIdentifier.replace('pass.com.passninja.', ''), eventJson.data.message,, JSON.stringify(processResponse)], 2, callback);
+ }
 
-  insertRow(targetSheet, event, 2, () => {
-    autoResizeSheet(targetSheet);
-    var range = targetSheet.getRange('A2:E2');
-    flashRange(range, 'red', 1, 50);
-    targetSheet.setActiveSelection(range);
-  });
+  insertRow(sheet, event, 2, callback);
 
   log(log.SUCCESS, 'Successfully added event.');
   return {
     data: event
   };
-
-  //return rowToJson(targetSheet, targetSheet.getRange('A2:E2'));
 }
 
 /*
@@ -79,23 +82,29 @@ function addEvent(targetSheet, eventJson) {
  *    }
  *}
  */
-function processScanEvent(eventJson) {
-  const sheet = getSheet(ENUMS.SCANNERS);
+function processScanEvent(spreadsheet, eventJson) {
+  log(log.STATUS, 'DETECTED SCAN EVENT, PROCESSING...')
+  const sheet = getSheet(ENUMS.SCANNERS, spreadsheet)
   const startingRow = 2;
+  const serialNumberColumnIndex = getColumnIndexFromString(sheet, 'serialNumber')
+  const passSerialNumberColumnIndex = getColumnIndexFromString(sheet, 'attachedPassSerial')
   const columnValues = sheet
-    .getRange(startingRow, getColumnIndexFromString(sheet, 'serialNumber'), sheet.getLastRow())
+    .getRange(startingRow, serialNumberColumnIndex, sheet.getLastRow()-1)
     .getValues();
-  const matchIndex = columnValues.map(e => e[0]).indexOf(eventJson.reader.serial_number);
+  let matchIndex = columnValues.map(e => e[0]).indexOf(eventJson.reader.serial_number);
+  log(log.SUCCESS, `Found match for serial ${eventJson.reader.serial_number} at row ${matchIndex}`)
 
   if (matchIndex != -1) {
-    let range = sheet.getRange(matchIndex + startingRow, 1, 1, sheet.getLastColumn());
+    matchIndex+=2 // To Offset back to 1 indexing
+    let range = sheet.getRange(matchIndex, 1, 1, sheet.getLastColumn());
+    log(log.STATUS, `Got cell range for matched scanner with last column ${sheet.getLastColumn()}`)
+        log(log.STATUS, `Range values are: ${range.getValues()}`)
 
-    let serialNumberCellRange = sheet.getRange(
-      matchIndex + startingRow,
-      getColumnIndexFromString(sheet, 'attachedPassSerial')
-    );
+    let serialNumberCellRange = sheet.getRange(matchIndex, passSerialNumberColumnIndex);
+    log(log.WARNING, range.getValues())
 
     const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
+    log(log.STATUS, serial, id, status, provisioned, attachedPassSerial, start, end, price)
     if (status === 'RESERVED' && attachedPassSerial !== eventJson.data.message) {
       throw new ScriptError('Requested resource is already in use by another pass.');
     }
@@ -106,18 +115,20 @@ function processScanEvent(eventJson) {
     const startTime = parseInt(startHours) * 60 + parseInt(startMinutes);
     const endTime = parseInt(endHours) * 60 + parseInt(endMinutes);
 
+    log(log.STATUS, 'Attempting to approve scan...', provisioned, startTime, endTime, eventTime)
     if (provisioned && startTime <= eventTime && eventTime <= endTime) {
-      new PassNinjaScannerService().notifyScanner({
-        request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE'
-      });
+      const scannerPayload = {request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE'}
+      log(log.SUCCESS, 'Approved scan, finalizing processing...')
+      const scannerResponse = new PassNinjaScannerService().notifyScanner();
 
-      const contactSheet = getSheet(ENUMS.CONTACTS);
-      const contactPassSerials = contactSheet
-        .getRange(startingRow, getColumnIndexFromString(contactSheet, 'serialNumber'), contactSheet.getLastRow())
-        .getValues();
-      const serialMatchIndex = contactPassSerials.map(e => e[0]).indexOf(eventJson.data.message);
-
+      const contactSheet = getSheet(ENUMS.CONTACTS, spreadsheet);
+      log(log.WARNING, contactSheet.getLastRow())
+      const contactPassSerials = contactSheet.getRange(startingRow, getColumnIndexFromString(contactSheet, 'serialNumber'), contactSheet.getLastRow()-1)
+      
+      log(log.STATUS, 'Attemping to find a match for event serial in contacts.')  
+      const serialMatchIndex = contactPassSerials.getValues().map(e => e[0]).indexOf(eventJson.data.message);
       if (serialMatchIndex != -1) {
+        log(log.SUCCESS, `Found match for attachedPassSerial in contacts in row ${serialMatchIndex}.`)
         const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
         const contactRange = contactSheet.getRange(serialMatchIndex + startingRow, 1, 1, passNinjaColumnStart - 1);
         const passJson = getRowPassPayload(contactRange);
@@ -125,25 +136,21 @@ function processScanEvent(eventJson) {
         if (status === 'AVAILABLE') {
           serialNumberCellRange.setValue(eventJson.data.message);
           passJson.pass.lockerNumber = id;
-          sheet.getRange(matchIndex + startingRow, getColumnIndexFromString(sheet, 'status')).setValue('RESERVED');
+          sheet.getRange(matchIndex, getColumnIndexFromString(sheet, 'status')).setValue('RESERVED');
           // need to set locker # in contacts
         } else {
           serialNumberCellRange.setValue('');
           passJson.pass.lockerNumber = 'unassigned';
-          sheet.getRange(matchIndex + startingRow, getColumnIndexFromString(sheet, 'status')).setValue('AVAILABLE');
+          sheet.getRange(matchIndex, getColumnIndexFromString(sheet, 'status')).setValue('AVAILABLE');
         }
 
         const putResponse = new PassNinjaService().putPass(passJson, eventJson.data.message);
         log(log.STATUS, JSON.stringify(putResponse));
-        eventJson.data.serialNumber;
+        return scannerPayload
       } else {
-        /*die*/
+        log(log.ERROR, 'Could not find serial in the contacts sheet') 
       }
     }
-  } else {
-    // Scanner not found logic
-    // Add new scanner to the sheet?
-    sheet.getRange(6, 1).setValue(eventJson);
   }
 }
 
@@ -162,5 +169,5 @@ function testPost() {
       message: '3bdc8ba0-aade-4d0d-84d6-38abe4ff4baa'
     }
   };
-  processScanEvent(payload);
+  addEvent(new VSpreadsheet(), JSON.stringify(payload))
 }
