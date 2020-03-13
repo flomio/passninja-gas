@@ -94,8 +94,11 @@ class VSheet {
 
 class VRange {
   constructor(rows, row, col, numRows = 1, numColumns = 1) {
+    log(log.STATUS, `Creating range from row ${row}-${row + numRows} and columns ${col}-${col + numColumns}`, row < 1);
+    if (row < 1 || col < 1 || numRows < 1 || numColumns < 1) {
+      throw new ScriptError('Cannot create a VRange with any parameter < 1');
+    }
     this.rows = rows;
-    log(log.STATUS, `Creating range from row ${row}-${row + numRows} and columns ${col}-${col + numColumns}`);
     this.row = row;
     this.col = col;
     this.numRows = numRows;
@@ -119,7 +122,6 @@ class VRange {
     for (let i = this.row; i <= this.row + this.numRows - 1; i++) {
       const row = [];
       for (let j = this.col; j <= this.col + this.numColumns - 1; j++) {
-        //            log(log.STATUS, `Adding value from row ${i-1}, ${j-1}, ${this.rows[i-1][j-1]}`)
         row.push(this.rows[i - 1][j - 1]);
       }
       result.push(row);
@@ -148,3 +150,11 @@ class VRange {
     } else throw new ScriptError('The values given do not match the size of the 2D array range.');
   }
 }
+
+try {
+  module.exports = {
+    VSpreadsheet,
+    VSheet,
+    VRange
+  };
+} catch {}
