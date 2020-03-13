@@ -163,4 +163,4 @@ try {
     VSheet,
     VRange
   };
-} catch {}
+} catch (err) {}
