@@ -98,6 +98,12 @@ class VRange {
     if (row < 1 || col < 1 || numRows < 1 || numColumns < 1) {
       throw new ScriptError('Cannot create a VRange with any parameter < 1');
     }
+    if (
+      (row > rows.length || row - 1 + numRows > rows.length) &&
+      (col - 1 + numColumns > rows[0].length || col > rows[0].length)
+    ) {
+      throw new ScriptError('Cannot create a VRange out of bounds of source data');
+    }
     this.rows = rows;
     this.row = row;
     this.col = col;

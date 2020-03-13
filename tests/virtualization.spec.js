@@ -1,7 +1,8 @@
-const { VSpreadsheet, VSheet, VRange } = require('../virtualization.gs');
+const { VSheet, VRange } = require('../virtualization.gs');
 
 // Patching globals from GAS runtime
-global.log = (...args) => console.log('GAS: ', args);
+// global.log = (...args) => console.log('GAS: ', args);
+global.log = () => {};
 global.log.STATUS = 'STATUS';
 global.log.ERROR = 'ERROR';
 global.log.WARNING = 'WARNING';
@@ -9,14 +10,8 @@ global.log.SUCCESS = 'SUCCESS';
 global.ScriptError = Error;
 global.testing = true;
 
-describe('VSpreadsheet tests', () => {
-  it('b spec', () => {
-    expect(2 + 2).toBe(4);
-  });
-});
-
 const createSheetProp = () => {
-  return {
+  return new VSheet({
     getName: () => 'test_sheet',
     getLastRow: () => 3,
     getLastColumn: () => 3,
@@ -27,26 +22,55 @@ const createSheetProp = () => {
       }
       return new VRange(arr, row, col, numRows, numCols);
     }
-  };
+  });
 };
 
-describe('VSheet tests', () => {
+describe('VSheet', () => {
   it('it to instantiate correctly', () => {
-    const sheetProp = createSheetProp();
-    console.log(sheetProp.getRange(1, 1, 3, 3));
-    const range = new VSheet(sheetProp);
-    expect(range).toHaveProperty('name', sheetProp.getName());
-    expect(range).toHaveProperty('maxRow', sheetProp.getLastRow());
-    expect(range).toHaveProperty('maxCol', sheetProp.getLastColumn());
-    expect(range).toHaveProperty('rows', [
+    const sheet = createSheetProp();
+    expect(sheet).toHaveProperty('name', sheet.getName());
+    expect(sheet).toHaveProperty('maxRow', sheet.getLastRow());
+    expect(sheet).toHaveProperty('maxCol', sheet.getLastColumn());
+    expect(sheet).toHaveProperty('rows', [
       ['', '', ''],
       ['', '', ''],
       ['', '', '']
     ]);
   });
+
+  it('insertRowBefore runs properly', () => {
+    const sheet = createSheetProp();
+    expect(sheet).toHaveProperty('rows', [
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', '']
+    ]);
+  });
+
+  it('insertColBefore runs properly', () => {
+    const sheet = createSheetProp();
+    expect(sheet).toHaveProperty('rows', [
+      ['', '', ''],
+      ['', '', ''],
+      ['', '', '']
+    ]);
+  });
+
+  it('getRange runs properly', () => {
+    const sheet = createSheetProp();
+    expect(sheet.getRange(1, 1, 2, 2).getValues()).toEqual([
+      ['', ''],
+      ['', '']
+    ]);
+  });
+
+  it('getRange fails properly if out of range', () => {
+    const sheet = createSheetProp();
+    expect(() => sheet.getRange(1, 1, 4, 4)).toThrow(ScriptError);
+  });
 });
 
-describe('VRange tests', () => {
+describe('VRange', () => {
   it('it to instantiate correctly', () => {
     const rows = [
       ['', '', ''],
