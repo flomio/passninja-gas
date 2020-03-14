@@ -104,22 +104,23 @@ function processScanEvent(spreadsheet, eventJson) {
   const passSerialNumberColumnIndex = getColumnIndexFromString(sheet, 'attachedPassSerial');
   const columnValues = sheet.getRange(startingRow, serialNumberColumnIndex, sheet.getLastRow() - 1).getValues();
   let matchIndex = columnValues.map(e => e[0]).indexOf(eventJson.reader.serial_number);
-  log(log.SUCCESS, `Found match for serial ${eventJson.reader.serial_number} at row ${matchIndex}`);
 
   if (matchIndex != -1) {
+    log(log.SUCCESS, `Found match for serial ${eventJson.reader.serial_number} at row ${matchIndex}`);
     matchIndex += 2; // To Offset back to 1 indexing
     let range = sheet.getRange(matchIndex, 1, 1, sheet.getLastColumn());
-    log(log.STATUS, `Got cell range for matched scanner with last column ${sheet.getLastColumn()}`);
-    log(log.STATUS, `Range values are: ${range.getValues()}`);
-
     let serialNumberCellRange = sheet.getRange(matchIndex, passSerialNumberColumnIndex);
-    log(log.WARNING, range.getValues());
-
     const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
-    log(log.STATUS, serial, id, status, provisioned, attachedPassSerial, start, end, price);
-    if (status === 'RESERVED' && attachedPassSerial !== eventJson.data.message) {
-      throw new ScriptError('Requested resource is already in use by another pass.');
+
+    if (status === 'RESERVED') {
+      if (attachedPassSerial === '') {
+        throw new ScriptError('Requested resource is marked in use but no pass is attached...manual fix required.');
+      }
+      if (attachedPassSerial !== eventJson.data.message) {
+        throw new ScriptError('Requested resource is already in use by another pass.');
+      }
     }
+
     const eventTimestamp = new Date(eventJson.data.timeStamp);
     const eventTime = eventTimestamp.getHours() * 60 + eventTimestamp.getMinutes();
     const [startHours, startMinutes] = start.split(':');
@@ -127,21 +128,18 @@ function processScanEvent(spreadsheet, eventJson) {
     const startTime = parseInt(startHours) * 60 + parseInt(startMinutes);
     const endTime = parseInt(endHours) * 60 + parseInt(endMinutes);
 
-    log(log.STATUS, 'Attempting to approve scan...', provisioned, startTime, endTime, eventTime);
     if (provisioned && startTime <= eventTime && eventTime <= endTime) {
-      const scannerPayload = { request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE' };
       log(log.SUCCESS, 'Approved scan, finalizing processing...');
+      const scannerPayload = { request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE' };
       const scannerResponse = new PassNinjaScannerService().notifyScanner();
 
       const contactSheet = getSheet(ENUMS.CONTACTS, spreadsheet);
-      log(log.WARNING, contactSheet.getLastRow());
       const contactPassSerials = contactSheet.getRange(
         startingRow,
         getColumnIndexFromString(contactSheet, 'serialNumber'),
         contactSheet.getLastRow() - 1
       );
 
-      log(log.STATUS, 'Attemping to find a match for event serial in contacts.');
       const serialMatchIndex = contactPassSerials
         .getValues()
         .map(e => e[0])
@@ -156,7 +154,6 @@ function processScanEvent(spreadsheet, eventJson) {
           serialNumberCellRange.setValue(eventJson.data.message);
           passJson.pass.lockerNumber = id;
           sheet.getRange(matchIndex, getColumnIndexFromString(sheet, 'status')).setValue('RESERVED');
-          // need to set locker # in contacts
         } else {
           serialNumberCellRange.setValue('');
           passJson.pass.lockerNumber = 'unassigned';
@@ -164,7 +161,6 @@ function processScanEvent(spreadsheet, eventJson) {
         }
 
         const putResponse = new PassNinjaService().putPass(passJson, eventJson.data.message);
-        log(log.STATUS, JSON.stringify(putResponse));
         log('FUNCTION', 'ENDING PROCESSSCANEVENT');
         return scannerPayload;
       } else {

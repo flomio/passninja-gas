@@ -9,11 +9,7 @@ var sendRequest = (url, options = {}, serviceName) => {
   if (response.getResponseCode() < 300 && response.getResponseCode() >= 200) {
     return JSON.parse(response.getContentText());
   } else {
-    throw new ServiceError(
-      'NON200RESPONSE',
-      response.getResponseCode(),
-      `${serviceName || ''}: ${response.getContentText()}`
-    );
+    throw new ServiceError(response.getResponseCode(), `${serviceName || ''}: ${response.getContentText()}`);
   }
 };
 
@@ -25,10 +21,7 @@ class PassNinjaService {
       this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
     } catch (err) {
       if (err instanceof ScriptError)
-        throw new CredentialsError(
-          this.serviceName,
-          `${this.serviceName}: PassNinja API credentials have not been set up.`
-        );
+        throw new CredentialsError(`${this.serviceName}: PassNinja API credentials have not been set up.`);
     }
     this.baseUrl = 'https://api.passninja.com/v1';
     this.passesPostRoute = `${this.baseUrl}/passes/`;
@@ -101,10 +94,7 @@ class TwilioService {
       this.phoneNumber = getEnvVar(ENUMS.TWILIO_NUMBER);
     } catch (err) {
       if (err instanceof ScriptError)
-        throw new CredentialsError(
-          this.serviceName,
-          `${this.serviceName}: Twilio API credentials have not been set up.`
-        );
+        throw new CredentialsError(`${this.serviceName}: Twilio API credentials have not been set up.`);
     }
     this.postRoute = `${this.baseUrl}/Accounts/${this.accountSid}/Messages.json`;
   }
@@ -125,8 +115,7 @@ class TwilioService {
   }
 
   sendText(to, body) {
-    if (body.length > 160)
-      throw new ServiceError(this.serviceName, `${this.serviceName}: The text should be limited to 160 characters`);
+    if (body.length > 160) throw new ServiceError(`${this.serviceName}: The text should be limited to 160 characters`);
     const options = {
       method: 'post',
       payload: {

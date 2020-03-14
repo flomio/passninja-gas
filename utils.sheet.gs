@@ -20,8 +20,7 @@ function getLinkedSpreadsheet() {
       return ss;
     }
   }
-  throw new ScriptError(
-    'UTILS',
+  throw new UtilsError(
     `No linked/bound spreadsheet connected to GAS Project for user ${Session.getActiveUser().getEmail()}.`
   );
 }
@@ -35,7 +34,7 @@ function getLinkedSpreadsheet() {
  */
 function getEnvVar(name, throwError = true) {
   const envVar = PropertiesService.getScriptProperties().getProperty(name);
-  if (throwError && !envVar) throw new ScriptError('UTILS', `Script variable ${name} does not exist.`);
+  if (throwError && !envVar) throw new UtilsError(`Script variable ${name} does not exist.`);
   return envVar;
 }
 
@@ -85,7 +84,7 @@ function getConfigConstants(spreadsheet) {
       .getValues()
       .filter(row => !!row[0])
   );
-  if (!constants.passType) throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
+  if (!constants.passType) throw new UtilsError('You must enter a passType in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigConstants');
   return constants;
 }
@@ -98,7 +97,7 @@ function getConfigFields(spreadsheet) {
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter(row => !!row[0]);
-  if (!fieldsData.length) throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
+  if (!fieldsData.length) throw new UtilsError('You must enter at least one field in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigFields');
   return fieldsData;
 }
@@ -123,7 +122,7 @@ function getAllFuncs(toCheck) {
 function getSheet(sheetName, ss) {
   log(log.FUNCTION, 'STARTING sheetName');
   const sheet = ss.getSheetByName(sheetName);
-  if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${ss}`);
+  if (!sheet) throw new UtilsError(`Sheet ${sheetName} not found in spreadsheet ${ss}`);
   log(log.FUNCTION, 'ENDING sheetName');
   return sheet;
 }
@@ -139,7 +138,7 @@ function getValidSheetSelectedRow(sheet) {
   const selectedRow = sheet.getActiveCell().getRow();
   const rowNumber = Number(selectedRow);
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
-    throw new ScriptError('UTILS', `Row ${selectedRow} is not valid.`);
+    throw new UtilsError(`Row ${selectedRow} is not valid.`);
     return false;
   }
   log(log.FUNCTION, 'ENDING getValidSheetSelectedRow');

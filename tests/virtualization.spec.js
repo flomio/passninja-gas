@@ -15,6 +15,8 @@ const createSheetProp = () => {
     getName: () => 'test_sheet',
     getLastRow: () => 3,
     getLastColumn: () => 3,
+    getMaxRows: () => 3,
+    getMaxColumns: () => 3,
     getRange: (row, col, numRows, numCols) => {
       var arr = [];
       for (var i = 0; i < numRows; i++) {

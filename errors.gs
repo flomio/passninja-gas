@@ -3,38 +3,52 @@
 class PassNinjaGASError extends Error {
   constructor(code = 'GENERIC', ...params) {
     super(...params);
-    log(log.ERROR, 'New ServiceError thrown from: ', params);
+    this.code = code;
+    log(log.ERROR, `New ${this.code} Error thrown from: `, params);
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, PassNinjaGASError);
     }
-
-    this.code = code;
   }
 }
 
 /** Custom Error type thrown when a Service encounters an error.
  */
 class ServiceError extends PassNinjaGASError {
-  constructor(code, status, ...params) {
-    super((code = 'SERVICE'), ...params);
-    this.status = status;
+  constructor(...params) {
+    super('SERVICE', ...params);
+  }
+}
+
+/** Custom Error type thrown when a Script encounters an error.
+ */
+class UtilsError extends PassNinjaGASError {
+  constructor(...params) {
+    super('UTILS', ...params);
   }
 }
 
 /** Custom Error type thrown when a Script encounters an error.
  */
 class ScriptError extends PassNinjaGASError {
-  constructor(code, ...params) {
-    super((code = 'SCRIPT'), ...params);
+  constructor(...params) {
+    super('SCRIPT', ...params);
   }
 }
 
 /** Custom Error type thrown when credentials have not been added to the script.
  */
 class CredentialsError extends PassNinjaGASError {
-  constructor(code, ...params) {
-    super((code = 'CREDS'), ...params);
+  constructor(...params) {
+    super('CREDS', ...params);
+  }
+}
+
+/** Custom Error type thrown when element build has failed.
+ */
+class BuildError extends PassNinjaGASError {
+  constructor(...params) {
+    super('BUILD', ...params);
   }
 }
 
@@ -48,6 +62,6 @@ function catchError(fn, errorMsg) {
     return fn();
   } catch (e) {
     log(log.ERROR, errorMsg, e);
-    throw new ScriptError('BUILD', errorMsg, e);
+    throw new BuildError(errorMsg, e);
   }
 }

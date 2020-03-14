@@ -22,6 +22,10 @@ class VSpreadsheet {
     return this._internal.getId();
   }
 
+  getNamedRanges() {
+    return this._internal.getNamedRanges();
+  }
+
   flush() {
     log(log.STATUS, 'FLUSHING SHEETS');
     if (Object.keys(this.sheets).length) {
@@ -40,8 +44,10 @@ class VSheet {
   constructor(sheet) {
     this._internal = sheet;
     this.name = this._internal.getName();
-    this.maxRow = this._internal.getLastRow();
-    this.maxCol = this._internal.getLastColumn();
+    this.lastRow = this._internal.getLastRow();
+    this.lastCol = this._internal.getLastColumn();
+    this.maxRow = this._internal.getMaxRows();
+    this.maxCol = this._internal.getMaxColumns();
     log(log.STATUS, `Sheet ${this.name} has ${this.maxRow} rows and ${this.maxCol} columns.`);
     this.rows = sheet.getRange(1, 1, this.maxRow, this.maxCol).getValues();
   }
@@ -84,15 +90,19 @@ class VSheet {
   }
 
   getLastColumn() {
-    return this.maxCol;
+    return this.lastCol;
   }
 
   getLastRow() {
-    return this.maxRow;
+    return this.lastRow;
   }
 
-  getNamedRanges() {
-    return this._internal.getNamedRanges();
+  getMaxColumns() {
+    return this.maxCol;
+  }
+
+  getMaxRows() {
+    return this.maxRow;
   }
 
   getRange(row, col, numRows = 1, numColumns = 1) {
