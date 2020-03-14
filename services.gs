@@ -1,10 +1,11 @@
 var sendRequest = (url, options = {}, serviceName) => {
   log(
-    log.STATUS,
+    log.FUNCTION,
     `Attempting to ${options.method.toUpperCase()} ${url} with payload: ${JSON.stringify(options.payload)}`
   );
   options.muteHttpExceptions = true;
   response = UrlFetchApp.fetch(url, { ...options });
+  log(log.FUNCTION, 'Received response from fetch');
   if (response.getResponseCode() < 300 && response.getResponseCode() >= 200) {
     return JSON.parse(response.getContentText());
   } else {

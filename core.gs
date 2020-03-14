@@ -3,6 +3,7 @@
  *  Spreadsheet is linked via a trigger to the script.
  */
 function createSpreadsheet() {
+  log(log.FUNCTION, 'STARTING CREATESPREADSHEET');
   const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
   Utilities.sleep(2000);
@@ -38,6 +39,7 @@ function createSpreadsheet() {
     'Your PassNinja Spreadsheet',
     `Here is the link to your spreadsheet ${spreadsheetUrl}`
   );
+  log(log.FUNCTION, 'FINISHED CREATESPREADSHEET');
   throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`);
 }
 
@@ -128,9 +130,9 @@ function storePassNinjaDetails_() {
  */
 function updateFromConfig_(force = false) {
   const ss = getLinkedSpreadsheet();
-  const fields = getConfigFields();
+  const fields = getConfigFields(ss);
   const fieldNames = fields.map(f => f[0]);
-  const constants = getConfigConstants();
+  const constants = getConfigConstants(ss);
   //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
   // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
@@ -176,6 +178,7 @@ function onboardNewPassholderFromForm(e) {
  * @returns {ServiceError} If the response from PassNinjaService is non 2xx.
  */
 function createPass_() {
+  log(log.FUNCTION, 'STARTING CREATEPASS_');
   const ss = getLinkedSpreadsheet();
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
 
@@ -188,7 +191,7 @@ function createPass_() {
   const passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
 
-  const payloadJSONString = getRowPassPayload(rowRange);
+  const payloadJSONString = getRowPassPayload(rowRange, ss);
   const serial = serialNumberRange.getValue();
 
   const originalContent = passNinjaContentRange.getValues();
@@ -224,6 +227,7 @@ function createPass_() {
 
   if (!serial) sendText_();
 
+  log(log.FUNCTION, 'FINISHED CREATEPASS_');
   return response.getContentText();
 }
 
@@ -234,6 +238,7 @@ function createPass_() {
  * @returns {Error} If an unexpected error occurred running TwilioService.
  */
 function sendText_() {
+  log(log.FUNCTION, 'RUNNING SENDTEXT_');
   let twilio;
   let phoneNumber;
   let passUrl;
@@ -264,6 +269,7 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
+  log(log.FUNCTION, 'FINISHED SENDTEXT_');
 }
 
 function mockScan_() {
@@ -275,6 +281,7 @@ function mockScan_() {
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
+  log(log.FUNCTION, 'RUNNING MOCKSCAN_');
   const ss = new VSpreadsheet();
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
@@ -298,4 +305,5 @@ function mockScan_() {
   };
   addEvent(ss, JSON.stringify(payload));
   ss.flush();
+  log(log.FUNCTION, 'FINISHED MOCKSCAN_');
 }

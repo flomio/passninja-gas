@@ -14,11 +14,13 @@ function doPost(e) {
  * @return {boolean} If the action completed successfully
  */
 function addEvent(spreadsheet, eventJson) {
+  log('FUNCTION', 'STARTING ADD EVENT');
   let event;
   let scan = false;
   const sheet = getSheet(ENUMS.EVENTS, spreadsheet);
   const callback = () => {
     spreadsheet.flush();
+    log(log.FUNCTION, 'TECHNICALLY ALL LOGIC IS FINISHED, FLASHING FOLLOWS.');
     autoResizeSheet(sheet._internal);
     var range = sheet._internal.getRange('A2:E2');
     flashRange(range, 'red', 2, 50);
@@ -71,7 +73,7 @@ function addEvent(spreadsheet, eventJson) {
 
   insertRow(sheet, event, 2, callback);
 
-  log(log.SUCCESS, 'Successfully added event.');
+  log('FUNCTION', 'ENDING ADD EVENT');
   return {
     data: event
   };
@@ -95,7 +97,7 @@ function addEvent(spreadsheet, eventJson) {
  *}
  */
 function processScanEvent(spreadsheet, eventJson) {
-  log(log.STATUS, 'DETECTED SCAN EVENT, PROCESSING...');
+  log('FUNCTION', 'STARTING PROCESSSCANEVENT');
   const sheet = getSheet(ENUMS.SCANNERS, spreadsheet);
   const startingRow = 2;
   const serialNumberColumnIndex = getColumnIndexFromString(sheet, 'serialNumber');
@@ -148,7 +150,7 @@ function processScanEvent(spreadsheet, eventJson) {
         log(log.SUCCESS, `Found match for attachedPassSerial in contacts in row ${serialMatchIndex}.`);
         const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
         const contactRange = contactSheet.getRange(serialMatchIndex + startingRow, 1, 1, passNinjaColumnStart - 1);
-        const passJson = getRowPassPayload(contactRange);
+        const passJson = getRowPassPayload(contactRange, spreadsheet);
 
         if (status === 'AVAILABLE') {
           serialNumberCellRange.setValue(eventJson.data.message);
@@ -163,28 +165,11 @@ function processScanEvent(spreadsheet, eventJson) {
 
         const putResponse = new PassNinjaService().putPass(passJson, eventJson.data.message);
         log(log.STATUS, JSON.stringify(putResponse));
+        log('FUNCTION', 'ENDING PROCESSSCANEVENT');
         return scannerPayload;
       } else {
         log(log.ERROR, 'Could not find serial in the contacts sheet');
       }
     }
   }
-}
-
-function testPost() {
-  const payload = {
-    reader: {
-      type: 'FloBlePlus',
-      serial_number: 'RR464-0017564',
-      firmware: 'ACR1255U-J1 SWV 3.00.05'
-    },
-    uuid: '358bb260-62e2-11ea-a4c8-136282d9f83b',
-    type: 'apple-pay',
-    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
-    data: {
-      timeStamp: '2020-03-10T15:17:04.789Z',
-      message: '3bdc8ba0-aade-4d0d-84d6-38abe4ff4baa'
-    }
-  };
-  addEvent(new VSpreadsheet(), JSON.stringify(payload));
 }

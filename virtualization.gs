@@ -4,6 +4,10 @@ class VSpreadsheet {
     this.sheets = {};
   }
 
+  getRangeByName(name) {
+    return this._internal.getRangeByName(name);
+  }
+
   getSheetByName(name) {
     const sheet = this.sheets[name] || this._internal.getSheetByName(name);
     if (sheet) {
@@ -20,10 +24,15 @@ class VSpreadsheet {
 
   flush() {
     log(log.STATUS, 'FLUSHING SHEETS');
-    for (let sheetName in this.sheets) {
-      log(log.STATUS, `FLUSHING SHEET ${sheetName}`);
-      this.sheets[sheetName].flush();
+    if (Object.keys(this.sheets).length) {
+      for (let sheetName in this.sheets) {
+        log(log.STATUS, `FLUSHING SHEET ${sheetName}`);
+        this.sheets[sheetName].flush();
+      }
+    } else {
+      log(log.WARNING, 'SHEET FLUSH SKIPPED, PREVIOUSLY FLUSHED');
     }
+    this.sheets = {};
   }
 }
 

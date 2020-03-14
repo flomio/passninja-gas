@@ -5,6 +5,7 @@
  * @returns {Spreadsheet} The spreadsheet that is linked to the GAS Script Project.
  */
 function getLinkedSpreadsheet() {
+  log(log.FUNCTION, 'STARTING getLinkedSpreadsheet');
   const fnRunner = [
     [SpreadsheetApp.getActive, []],
     [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
@@ -14,6 +15,7 @@ function getLinkedSpreadsheet() {
   for ([fn, args] of fnRunner) {
     ss = fn(...args);
     if (ss) {
+      log(log.FUNCTION, 'ENDING getLinkedSpreadsheet');
       log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`);
       return ss;
     }
@@ -51,9 +53,10 @@ function setEnvVar(name, value) {
  *
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(rowRange) {
-  const fieldsData = getConfigFields();
-  const { passType, ...passFieldConstants } = getConfigConstants();
+function getRowPassPayload(rowRange, spreadsheet) {
+  log(log.FUNCTION, 'STARTING getRowPassPayload');
+  const fieldsData = getConfigFields(spreadsheet);
+  const { passType, ...passFieldConstants } = getConfigConstants(spreadsheet);
   const rowValues = rowRange.getValues()[0];
   log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`);
   const postData = {
@@ -68,31 +71,35 @@ function getRowPassPayload(rowRange) {
       postData.pass[fieldName] = rowValues[i];
     }
   }
-  log(log.SUCCESS, postData);
+  log(log.FUNCTION, 'ENDING getRowPassPayload');
   return postData;
 }
 
 /** Returns an object with key:value pairs from the Config sheet
  */
-function getConfigConstants() {
+function getConfigConstants(spreadsheet) {
+  log(log.FUNCTION, 'STARTING getConfigConstants');
   const constants = Object.fromEntries(
-    getLinkedSpreadsheet()
+    spreadsheet
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
       .filter(row => !!row[0])
   );
   if (!constants.passType) throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
+  log(log.FUNCTION, 'ENDING getConfigConstants');
   return constants;
 }
 
 /** Returns a list of config field entries
  */
-function getConfigFields() {
-  const fieldsData = getLinkedSpreadsheet()
+function getConfigFields(spreadsheet) {
+  log(log.FUNCTION, 'STARTING getConfigFields');
+  const fieldsData = spreadsheet
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter(row => !!row[0]);
   if (!fieldsData.length) throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
+  log(log.FUNCTION, 'ENDING getConfigFields');
   return fieldsData;
 }
 
@@ -114,8 +121,10 @@ function getAllFuncs(toCheck) {
  * @returns {Sheet} Google Sheet object
  */
 function getSheet(sheetName, ss) {
+  log(log.FUNCTION, 'STARTING sheetName');
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${ss}`);
+  log(log.FUNCTION, 'ENDING sheetName');
   return sheet;
 }
 
@@ -126,12 +135,14 @@ function getSheet(sheetName, ss) {
  * @returns {boolean} If the selected row is invalid
  */
 function getValidSheetSelectedRow(sheet) {
+  log(log.FUNCTION, 'STARTING getValidSheetSelectedRow');
   const selectedRow = sheet.getActiveCell().getRow();
   const rowNumber = Number(selectedRow);
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
     throw new ScriptError('UTILS', `Row ${selectedRow} is not valid.`);
     return false;
   }
+  log(log.FUNCTION, 'ENDING getValidSheetSelectedRow');
   return rowNumber;
 }
 
@@ -140,9 +151,11 @@ function getValidSheetSelectedRow(sheet) {
  * @param {Sheet} sheet The sheet to resize
  */
 function autoResizeSheet(sheet) {
+  log(log.FUNCTION, 'STARTING autoResizeSheet');
   for (i = 1; i <= sheet.getMaxColumns(); i++) {
     sheet.autoResizeColumn(i);
   }
+  log(log.FUNCTION, 'ENDING autoResizeSheet');
 }
 
 /** Deletes all columns from min->max on the given sheet
@@ -151,9 +164,11 @@ function autoResizeSheet(sheet) {
  * @param {int} max The final column index
  */
 function deleteUnusedColumns(min, max, sheet) {
+  log(log.FUNCTION, 'STARTING deleteUnusedColumns');
   for (var i = max; i >= min; i--) {
     sheet.deleteColumn(i);
   }
+  log(log.FUNCTION, 'ENDING deleteUnusedColumns');
 }
 
 /** Highlights a given range via custom status presets
@@ -163,6 +178,7 @@ function deleteUnusedColumns(min, max, sheet) {
  * @param {string} [value] Value to set the cell contents to
  */
 function highlightRange(range, status, value) {
+  log(log.FUNCTION, 'STARTING highlightRange');
   if (value) range.setValue(value);
   const statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
@@ -170,6 +186,7 @@ function highlightRange(range, status, value) {
   if (statusColors.background) range.setBackground(statusColors.background);
   if (statusColors.color) range.setFontColor(statusColors.color);
   if (statusColors.bold) range.setFontWeight('bold');
+  log(log.FUNCTION, 'ENDING highlightRange');
 }
 
 /** Creates an object from a sheet's first row headers as keys with the values from the data object.
@@ -178,6 +195,7 @@ function highlightRange(range, status, value) {
  * @param {string[]} data Array of string data representing a row
  */
 function rowToJson(sheet, data) {
+  log(log.FUNCTION, 'STARTING rowToJson');
   const obj = {};
   const keys = getHeaders(sheet);
 
@@ -185,6 +203,7 @@ function rowToJson(sheet, data) {
     obj[keys[i]] = data[i];
   }
 
+  log(log.FUNCTION, 'ENDING rowToJson');
   return obj;
 }
 
@@ -195,6 +214,7 @@ function rowToJson(sheet, data) {
  * @param {int} [index] Optional index to specify the insertion point
  */
 function insertRow(sheet, rowData, index, cb) {
+  log(log.FUNCTION, 'STARTING insertRow');
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
@@ -209,6 +229,7 @@ function insertRow(sheet, rowData, index, cb) {
   } finally {
     lock.releaseLock();
   }
+  log(log.FUNCTION, 'ENDING insertRow');
 }
 
 /** Returns first found matching column (searches first row of the sheet)
@@ -218,6 +239,7 @@ function insertRow(sheet, rowData, index, cb) {
  * @returns {int} The first found column index, -1 if not found
  */
 function getColumnIndexFromString(sheet, searchTerm) {
+  log(log.FUNCTION, 'STARTING getColumnIndexFromString');
   const headers = getHeaders(sheet);
   log(log.STATUS, `Got headers: ${headers}`);
   for (var i = 0; i < headers.length; i++) {
@@ -226,6 +248,7 @@ function getColumnIndexFromString(sheet, searchTerm) {
       return i + 1;
     }
   }
+  log(log.FUNCTION, 'ENDING getColumnIndexFromString');
   return -1;
 }
 
