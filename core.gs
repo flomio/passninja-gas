@@ -154,7 +154,7 @@ function updateFromConfig_(force = false) {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-  const ss = getLinkedSpreadsheet();
+  const ss = new VSpreadsheet();
   const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
@@ -163,13 +163,12 @@ function onboardNewPassholderFromForm(e) {
 
   const lock = LockService.getPublicLock();
   if (lock.tryLock(10000)) {
-    sheet.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
+    sheet._internal.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
     lock.releaseLock();
   } else {
     return 'Lock Timeout';
   }
-  autoResizeSheet(sheet);
-  sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
+  sheet._internal.setActiveRange(sheet._internal.getRange(sheet.getLastRow(), 1));
   createPass_();
 }
 
@@ -179,7 +178,7 @@ function onboardNewPassholderFromForm(e) {
  */
 function createPass_() {
   log(log.FUNCTION, 'STARTING CREATEPASS_');
-  const ss = getLinkedSpreadsheet();
+  const ss = new VSpreadsheet();
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
 
   const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
@@ -187,8 +186,8 @@ function createPass_() {
   const rowNumber = getValidSheetSelectedRow(contactSheet);
 
   const rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
-  const passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
-  const passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
+  const passNinjaContentRange = contactSheet._internal.getRange(rowNumber, passNinjaColumnStart, 1, 3);
+  const passUrlRange = contactSheet._internal.getRange(rowNumber, passNinjaColumnStart, 1, 1);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
 
   const payloadJSONString = getRowPassPayload(rowRange, ss);
@@ -223,7 +222,7 @@ function createPass_() {
 
   highlightRange(passNinjaContentRange, 'success');
   contactSheet.setActiveSelection(passUrlRange);
-  autoResizeSheet(contactSheet);
+  autoResizeSheet(contactSheet._internal);
 
   if (!serial) sendText_();
 
@@ -244,7 +243,7 @@ function sendText_() {
   let passUrl;
   try {
     twilio = new TwilioService();
-    const ss = getLinkedSpreadsheet();
+    const ss = new VSpreadsheet();
     const contactSheet = getSheet(ENUMS.CONTACTS, ss);
     passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
