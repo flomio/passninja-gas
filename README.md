@@ -39,7 +39,7 @@ Requires Chrome.
 3. Navigate to [Google App Scripts](https://script.google.com/home/shared)
 7. Now click the  **+ New Project** button on the top left of your screen. 
 5. Once the script editor opens click **Ctrl+S** or **Cmd+S** to save and name your project.
-6. Then right click on the file called Code.gs and rename it (a collision occurs on GitHub pull without renaming the file). 
+6. Then right click on the file called `Code.gs` and rename it (a collision occurs on GitHub pull without renaming the file). 
 7. Log in to GitHub clicking the **login SCM** button and entering your GitHub Credentials.  You may have to generate a GitHub token by following these instructions:
 	1. On any GitHub page, click your profile icon and then click Settings.
 	2. On the sidebar, click Personal access tokens.
@@ -48,21 +48,11 @@ Requires Chrome.
 	5. Copy the token to a secure location or password management app. For security reasons, after you leave the page, you can no longer see the token again.
 	6. Enter the token into the github login window back at the Scripts page.
 8. Now that you are logged in, click the dropdown button that says **Repository** and select `flomio/passninja-guestlist-gas` from the list (if its not there, ask your passninja rep to double check that was shared, and ensure that you have accepted the invitiation that comes to you in an email from GitHub).
-9. Now click the down arrow to the right of the **Repository** and **Branch** buttons to bring the code into your editor.
-10. Now request access to the `appsscript.json` file by navigating to  `Menu -> View -> Show manifest file`. The file will appear in the list of files for your project.
-11. Open that file and replace the contents with the following (modify timezone to reflect your location).
-``` 
-{
-  "webapp": {
-    "access": "ANYONE_ANONYMOUS",
-    "executeAs": "USER_DEPLOYING"
-  },
-  "oauthScopes": ["https://www.googleapis.com/auth/script.container.ui", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/script.external_request", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/forms", "https://www.googleapis.com/auth/script.scriptapp"],
-  "runtimeVersion": "V8"
-}
-```
-12. Select the code file Code.gs, and use the 
-13. Now reload the sheet and the PassNinja menu should appear.
+9. **IMPORTANT** - on the gear icon next to your repository and branch settings sclick and check the "Manage manifest file"
+![alt text](https://user-images.githubusercontent.com/1587270/77801817-f8602800-704f-11ea-9238-9f37b22a5c16.png "Settings icon")
+![alt text](https://user-images.githubusercontent.com/1587270/77801857-0dd55200-7050-11ea-83f3-3e1bc56cfc05.png "Manifest Checkbox")
+10. Now click the down arrow to the right of the **Repository** and **Branch** buttons to bring the code into your editor.
+11. [INSTALLATION](#installation)
 
 [`^ Back to Top`](#contents)
 
