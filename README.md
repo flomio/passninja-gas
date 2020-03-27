@@ -26,7 +26,7 @@
 1.  Ask PassNinja to share this personal Google Apps Script (GAS) Project with you
 1.  Open the GAS Project and open the `core.gs` file then run the `createSpreadsheet` function from `Menu->Run->Run function->createSpreadsheet`
 1.  If this is your first time running it: it will ask for permission to run via a Google OAUTH popup which is required for functionality.
-1.  Check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet - <ISO DATE>"`.  After the script is finished it will also email you and pop up with the link upon completion.
+1.  The error that pops up is not actually an error but the link to your created spreadsheet!  If you want to, copy paste from that error popup after clicking `Details` in the error.  Otherwise: check your https://docs.google.com/spreadsheets/ drive and it should have created a new Spreadsheet called `"PassNinja Demo Spreadsheet - <ISO DATE>"`.  After the script is finished it will also email you and pop up with the link upon completion.
 1.  Verify it worked when the `PassNinja` menu appears above after the entire sheet is finished loading!
 
 [`^ Back to Top`](#contents)
