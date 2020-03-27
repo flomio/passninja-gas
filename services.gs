@@ -7,7 +7,12 @@ var sendRequest = (url, options = {}, serviceName) => {
   response = UrlFetchApp.fetch(url, { ...options });
   log(log.FUNCTION, 'Received response from fetch');
   if (response.getResponseCode() < 300 && response.getResponseCode() >= 200) {
+    try {
     return JSON.parse(response.getContentText());
+    }
+    catch(err) {
+      return response.getContentText()
+      }
   } else {
     throw new ServiceError(response.getResponseCode(), `${serviceName || ''}: ${response.getContentText()}`);
   }
@@ -64,21 +69,19 @@ class PassNinjaService {
 class PassNinjaScannerService {
   constructor() {
     this.serviceName = 'PassNinjaScannerAPI';
-    this.baseUrl = 'nada';
-    this.passesPostRoute = `${this.baseUrl}/passes/`;
+    this.baseUrl = 'https://passninja.ngrok.io/fancy/path/';
   }
 
   notifyScanner(payload) {
-    return { statusCode: 200 };
-    // return sendRequest(
-    //   this.passesPostRoute,
-    //   {
-    //     method: 'post',
-    //     contentType: 'application/json',
-    //     payload: JSON.stringify(payload)
-    //   },
-    //   this.serviceName
-    // );
+     return sendRequest(
+       this.baseUrl,
+       {
+         method: 'post',
+         contentType: 'application/json',
+         payload: JSON.stringify(payload)
+       },
+       this.serviceName
+     );
   }
 }
 

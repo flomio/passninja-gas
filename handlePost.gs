@@ -130,8 +130,12 @@ function processScanEvent(spreadsheet, eventJson) {
 
     if (provisioned && startTime <= eventTime && eventTime <= endTime) {
       log(log.SUCCESS, 'Approved scan, finalizing processing...');
-      const scannerPayload = { request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE' };
-      const scannerResponse = new PassNinjaScannerService().notifyScanner();
+      
+      if(eventJson.reader.serial_number !== "RR464-0017564") {
+        const scannerPayload = { request: status === 'AVAILABLE' ? 'RESERVED' : 'AVAILABLE' };
+        const scannerResponse = new PassNinjaScannerService().notifyScanner();
+        log(log.STATUS, scannerResponse)
+      }
 
       const contactSheet = getSheet(ENUMS.CONTACTS, spreadsheet);
       const contactPassSerials = contactSheet.getRange(
