@@ -5,6 +5,7 @@
  * @returns {Spreadsheet} The spreadsheet that is linked to the GAS Script Project.
  */
 function getLinkedSpreadsheet() {
+  log(log.FUNCTION, 'STARTING getLinkedSpreadsheet');
   const fnRunner = [
     [SpreadsheetApp.getActive, []],
     [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
@@ -14,12 +15,12 @@ function getLinkedSpreadsheet() {
   for ([fn, args] of fnRunner) {
     ss = fn(...args);
     if (ss) {
+      log(log.FUNCTION, 'ENDING getLinkedSpreadsheet');
       log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`);
       return ss;
     }
   }
-  throw new ScriptError(
-    'UTILS',
+  throw new UtilsError(
     `No linked/bound spreadsheet connected to GAS Project for user ${Session.getActiveUser().getEmail()}.`
   );
 }
@@ -33,7 +34,7 @@ function getLinkedSpreadsheet() {
  */
 function getEnvVar(name, throwError = true) {
   const envVar = PropertiesService.getScriptProperties().getProperty(name);
-  if (throwError && !envVar) throw new ScriptError('UTILS', `Script variable ${name} does not exist.`);
+  if (throwError && !envVar) throw new UtilsError(`Script variable ${name} does not exist.`);
   return envVar;
 }
 
@@ -51,10 +52,10 @@ function setEnvVar(name, value) {
  *
  * @param {Range} rowRange Row range to query
  */
-function getRowPassPayload(rowRange) {
-  rowRange.setNumberFormat('@');
-  const fieldsData = getConfigFields();
-  const { passType, ...passFieldConstants } = getConfigConstants();
+function getRowPassPayload(rowRange, spreadsheet) {
+  log(log.FUNCTION, 'STARTING getRowPassPayload');
+  const fieldsData = getConfigFields(spreadsheet);
+  const { passType, ...passFieldConstants } = getConfigConstants(spreadsheet);
   const rowValues = rowRange.getValues()[0];
   log(log.STATUS, `Working on row #${rowRange.getRow()} with values [${rowValues}]`);
   const postData = {
@@ -69,40 +70,48 @@ function getRowPassPayload(rowRange) {
       postData.pass[fieldName] = rowValues[i];
     }
   }
-  log(log.SUCCESS, postData);
+  log(log.FUNCTION, 'ENDING getRowPassPayload');
   return postData;
 }
 
 /** Returns an object with key:value pairs from the Config sheet
  */
-function getConfigConstants() {
+function getConfigConstants(spreadsheet) {
+  log(log.FUNCTION, 'STARTING getConfigConstants');
   const constants = Object.fromEntries(
-    getLinkedSpreadsheet()
+    spreadsheet
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
       .filter(row => !!row[0])
   );
-  if (!constants.passType) throw new ScriptError('UTILS', 'You must enter a passType in the Config sheet.');
+  if (!constants.passType) throw new UtilsError('You must enter a passType in the Config sheet.');
+  log(log.FUNCTION, 'ENDING getConfigConstants');
   return constants;
 }
 
 /** Returns a list of config field entries
  */
-function getConfigFields() {
-  const fieldsData = getLinkedSpreadsheet()
+function getConfigFields(spreadsheet) {
+  log(log.FUNCTION, 'STARTING getConfigFields');
+  const fieldsData = spreadsheet
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter(row => !!row[0]);
-  if (!fieldsData.length) throw new ScriptError('UTILS', 'You must enter at least one field in the Config sheet.');
+  if (!fieldsData.length) throw new UtilsError('You must enter at least one field in the Config sheet.');
+  log(log.FUNCTION, 'ENDING getConfigFields');
   return fieldsData;
 }
-/** Sorts the specified sheet
- *
- * @param {Sheet} sheet The Google sheet to sort
- */
-function sortSheet(sheet) {
-  const range = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn());
-  range.sort({ column: 1, ascending: false });
+
+function getAllFuncs(toCheck) {
+  var props = [];
+  var obj = toCheck;
+  do {
+    props = props.concat(Object.getOwnPropertyNames(obj));
+  } while ((obj = Object.getPrototypeOf(obj)));
+
+  return props.sort().filter(function(e, i, arr) {
+    if (e != arr[i + 1] && typeof toCheck[e] == 'function') return true;
+  });
 }
 
 /** Returns the requested Google Sheet by name
@@ -110,10 +119,11 @@ function sortSheet(sheet) {
  * @param {string} sheetName Name of the sheet you want to get back
  * @returns {Sheet} Google Sheet object
  */
-function getSheet(sheetName) {
-  const spreadsheet = getLinkedSpreadsheet();
-  const sheet = spreadsheet.getSheetByName(sheetName);
-  if (!sheet) throw new ScriptError('UTILS', `Sheet ${sheetName} not found in spreadsheet ${spreadsheet}`);
+function getSheet(sheetName, ss) {
+  log(log.FUNCTION, 'STARTING sheetName');
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) throw new UtilsError(`Sheet ${sheetName} not found in spreadsheet ${ss}`);
+  log(log.FUNCTION, 'ENDING sheetName');
   return sheet;
 }
 
@@ -124,12 +134,14 @@ function getSheet(sheetName) {
  * @returns {boolean} If the selected row is invalid
  */
 function getValidSheetSelectedRow(sheet) {
+  log(log.FUNCTION, 'STARTING getValidSheetSelectedRow');
   const selectedRow = sheet.getActiveCell().getRow();
   const rowNumber = Number(selectedRow);
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
-    throw new ScriptError('UTILS', `Row ${selectedRow} is not valid.`);
+    throw new UtilsError(`Row ${selectedRow} is not valid.`);
     return false;
   }
+  log(log.FUNCTION, 'ENDING getValidSheetSelectedRow');
   return rowNumber;
 }
 
@@ -138,9 +150,11 @@ function getValidSheetSelectedRow(sheet) {
  * @param {Sheet} sheet The sheet to resize
  */
 function autoResizeSheet(sheet) {
+  log(log.FUNCTION, 'STARTING autoResizeSheet');
   for (i = 1; i <= sheet.getMaxColumns(); i++) {
     sheet.autoResizeColumn(i);
   }
+  log(log.FUNCTION, 'ENDING autoResizeSheet');
 }
 
 /** Deletes all columns from min->max on the given sheet
@@ -149,25 +163,29 @@ function autoResizeSheet(sheet) {
  * @param {int} max The final column index
  */
 function deleteUnusedColumns(min, max, sheet) {
+  log(log.FUNCTION, 'STARTING deleteUnusedColumns');
   for (var i = max; i >= min; i--) {
     sheet.deleteColumn(i);
   }
+  log(log.FUNCTION, 'ENDING deleteUnusedColumns');
 }
 
 /** Highlights a given range via custom status presets
  *
- * @param {Range} cells That you want to highlight
+ * @param {Range} range That you want to highlight
  * @param {string} status The type of higlighting you want to apply
  * @param {string} [value] Value to set the cell contents to
  */
-function highlightCells(cells, status, value) {
-  if (value) cells.setValue(value);
+function highlightRange(range, status, value) {
+  log(log.FUNCTION, 'STARTING highlightRange');
+  if (value) range.setValue(value);
   const statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
-    cells.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
-  if (statusColors.background) cells.setBackground(statusColors.background);
-  if (statusColors.color) cells.setFontColor(statusColors.color);
-  if (statusColors.bold) cells.setFontWeight('bold');
+    range.setBorder(true, true, true, true, true, true, statusColors.border, SpreadsheetApp.BorderStyle.SOLID);
+  if (statusColors.background) range.setBackground(statusColors.background);
+  if (statusColors.color) range.setFontColor(statusColors.color);
+  if (statusColors.bold) range.setFontWeight('bold');
+  log(log.FUNCTION, 'ENDING highlightRange');
 }
 
 /** Creates an object from a sheet's first row headers as keys with the values from the data object.
@@ -176,6 +194,7 @@ function highlightCells(cells, status, value) {
  * @param {string[]} data Array of string data representing a row
  */
 function rowToJson(sheet, data) {
+  log(log.FUNCTION, 'STARTING rowToJson');
   const obj = {};
   const keys = getHeaders(sheet);
 
@@ -183,6 +202,7 @@ function rowToJson(sheet, data) {
     obj[keys[i]] = data[i];
   }
 
+  log(log.FUNCTION, 'ENDING rowToJson');
   return obj;
 }
 
@@ -193,10 +213,12 @@ function rowToJson(sheet, data) {
  * @param {int} [index] Optional index to specify the insertion point
  */
 function insertRow(sheet, rowData, index, cb) {
+  log(log.FUNCTION, 'STARTING insertRow');
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     const rowIndex = index || 1;
+    log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex + 1} columns ${1}-${1 + rowData.length}`);
     sheet
       .insertRowBefore(rowIndex)
       .getRange(rowIndex, 1, 1, rowData.length)
@@ -206,6 +228,7 @@ function insertRow(sheet, rowData, index, cb) {
   } finally {
     lock.releaseLock();
   }
+  log(log.FUNCTION, 'ENDING insertRow');
 }
 
 /** Returns first found matching column (searches first row of the sheet)
@@ -215,10 +238,16 @@ function insertRow(sheet, rowData, index, cb) {
  * @returns {int} The first found column index, -1 if not found
  */
 function getColumnIndexFromString(sheet, searchTerm) {
+  log(log.FUNCTION, 'STARTING getColumnIndexFromString');
   const headers = getHeaders(sheet);
+  log(log.STATUS, `Got headers: ${headers}`);
   for (var i = 0; i < headers.length; i++) {
-    if (headers[i] == searchTerm) return i + 1;
+    if (headers[i] == searchTerm) {
+      log(log.STATUS, `Header ${searchTerm} found at column ${i + 1}`);
+      return i + 1;
+    }
   }
+  log(log.FUNCTION, 'ENDING getColumnIndexFromString');
   return -1;
 }
 
@@ -242,6 +271,25 @@ function getNamedRange(name, ss) {
     .getNamedRanges()
     .filter(e => e.getName() === name)[0]
     .getRange();
+}
+
+/** Flashes a row of a sheet
+ *  Note: the range will end overridden with the top left's background color.
+ *
+ * @param {Range} range Range to flash across
+ * @param {string} flashColor Valid Google SpreadSheet color to flash
+ * @param {int} numFlashes Number of times to flash the range
+ * @param {int} timeout The timeout (in ms) for the flashes
+ */
+function flashRange(range, flashColor, numFlashes, timeout) {
+  const originalBgColor = range.getBackground();
+  for (var i = 0; i < numFlashes; i++) {
+    range.setBackground(flashColor);
+    SpreadsheetApp.flush();
+    Utilities.sleep(timeout);
+    range.setBackground(originalBgColor);
+    SpreadsheetApp.flush();
+  }
 }
 
 /** Clears all previous form items from a form
@@ -287,61 +335,4 @@ function clearFormDestinationSheet(form) {
   form.deleteAllResponses();
   destinationSheet.setName(`${destinationSheet.getName()}_${new Date().toISOString().replace(/[:]/g, '.')}`);
   destinationSheet.hideSheet();
-}
-
-/** Returns the file ID of the current spreadsheet.
- *
- * @returns {string} - The file ID or undefined if not found.
- */
-function getFileId() {
-  const files = DriveApp.getFiles();
-  while (files.hasNext()) {
-    const file = files.next();
-    if (file.getName() == DriveApp.getFileById(current.getId())) {
-      return file.getId();
-    }
-  }
-}
-
-/** Toasts the user at the current spreadsheet
- *
- * @param {string} msg The message to sent
- * @param {string} title The title of the toast
- * @param {int} timeout The timeout of the toast
- */
-function toast(msg, title, timeout) {
-  const currentSpreadsheet = getLinkedSpreadsheet();
-  currentSpreadsheet.toast(msg, title, timeout);
-}
-/** Flashes a row of a sheet
- *  Note: the range will end overridden with the top left's background color.
- *
- * @param {Range} range Range to flash across
- * @param {string} flashColor Valid Google SpreadSheet color to flash
- * @param {int} numFlashes Number of times to flash the range
- * @param {int} timeout The timeout (in ms) for the flashes
- */
-function flashRange(range, flashColor, numFlashes, timeout) {
-  const originalBgColor = range.getBackground();
-  for (var i = 0; i < numFlashes; i++) {
-    range.setBackground(flashColor);
-    SpreadsheetApp.flush();
-    Utilities.sleep(timeout);
-    range.setBackground(originalBgColor);
-    SpreadsheetApp.flush();
-  }
-}
-
-/** Runs the function and catches then throws any error and logs it.
- *
- * @param {string} error Error to log
- * @param {string} msg The extra message to add
- */
-function catchError(fn, errorMsg) {
-  try {
-    return fn();
-  } catch (e) {
-    log(log.ERROR, errorMsg, e);
-    throw new ScriptError('BUILD', errorMsg, e);
-  }
 }

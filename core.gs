@@ -3,6 +3,7 @@
  *  Spreadsheet is linked via a trigger to the script.
  */
 function createSpreadsheet() {
+  log(log.FUNCTION, 'STARTING CREATESPREADSHEET');
   const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
   Utilities.sleep(2000);
@@ -38,6 +39,7 @@ function createSpreadsheet() {
     'Your PassNinja Spreadsheet',
     `Here is the link to your spreadsheet ${spreadsheetUrl}`
   );
+  log(log.FUNCTION, 'FINISHED CREATESPREADSHEET');
   throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`);
 }
 
@@ -128,9 +130,9 @@ function storePassNinjaDetails_() {
  */
 function updateFromConfig_(force = false) {
   const ss = getLinkedSpreadsheet();
-  const fields = getConfigFields();
+  const fields = getConfigFields(ss);
   const fieldNames = fields.map(f => f[0]);
-  const constants = getConfigConstants();
+  const constants = getConfigConstants(ss);
   //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
   // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
@@ -139,7 +141,7 @@ function updateFromConfig_(force = false) {
   catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
   catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
   catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
-  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS), fields), 'Error building Contacts Form - ');
+  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields), 'Error building Contacts Form - ');
   //   setEnvVar(ENUMS.FIELDS_HASH, hash);
   //  } else {
   //    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
@@ -152,8 +154,8 @@ function updateFromConfig_(force = false) {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
-  const ss = getLinkedSpreadsheet();
-  const sheet = getSheet(ENUMS.CONTACTS);
+  const ss = new VSpreadsheet();
+  const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
     .filter(v => !!v[0]);
@@ -161,13 +163,12 @@ function onboardNewPassholderFromForm(e) {
 
   const lock = LockService.getPublicLock();
   if (lock.tryLock(10000)) {
-    sheet.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
+    sheet._internal.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
     lock.releaseLock();
   } else {
     return 'Lock Timeout';
   }
-  autoResizeSheet(sheet);
-  sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
+  sheet._internal.setActiveRange(sheet._internal.getRange(sheet._internal.getLastRow(), 1));
   createPass_();
 }
 
@@ -176,23 +177,24 @@ function onboardNewPassholderFromForm(e) {
  * @returns {ServiceError} If the response from PassNinjaService is non 2xx.
  */
 function createPass_() {
-  const ss = getLinkedSpreadsheet();
-  const contactSheet = getSheet(ENUMS.CONTACTS);
+  log(log.FUNCTION, 'STARTING CREATEPASS_');
+  const ss = new VSpreadsheet();
+  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
 
   const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
 
   const rowRange = contactSheet.getRange(rowNumber, 1, 1, passNinjaColumnStart - 1);
-  const passNinjaContentRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 3);
-  const passUrlRange = contactSheet.getRange(rowNumber, passNinjaColumnStart, 1, 1);
+  const passNinjaContentRange = contactSheet._internal.getRange(rowNumber, passNinjaColumnStart, 1, 3);
+  const passUrlRange = contactSheet._internal.getRange(rowNumber, passNinjaColumnStart, 1, 1);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex, 1, 1);
 
-  const payloadJSONString = getRowPassPayload(rowRange);
+  const payloadJSONString = getRowPassPayload(rowRange, ss);
   const serial = serialNumberRange.getValue();
 
   const originalContent = passNinjaContentRange.getValues();
-  highlightCells(passNinjaContentRange, 'loading');
+  highlightRange(passNinjaContentRange, 'loading');
   passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress']]);
   SpreadsheetApp.flush();
 
@@ -205,8 +207,8 @@ function createPass_() {
     passNinjaContentRange.setValues(
       rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'], ['PassNinja Credentials?'], ['']]]
     );
-    highlightCells(passNinjaContentRange, 'error');
-    autoResizeSheet(contactSheet);
+    highlightRange(passNinjaContentRange, 'error');
+    autoResizeSheet(contactSheet._internal);
     throw err;
   }
   log(log.SUCCESS, JSON.stringify(responseData));
@@ -218,12 +220,13 @@ function createPass_() {
     ]
   ]);
 
-  highlightCells(passNinjaContentRange, 'success');
+  highlightRange(passNinjaContentRange, 'success');
   contactSheet.setActiveSelection(passUrlRange);
-  autoResizeSheet(contactSheet);
+  autoResizeSheet(contactSheet._internal);
 
   if (!serial) sendText_();
 
+  log(log.FUNCTION, 'FINISHED CREATEPASS_');
   return response.getContentText();
 }
 
@@ -234,12 +237,14 @@ function createPass_() {
  * @returns {Error} If an unexpected error occurred running TwilioService.
  */
 function sendText_() {
+  log(log.FUNCTION, 'RUNNING SENDTEXT_');
   let twilio;
   let phoneNumber;
   let passUrl;
   try {
     twilio = new TwilioService();
-    const contactSheet = getSheet(ENUMS.CONTACTS);
+    const ss = new VSpreadsheet();
+    const contactSheet = getSheet(ENUMS.CONTACTS, ss);
     passUrl = contactSheet
       .getRange(getValidSheetSelectedRow(contactSheet), getColumnIndexFromString(contactSheet, ENUMS.PASSURL), 1, 1)
       .getValue();
@@ -251,10 +256,7 @@ function sendText_() {
       log(log.ERROR, 'Twilio auth was not set up...ignoring sendText attempt.');
       return;
     }
-    throw new ScriptError(
-      'MISSING_FIELD',
-      'You must specify a phoneNumber field in order to use Twilio API capabilities.'
-    );
+    throw new ScriptError('You must specify a phoneNumber field in order to use Twilio API capabilities.');
   }
 
   try {
@@ -263,6 +265,7 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
+  log(log.FUNCTION, 'FINISHED SENDTEXT_');
 }
 
 function mockScan_() {
@@ -274,10 +277,13 @@ function mockScan_() {
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
-  const contactSheet = getSheet(ENUMS.CONTACTS);
+  log(log.FUNCTION, 'RUNNING MOCKSCAN_');
+  const ss = new VSpreadsheet();
+  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
+  log(log.WARNING, serialNumberRange.getValue());
 
   const payload = {
     reader: {
@@ -293,5 +299,7 @@ function mockScan_() {
       message: serialNumberRange.getValue()
     }
   };
-  processScanEvent(payload);
+  addEvent(ss, JSON.stringify(payload));
+  ss.flush();
+  log(log.FUNCTION, 'FINISHED MOCKSCAN_');
 }

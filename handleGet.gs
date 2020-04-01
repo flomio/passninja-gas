@@ -4,8 +4,9 @@
  * @returns {object} Standard response with a JavaScript text body
  */
 function doGet(request) {
+  const ss = getLinkedSpreadsheet();
   const serialNumber = request.parameter.serialNumber;
-  clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS), serialNumber);
+  clientData = rowToJSONFromSerial(getSheet(ENUMS.CONTACTS, ss), serialNumber);
   return ContentService.createTextOutput(JSON.stringify(clientData)).setMimeType(ContentService.MimeType.JSON);
 }
 

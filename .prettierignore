@@ -4,6 +4,8 @@
 !*.gs
 !*.js
 !*.yml
-*.json
-*.md
-*.mdx
+!*.json
+!*.md
+!*.mdx
+
+coverage/

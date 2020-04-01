@@ -11,7 +11,7 @@
 <dt><a href="#doPost">doPost(e)</a> ⇒ <code>object</code></dt>
 <dd><p>Creates an event entry in the Events spreadsheet</p>
 </dd>
-<dt><a href="#addEvent">addEvent(targetSheet, eventJson)</a> ⇒ <code>boolean</code></dt>
+<dt><a href="#addEvent">addEvent(sheet, eventJson)</a> ⇒ <code>boolean</code></dt>
 <dd><p>Adds a PassNinja event to a new row in the target spreadsheet</p>
 </dd>
 </dl>
@@ -56,7 +56,7 @@ Creates an event entry in the Events spreadsheet
 
 <a name="addEvent"></a>
 
-## addEvent(targetSheet, eventJson) ⇒ <code>boolean</code>
+## addEvent(sheet, eventJson) ⇒ <code>boolean</code>
 Adds a PassNinja event to a new row in the target spreadsheet
 
 **Kind**: global function  
@@ -64,6 +64,6 @@ Adds a PassNinja event to a new row in the target spreadsheet
 
 | Param | Type | Description |
 | --- | --- | --- |
-| targetSheet | <code>Sheet</code> | Sheet to insert the event into |
+| sheet | <code>Sheet</code> | Sheet to insert the event into |
 | eventJson | <code>object</code> | JSON representation of the PassNinja event |
 
