@@ -52,6 +52,7 @@ Requires Chrome.
 ![alt text](https://user-images.githubusercontent.com/1587270/77801817-f8602800-704f-11ea-9238-9f37b22a5c16.png "Settings icon")
 ![alt text](https://user-images.githubusercontent.com/1587270/77801857-0dd55200-7050-11ea-83f3-3e1bc56cfc05.png "Manifest Checkbox")
 10. Now click the down arrow to the right of the **Repository** and **Branch** buttons to bring the code into your editor.
+    **Note:** Sometimes the extension will pull the files properly but report an error and you will see no changes.  In that case please refresh the page (ctrl + f5 if you want to be sure) and the files should appear on the left.  Just to be sure press the pull button once more and you should receive an "Everything already up-to-date" notification.
 11. [INSTALLATION](#installation)
 
 [`^ Back to Top`](#contents)
