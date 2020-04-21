@@ -69,12 +69,22 @@ function buildConfigSheet(ss, force = false) {
 
   deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet);
   autoResizeSheet(sheet);
-  const titleRange = sheet.getRange(1, 1, 4, 4);
+  const titleRange = sheet.getRange(1, 1, 4, 2);
 
   titleRange.merge();
   titleRange.setValue('01 CONFIG');
-  titleRange.setFontSize(36);
-  titleRange.setVerticalAlignment('TOP');
+  titleRange.setFontSize(24);
+  titleRange.setVerticalAlignment('middle');
+
+  const deployUrlRange = sheet.getRange(1, 3, 2, 2);
+  deployUrlRange.merge();
+  deployUrlRange.setValue(`=HYPERLINK("${getScriptUrl()}", "Source Script")`);
+  deployUrlRange.setVerticalAlignment('middle');
+
+  const scriptUrlRange = sheet.getRange(3, 3, 2, 2);
+  scriptUrlRange.merge();
+  scriptUrlRange.setValue(`=HYPERLINK("${getDevDeploymentUrl()}", "Deployment Url")`);
+  scriptUrlRange.setVerticalAlignment('middle');
 
   sheet.getRange(1, 5, 4, 1).setFontSize(8);
   sheet.getRange(1, 5).setValue('INSTRUCTIONS:');
