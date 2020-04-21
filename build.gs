@@ -76,15 +76,15 @@ function buildConfigSheet(ss, force = false) {
   titleRange.setFontSize(24);
   titleRange.setVerticalAlignment('middle');
 
-  const deployUrlRange = sheet.getRange(1, 3, 2, 2);
-  deployUrlRange.merge();
-  deployUrlRange.setValue(`=HYPERLINK("${getScriptUrl()}", "Source Script")`);
-  deployUrlRange.setVerticalAlignment('middle');
-
-  const scriptUrlRange = sheet.getRange(3, 3, 2, 2);
+  const scriptUrlRange = sheet.getRange(1, 3, 4, 2);
   scriptUrlRange.merge();
-  scriptUrlRange.setValue(`=HYPERLINK("${getDevDeploymentUrl()}", "Deployment Url")`);
+  scriptUrlRange.setValue(`=HYPERLINK("${getScriptUrl()}", "Source Script")`);
   scriptUrlRange.setVerticalAlignment('middle');
+
+  // const deployUrlRange = sheet.getRange(3, 3, 2, 2);
+  // deployUrlRange.merge();
+  // deployUrlRange.setValue(`=HYPERLINK("${getDevDeploymentUrl()}", "Deployment Url")`);
+  // deployUrlRange.setVerticalAlignment('middle');
 
   sheet.getRange(1, 5, 4, 1).setFontSize(8);
   sheet.getRange(1, 5).setValue('INSTRUCTIONS:');
