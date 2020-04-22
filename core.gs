@@ -4,9 +4,15 @@
  */
 function createSpreadsheet() {
   log(log.FUNCTION, 'STARTING CREATESPREADSHEET');
-  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
+  try {
+    log(log.STATUS, 'Checking for existing sheet first.');
+    const ss = getLinkedSpreadsheet();
+    ss.rename(`${ss.getName()}_DISCONNECTED`);
+  } catch (err) {
+    log(log.STATUS, 'No sheet found, continuing...');
+  }
 
-  Utilities.sleep(2000);
+  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
   ScriptApp.getProjectTriggers().forEach(trigger => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen')

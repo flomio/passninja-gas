@@ -8,19 +8,19 @@ var sendRequest = (url, options = {}, serviceName) => {
   log(log.FUNCTION, 'Received response from fetch');
   if (response.getResponseCode() < 300 && response.getResponseCode() >= 200) {
     try {
-    return JSON.parse(response.getContentText());
+      return JSON.parse(response.getContentText());
+    } catch (err) {
+      return response.getContentText();
     }
-    catch(err) {
-      return response.getContentText()
-      }
   } else {
-    throw new ServiceError(response.getResponseCode(), `${serviceName || ''}: ${response.getContentText()}`);
+    throw new ServiceError(`${serviceName || ''}:${response.getResponseCode()} RESPONSE: ${response.getContentText()}`);
   }
 };
 
 class PassNinjaService {
   constructor() {
     this.serviceName = 'PassNinjaAPI';
+    this.branch = 'master';
     try {
       this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
       this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
@@ -28,7 +28,7 @@ class PassNinjaService {
       if (err instanceof ScriptError)
         throw new CredentialsError(`${this.serviceName}: PassNinja API credentials have not been set up.`);
     }
-    this.baseUrl = 'https://api.passninja.com/v1';
+    this.baseUrl = `https://api.passninja.com/${branch === 'master' ? 'v1' : branch}`;
     this.passesPostRoute = `${this.baseUrl}/passes/`;
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
   }
@@ -73,15 +73,15 @@ class PassNinjaScannerService {
   }
 
   notifyScanner(payload) {
-     return sendRequest(
-       this.baseUrl,
-       {
-         method: 'post',
-         contentType: 'application/json',
-         payload: JSON.stringify(payload)
-       },
-       this.serviceName
-     );
+    return sendRequest(
+      this.baseUrl,
+      {
+        method: 'post',
+        contentType: 'application/json',
+        payload: JSON.stringify(payload)
+      },
+      this.serviceName
+    );
   }
 }
 

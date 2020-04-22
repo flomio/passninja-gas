@@ -1,7 +1,6 @@
 const { VSheet, VRange } = require('../virtualization.gs');
 
 // Patching globals from GAS runtime
-// global.log = (...args) => console.log('GAS: ', args);
 global.log = () => {};
 global.log.STATUS = 'STATUS';
 global.log.ERROR = 'ERROR';

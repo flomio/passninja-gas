@@ -25,6 +25,10 @@ function getLinkedSpreadsheet() {
   );
 }
 
+const getDevDeploymentUrl = () => ScriptApp.getService().getUrl();
+
+const getScriptUrl = () => `https://script.google.com/d/${ScriptApp.getScriptId()}/edit`;
+
 /** Returns an Script Project environment variable if found or throws an error.
  *
  * @param {string} name Name of the env var to query
