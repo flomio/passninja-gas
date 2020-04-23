@@ -28,7 +28,7 @@ class PassNinjaService {
       if (err instanceof ScriptError)
         throw new CredentialsError(`${this.serviceName}: PassNinja API credentials have not been set up.`);
     }
-    this.baseUrl = `https://api.passninja.com/${branch === 'master' ? 'v1' : branch}`;
+    this.baseUrl = `https://api.passninja.com/${this.branch === 'master' ? 'v1' : this.branch}`;
     this.passesPostRoute = `${this.baseUrl}/passes/`;
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
   }
