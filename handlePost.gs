@@ -30,8 +30,10 @@ function addEvent(spreadsheet, eventJson) {
     if (eventJson.event.reader) {
       event.push(JSON.stringify(eventJson.event));
       scan = true;
-    } else {
+    } else if (eventJson.event.passJson) {
       event.push(JSON.stringify(eventJson.event.passJson));
+    } else {
+      event.push(JSON.stringify(eventJson));
     }
   } catch (e) {
     insertRow(eventsSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2);

@@ -50,7 +50,7 @@ function getScanner(scannerSheet, serialNumber) {
   return { scannerMatchIndex, passSerialNumberColumnIndex };
 }
 
-function validateScannerStatus(status, eventPassSerial, currentPassSerial) {
+function validateScan(status, eventPassSerial, currentPassSerial, date, start, end, provisioned) {
   if (status === 'RESERVED') {
     if (currentPassSerial === '') {
       throw new ScriptError('Requested resource is marked in use but no pass is attached...manual fix required.');
@@ -59,12 +59,20 @@ function validateScannerStatus(status, eventPassSerial, currentPassSerial) {
       throw new ScriptError('Requested resource is already in use by another pass.');
     }
   }
+
+  const { eventTime, startTime, endTime } = getScannerEventTimes(date, start, end);
+  if (!provisioned || !(startTime <= eventTime && eventTime <= endTime)) {
+    const eventDate = new Date(date);
+    throw new ScriptError(
+      `Scan failed due to being outside scanner valid usage time: ${start}-${end}, scan: ${eventDate.getUTCHours()}:${eventDate.getUTCMinutes()}.`
+    );
+  }
 }
 
 function getScannerEventTimes(eventDate, scannerStart, scannerEnd) {
   try {
     const eventTimestamp = new Date(eventDate);
-    const eventTime = eventTimestamp.getHours() * 60 + eventTimestamp.getMinutes();
+    const eventTime = eventTimestamp.getUTCHours() * 60 + eventTimestamp.getUTCMinutes();
     const [startHours, startMinutes] = scannerStart.split(':');
     const [endHours, endMinutes] = scannerEnd.split(':');
     const startTime = parseInt(startHours) * 60 + parseInt(startMinutes);
@@ -130,47 +138,39 @@ function processScanEvent(ss, eventJson) {
   const { serialNumber, reader, date } = eventJson.event;
   const { scannerMatchIndex, passSerialNumberColumnIndex } = getScanner(scannersSheet, reader.serialNumber);
 
-  if (scannerMatchIndex != -1) {
-    log(log.SUCCESS, `Found match for serial ${reader.serialNumber} at row ${scannerMatchIndex}`);
-    const virtualScannerIndex = scannerMatchIndex + 2; // To Offset back to 1 indexing
-    const range = scannersSheet.getRange(virtualScannerIndex, 1, 1, scannersSheet.getLastColumn());
-    const serialNumberCellRange = scannersSheet.getRange(virtualScannerIndex, passSerialNumberColumnIndex);
-    const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
-
-    validateScannerStatus(status, serialNumber, attachedPassSerial);
-    const { eventTime, startTime, endTime } = getScannerEventTimes(date, start, end);
-
-    if (provisioned && startTime <= eventTime && eventTime <= endTime) {
-      log(log.SUCCESS, 'Approved scan, finalizing processing...');
-      const scannerPayload = { request: status === ENUMS.AVAILABLE ? ENUMS.RESERVED : ENUMS.AVAILABLE };
-      const scannerResponse = new PassNinjaScannerService().notifyScanner(scannerPayload);
-      log(log.STATUS, scannerResponse);
-
-      const contactSheet = getSheet(ENUMS.CONTACTS, ss);
-      const contactMatchIndex = getRowSerialMatchIndex(contactSheet, serialNumber);
-      if (contactMatchIndex === -1) {
-        throw new ScriptError('Could not find serial in the contacts sheet.');
-      } else {
-        log(log.SUCCESS, `Found match for attachedPassSerial in contacts in row ${contactMatchIndex}.`);
-      }
-      updateScannerSheetAndPass(
-        ss,
-        contactSheet,
-        scannersSheet,
-        status,
-        id,
-        serialNumberCellRange,
-        serialNumber,
-        virtualScannerIndex,
-        contactMatchIndex
-      );
-      autoResizeSheet(scannersSheet._internal);
-      log(log.FUNCTION, 'ENDING PROCESSSCANEVENT');
-      return scannerPayload;
-    } else {
-      throw new ScriptError('Scan failed due to being outside scanner valid usage time.');
-    }
-  } else {
+  if (scannerMatchIndex === -1) {
     throw new ScriptError(`Scan failed: Could not find scanner serial '${reader.serialNumber}' in Scanners sheet`);
   }
+
+  log(log.SUCCESS, `Found match for serial ${reader.serialNumber} at row ${scannerMatchIndex}`);
+  const virtualScannerIndex = scannerMatchIndex + 2; // To Offset back to 1 indexing
+  const range = scannersSheet.getRange(virtualScannerIndex, 1, 1, scannersSheet.getLastColumn());
+  const serialNumberCellRange = scannersSheet.getRange(virtualScannerIndex, passSerialNumberColumnIndex);
+  const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
+
+  validateScan(status, serialNumber, attachedPassSerial, date, start, end, provisioned);
+  log(log.SUCCESS, 'Scan is valid, processing...');
+  const scannerPayload = { request: status === ENUMS.AVAILABLE ? ENUMS.RESERVED : ENUMS.AVAILABLE };
+  const scannerResponse = new PassNinjaScannerService().notifyScanner(scannerPayload);
+  log(log.STATUS, scannerResponse);
+
+  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
+  const contactMatchIndex = getRowSerialMatchIndex(contactSheet, serialNumber);
+  if (contactMatchIndex === -1) throw new ScriptError('Could not find serial in the contacts sheet.');
+  log(log.SUCCESS, `Found match for attachedPassSerial in contacts in row ${contactMatchIndex}.`);
+
+  updateScannerSheetAndPass(
+    ss,
+    contactSheet,
+    scannersSheet,
+    status,
+    id,
+    serialNumberCellRange,
+    serialNumber,
+    virtualScannerIndex,
+    contactMatchIndex
+  );
+  autoResizeSheet(scannersSheet._internal);
+  log(log.FUNCTION, 'ENDING PROCESSSCANEVENT');
+  return scannerPayload;
 }
