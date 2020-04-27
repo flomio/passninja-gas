@@ -288,6 +288,7 @@ function mockScan_() {
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
   const rowNumber = getValidSheetSelectedRow(contactSheet);
   const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
+  const passType = getColumnIndexFromString(contactSheet, ENUMS.PASSTYPE);
   const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
   log(log.WARNING, serialNumberRange.getValue());
 
@@ -299,9 +300,9 @@ function mockScan_() {
     },
     uuid: Utilities.getUuid(),
     type: 'apple-pay',
-    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
+    passTypeIdentifier: `pass.com.passninja.${passType}`,
     data: {
-      timeStamp: '2020-03-10T15:17:04.789Z',
+      timeStamp: new Date(),
       message: serialNumberRange.getValue()
     }
   };

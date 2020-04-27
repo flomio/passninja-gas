@@ -54,23 +54,7 @@ function addEvent(spreadsheet, eventJson) {
     };
   }
 
-  if (scan) {
-    const processResponse = processScanEvent(spreadsheet, eventJson);
-    // insertRow(
-    //   sheet,
-    //   [
-    //     new Date().toUTCString(),
-    //     'SCAN_RESPONSE',
-    //     eventJson.passTypeIdentifier.replace('pass.com.passninja.', ''),
-    //     eventJson.data.message,
-    //     ,
-    //     JSON.stringify(processResponse)
-    //   ],
-    //   2,
-    //   callback
-    // );
-  }
-
+  if (scan) processScanEvent(spreadsheet, eventJson);
   insertRow(sheet, event, 2, callback);
 
   log('FUNCTION', 'ENDING ADD EVENT');
@@ -108,8 +92,8 @@ function processScanEvent(spreadsheet, eventJson) {
   if (matchIndex != -1) {
     log(log.SUCCESS, `Found match for serial ${eventJson.reader.serial_number} at row ${matchIndex}`);
     matchIndex += 2; // To Offset back to 1 indexing
-    let range = sheet.getRange(matchIndex, 1, 1, sheet.getLastColumn());
-    let serialNumberCellRange = sheet.getRange(matchIndex, passSerialNumberColumnIndex);
+    const range = sheet.getRange(matchIndex, 1, 1, sheet.getLastColumn());
+    const serialNumberCellRange = sheet.getRange(matchIndex, passSerialNumberColumnIndex);
     const [serial, id, status, provisioned, attachedPassSerial, start, end, price] = range.getValues()[0];
 
     if (status === 'RESERVED') {
