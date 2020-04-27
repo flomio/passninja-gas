@@ -1,11 +1,12 @@
 const print = Logger.log;
-const FILTER = 'FUNCTION';
-var LAST_LOG = new Date();
+const FILTER = 'FUNCTION,ERROR,SUCCESS';
+let LAST_LOG = new Date();
+const DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 const log = (eventType, msg, ...args) => {
   const NEW_LOG = new Date();
   let ms = ((NEW_LOG - LAST_LOG) / 1000).toFixed(3);
-  FILTER === '*' || FILTER === eventType ? print(' ' + eventType + ` (+${ms}s): ` + msg, ...args) : null;
+  FILTER === '*' || FILTER.includes(eventType) ? print(' ' + eventType + ` (+${ms}s): ` + msg, ...args) : null;
   LAST_LOG = NEW_LOG;
 };
 
@@ -14,6 +15,7 @@ log.WARNING = 'WARNING';
 log.ERROR = 'ERROR';
 log.STATUS = 'STATUS';
 log.FUNCTION = 'FUNCTION';
+log.VIRTUAL = 'VIRTUAL';
 
 const COLORS = {
   FIELD_PASSNINJA: '#325D79',
@@ -67,7 +69,11 @@ const ENUMS = {
   PASSNINJA_ACCOUNT_ID: 'passninja_account_id',
   PASSNINJA_API_KEY: 'passninja_api_key',
   CURRENT_SPREADSHEET_ID: 'current_spreadsheet_id',
-  CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url'
+  CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url',
+  AVAILABLE: 'AVAILABLE',
+  RESERVED: 'RESERVED',
+  UNASSIGNED: 'UNASSIGNED',
+  STATUS: 'status'
 };
 
 const FORM_LOOKUP = {

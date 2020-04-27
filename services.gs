@@ -73,15 +73,16 @@ class PassNinjaScannerService {
   }
 
   notifyScanner(payload) {
-    return sendRequest(
-      this.baseUrl,
-      {
-        method: 'post',
-        contentType: 'application/json',
-        payload: JSON.stringify(payload)
-      },
-      this.serviceName
-    );
+    return { statusCode: 200 };
+    // return sendRequest(
+    //   this.baseUrl,
+    //   {
+    //     method: 'post',
+    //     contentType: 'application/json',
+    //     payload: JSON.stringify(payload)
+    //   },
+    //   this.serviceName
+    // );
   }
 }
 

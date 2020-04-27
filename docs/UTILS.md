@@ -1,6 +1,12 @@
 ## Functions
 
 <dl>
+<dt><a href="#randomChoice">randomChoice(arr)</a></dt>
+<dd><p>Chose a random item from an array</p>
+</dd>
+<dt><a href="#formatDate">formatDate(date)</a></dt>
+<dd><p>Localizes a date object to the user&#39;s timezone.</p>
+</dd>
 <dt><a href="#findMatchIndexAtColumn">findMatchIndexAtColumn(arr, column, query)</a> ⇒ <code>int</code></dt>
 <dd><p>Returns the index of the matching query in the 2D array at column index.</p>
 </dd>
@@ -79,6 +85,28 @@ Author:
 <dd><p>Deletes and returns the data from the previous form response sheet</p>
 </dd>
 </dl>
+
+<a name="randomChoice"></a>
+
+## randomChoice(arr)
+Chose a random item from an array
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| arr | <code>array</code> | Array to choose from |
+
+<a name="formatDate"></a>
+
+## formatDate(date)
+Localizes a date object to the user's timezone.
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| date | <code>Date</code> | date object to format |
 
 <a name="findMatchIndexAtColumn"></a>
 

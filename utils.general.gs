@@ -1,3 +1,20 @@
+/** Chose a random item from an array
+ *
+ * @param {array} arr Array to choose from
+ */
+function randomChoice(arr) {
+  return arr[Math.floor(arr.length * Math.random())];
+}
+
+/** Localizes a date object to the user's timezone.
+ *
+ * @param {Date} date date object to format
+ */
+function formatDate(date) {
+  const FUS1 = date.toString().substr(25, 6) + ':00';
+  return Utilities.formatDate(date, FUS1, DATE_FORMAT);
+}
+
 /** Returns the index of the matching query in the 2D array at column index.
  *
  * @param {array} arr 2D Array to query

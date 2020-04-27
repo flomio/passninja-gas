@@ -307,6 +307,28 @@ function clearForm(form) {
   }
 }
 
+function getSelectedContactData(ss) {
+  log(log.FUNCTION, 'RUNNING getSelectedContactData');
+  try {
+    const contactSheet = getSheet(ENUMS.CONTACTS, ss);
+    const rowNumber = getValidSheetSelectedRow(contactSheet);
+
+    const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
+    const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
+    const serialNumber = serialNumberRange.getValue();
+
+    const passTypeColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.PASSTYPE);
+    const passTypeRange = contactSheet.getRange(rowNumber, passTypeColumnIndex);
+    const passType = passTypeRange.getValue();
+
+    log(log.STATUS, `Selected contact info: ${serialNumber}, ${passType}`);
+    log(log.FUNCTION, 'FINISHED getSelectedContactData');
+    return { passType, serialNumber };
+  } catch (err) {
+    throw new ScriptError(`Could not find contact fields for serialNumber or passType: ${err}`);
+  }
+}
+
 /** Returns the matching sheet that the form is dumping into
  *
  * @param {Form} form A Google Form
