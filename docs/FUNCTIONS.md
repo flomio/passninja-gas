@@ -1,178 +1,266 @@
-## Functions
+## Modules
 
 <dl>
-<dt><a href="#createSpreadsheet">createSpreadsheet()</a></dt>
-<dd><p><del><em>--</em></del> RUN ME FIRST <del><em>--</em></del>
- Creates the necessary demo spreadsheet in the user&#39;s spreadsheets.
- Spreadsheet is linked via a trigger to the script.</p>
+<dt><a href="#module_scan">scan</a></dt>
+<dd><p>All functions relating to scanning feature</p>
 </dd>
-<dt><a href="#onOpen">onOpen()</a></dt>
-<dd><p>Custom Trigger: adds the PassNinja script set as a menu item on load.</p>
-</dd>
-<dt><a href="#storeTwilioDetails_">storeTwilioDetails_()</a> ⇒ <code>ServiceError</code></dt>
-<dd><p>Menu command to stores the Twilio auth details into the Script Properties permanently..</p>
-</dd>
-<dt><a href="#updateFromConfig_">updateFromConfig_(ss, values)</a></dt>
-<dd><p>Creates a Google Form that allows respondents to select which conference
-sessions they would like to attend, grouped by date and start time.</p>
-</dd>
-<dt><a href="#onboardNewPassholderFromForm">onboardNewPassholderFromForm(e)</a> ⇒ <code>string</code></dt>
-<dd><p>Custom Trigger: inputs a new user&#39;s data from a form submit event and triggers a pass creation.</p>
-</dd>
-<dt><a href="#createPass_">createPass_()</a> ⇒ <code>string</code> | <code>ServiceError</code></dt>
-<dd><p>Menu command to create a PassNinja pass from the selected row.</p>
-</dd>
-<dt><a href="#sendText_">sendText_()</a> ⇒ <code>ServiceError</code> | <code>CredentialsError</code> | <code>Error</code></dt>
-<dd><p>Sends a text to the current row using the TwilioService and stored Script Properties.
- NOTE: only works if the header &#39;phoneNumber&#39; is present</p>
-</dd>
-<dt><a href="#initializeSheet">initializeSheet(name, ss)</a> ⇒ <code>Sheet</code></dt>
-<dd><p>Creates a default PassNinja formatted Google sheet on the given spreadsheet</p>
-</dd>
-<dt><a href="#buildConfigSheet">buildConfigSheet()</a></dt>
-<dd><p>Builds initial config sheet</p>
-</dd>
-<dt><a href="#buildEventsSheet">buildEventsSheet(ss, fieldsNames)</a></dt>
-<dd><p>Builds a events sheet based on the user config sheet</p>
-</dd>
-<dt><a href="#buildScannersSheet">buildScannersSheet(ss, fieldsNames)</a></dt>
-<dd><p>Builds a scanners sheet based on the user config sheet with one default scanner</p>
-</dd>
-<dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a> ⇒ <code>Sheet</code></dt>
-<dd><p>Builds a contacts sheet based on the user config sheet</p>
-</dd>
-<dt><a href="#buildContactsForm">buildContactsForm(ss, sheet, fieldData)</a></dt>
-<dd><p>Builds a form based on the user config sheet</p>
+<dt><a href="#module_services">services</a></dt>
+<dd><p>Contains Service clases for all external service calls</p>
 </dd>
 </dl>
 
-<a name="createSpreadsheet"></a>
+<a name="module_scan"></a>
 
-## createSpreadsheet()
-~*--*~ RUN ME FIRST ~*--*~
- Creates the necessary demo spreadsheet in the user's spreadsheets.
- Spreadsheet is linked via a trigger to the script.
+## scan
+All functions relating to scanning feature
 
-**Kind**: global function  
-<a name="onOpen"></a>
 
-## onOpen()
-Custom Trigger: adds the PassNinja script set as a menu item on load.
+* [scan](#module_scan)
+    * [~createMockScanPayload(passType, serialNumber, scannerSerialNumber)](#module_scan..createMockScanPayload) ⇒ <code>Object</code>
+    * [~getScanner(scannerSheet, serialNumber)](#module_scan..getScanner) ⇒ <code>ScannerMatch</code>
+    * [~validateScan(status, eventPassSerial, currentPassSerial, date, start, end, provisioned)](#module_scan..validateScan)
+    * [~getScannerEventTimes(eventDate, scannerStart, scannerEnd)](#module_scan..getScannerEventTimes) ⇒ <code>Object</code>
+    * [~updateScannerSheetAndPass(ss, contactSheet, scannersSheet, status, id, serialNumberCellRange, serialNumber, scannerMatchIndex, contactMatchIndex)](#module_scan..updateScannerSheetAndPass)
+    * [~getRowSerialMatchIndex(contactSheet, serialNumber)](#module_scan..getRowSerialMatchIndex) ⇒ <code>number</code>
+    * [~processScanEvent(ss, eventJson)](#module_scan..processScanEvent) ⇒ <code>Object</code>
+    * [~ScannerMatch](#module_scan..ScannerMatch) : <code>Object</code>
 
-**Kind**: global function  
-<a name="storeTwilioDetails_"></a>
+<a name="module_scan..createMockScanPayload"></a>
 
-## storeTwilioDetails\_() ⇒ <code>ServiceError</code>
-Menu command to stores the Twilio auth details into the Script Properties permanently..
+### scan~createMockScanPayload(passType, serialNumber, scannerSerialNumber) ⇒ <code>Object</code>
+Generates a mock payload for a scan event that matches the format of a PN scan event
 
-**Kind**: global function  
-**Returns**: <code>ServiceError</code> - If setup is cancelled.  
-<a name="updateFromConfig_"></a>
-
-## updateFromConfig\_(ss, values)
-Creates a Google Form that allows respondents to select which conference
-sessions they would like to attend, grouped by date and start time.
-
-**Kind**: global function  
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
+**Returns**: <code>Object</code> - Mock scan event payload with current time and relevant details  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ss | <code>Spreadsheet</code> | The spreadsheet that contains the conference data. |
-| values | <code>Array.&lt;string&gt;</code> | Cell values for the spreadsheet range. |
+| passType | <code>string</code> | The passninja passtype |
+| serialNumber | <code>string</code> | a UUID that matches a serial number in the Contacts sheet |
+| scannerSerialNumber | <code>string</code> | a UUID that matches a scanner serial Number in the Scanners sheet |
 
-<a name="onboardNewPassholderFromForm"></a>
+<a name="module_scan..getScanner"></a>
 
-## onboardNewPassholderFromForm(e) ⇒ <code>string</code>
-Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
+### scan~getScanner(scannerSheet, serialNumber) ⇒ <code>ScannerMatch</code>
+Finds a matching scanner from the scanner sheet or returns {-1, number}
 
-**Kind**: global function  
-**Returns**: <code>string</code> - "Lock Timeout" if the contact sheet queries cause a timeout  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| e | <code>object</code> | The form event to read from |
-
-<a name="createPass_"></a>
-
-## createPass\_() ⇒ <code>string</code> \| <code>ServiceError</code>
-Menu command to create a PassNinja pass from the selected row.
-
-**Kind**: global function  
-**Returns**: <code>string</code> - The response from the PassNinja API.<code>ServiceError</code> - If the response from PassNinjaService is non 2xx.  
-<a name="sendText_"></a>
-
-## sendText\_() ⇒ <code>ServiceError</code> \| <code>CredentialsError</code> \| <code>Error</code>
-Sends a text to the current row using the TwilioService and stored Script Properties.
- NOTE: only works if the header 'phoneNumber' is present
-
-**Kind**: global function  
-**Returns**: <code>ServiceError</code> - If the response from TwilioService is non 2xx.<code>CredentialsError</code> - If the credentials from TwilioService are not set up.<code>Error</code> - If an unexpected error occurred running TwilioService.  
-<a name="initializeSheet"></a>
-
-## initializeSheet(name, ss) ⇒ <code>Sheet</code>
-Creates a default PassNinja formatted Google sheet on the given spreadsheet
-
-**Kind**: global function  
-**Returns**: <code>Sheet</code> - The resulting Google sheet  
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| name | <code>string</code> | The name of the named range to query |
-| ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
+| scannerSheet | <code>Sheet</code> | The sheet object for the Scanner sheet |
+| serialNumber | <code>string</code> | a UUID for the scanner we are looking for |
 
-<a name="buildConfigSheet"></a>
+<a name="module_scan..validateScan"></a>
 
-## buildConfigSheet()
-Builds initial config sheet
+### scan~validateScan(status, eventPassSerial, currentPassSerial, date, start, end, provisioned)
+Overall validation for business permission logic of scan event
 
-**Kind**: global function  
-<a name="buildEventsSheet"></a>
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
+**Throws**:
 
-## buildEventsSheet(ss, fieldsNames)
-Builds a events sheet based on the user config sheet
+- <code>ScriptError</code> If one of the validations is not passed it will throw a related error
 
-**Kind**: global function  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ss | <code>Spreadsheet</code> | The container spreadsheet |
-| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+| status | <code>string</code> | The scanner status, either: "RESERVED" | "AVAILABLE" |
+| eventPassSerial | <code>string</code> | UUID of the scanned pass |
+| currentPassSerial | <code>string</code> | UUID of the currently used pass, "" | UUID |
+| date | <code>string</code> | The date of the scan event |
+| start | <code>string</code> | The available start time for the scanner in format "HH:mm" |
+| end | <code>string</code> | The available end time for the scanner in format "HH:mm" |
+| provisioned | <code>string</code> | Whether we can use this scanner or not, TRUE | "" |
 
-<a name="buildScannersSheet"></a>
+<a name="module_scan..getScannerEventTimes"></a>
 
-## buildScannersSheet(ss, fieldsNames)
-Builds a scanners sheet based on the user config sheet with one default scanner
+### scan~getScannerEventTimes(eventDate, scannerStart, scannerEnd) ⇒ <code>Object</code>
+Returns all times in a normalized format of total minutes
 
-**Kind**: global function  
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
+**Returns**: <code>Object</code> - The formatted times in total minute format for { eventTime, startTime, endTime }  
+**Throws**:
 
-| Param | Type | Description |
-| --- | --- | --- |
-| ss | <code>Spreadsheet</code> | The container spreadsheet |
-| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+- <code>ScriptError</code> If the scanner fields are incorrectly formatted
 
-<a name="buildContactsSheet"></a>
-
-## buildContactsSheet(ss, fieldsNames) ⇒ <code>Sheet</code>
-Builds a contacts sheet based on the user config sheet
-
-**Kind**: global function  
-**Returns**: <code>Sheet</code> - The resulting Contacts sheet that was created.  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ss | <code>Spreadsheet</code> | The container spreadsheet |
-| fieldsNames | <code>Array.&lt;string&gt;</code> | The names of the fields that the user has entered in the config |
+| eventDate | <code>string</code> | The date of the scan event |
+| scannerStart | <code>string</code> | The available start time for the scanner in format "HH:mm" |
+| scannerEnd | <code>string</code> | The available end time for the scanner in format "HH:mm" |
 
-<a name="buildContactsForm"></a>
+<a name="module_scan..updateScannerSheetAndPass"></a>
 
-## buildContactsForm(ss, sheet, fieldData)
-Builds a form based on the user config sheet
+### scan~updateScannerSheetAndPass(ss, contactSheet, scannersSheet, status, id, serialNumberCellRange, serialNumber, scannerMatchIndex, contactMatchIndex)
+Responsible for updating the scanner sheet from a scan event and PUT updating the scanned pass
 
-**Kind**: global function  
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ss | <code>Spreadsheet</code> | The container spreadsheet |
-| sheet | <code>Sheet</code> | The container sheet for the form |
-| fieldData | <code>Array.&lt;string&gt;</code> | The fields that the user has entered in the config |
+| ss | <code>Spreadsheet</code> |  |
+| contactSheet | <code>Sheet</code> |  |
+| scannersSheet | <code>Sheet</code> |  |
+| status | <code>string</code> | The status of the scanner being used: "AVAILABLE" | "RESERVED" |
+| id | <code>string</code> | The ID of the scanner to be added to the pass |
+| serialNumberCellRange | <code>Range</code> | The range for the attachedPassSerialNumber entry in the Scanners sheet |
+| serialNumber | <code>string</code> | The serial number of the scanned pass |
+| scannerMatchIndex | <code>number</code> | Row index in the Scanners sheet for the matching scanner |
+| contactMatchIndex | <code>number</code> | Row index in the Contacts sheet for the matching pass |
+
+<a name="module_scan..getRowSerialMatchIndex"></a>
+
+### scan~getRowSerialMatchIndex(contactSheet, serialNumber) ⇒ <code>number</code>
+Finds a mtaching row number for the serial in question in the Contacts sheet
+
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
+**Returns**: <code>number</code> - Row index if found, -1 if not  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| contactSheet | <code>Sheet</code> | The object for Contacts sheet |
+| serialNumber | <code>string</code> | The serial number to match |
+
+<a name="module_scan..processScanEvent"></a>
+
+### scan~processScanEvent(ss, eventJson) ⇒ <code>Object</code>
+Overall function responsible for processing an inbound scan event
+
+**Kind**: inner method of [<code>scan</code>](#module_scan)  
+**Returns**: <code>Object</code> - The response from our sheet updating with any modifications  
+**Throws**:
+
+- <code>ScriptError</code> If we cannot find a matching scanner or matching pass will throw an error
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ss | <code>Spreadsheet</code> | The spreadsheet we are using to process the event |
+| eventJson | <code>Object</code> | The incoming event json to be parsed |
+
+<a name="module_scan..ScannerMatch"></a>
+
+### scan~ScannerMatch : <code>Object</code>
+**Kind**: inner typedef of [<code>scan</code>](#module_scan)  
+**Properties**
+
+| Name | Type | Description |
+| --- | --- | --- |
+| scannerMatchIndex | <code>number</code> | The matching index for the scanner row (-1 if not found) |
+| passSerialNumberColumnIndex | <code>number</code> | The attached serial number column |
+
+<a name="module_services"></a>
+
+## services
+Contains Service clases for all external service calls
+
+
+* [services](#module_services)
+    * [~PassNinjaService](#module_services..PassNinjaService)
+        * [.createPass(payload)](#module_services..PassNinjaService+createPass) ⇒ <code>HTTPResponse</code>
+        * [.putPass(payload, serial)](#module_services..PassNinjaService+putPass) ⇒ <code>HTTPResponse</code>
+    * [~PassNinjaScannerService](#module_services..PassNinjaScannerService)
+        * [.notifyScanner(payload)](#module_services..PassNinjaScannerService+notifyScanner) ⇒ <code>HTTPResponse</code>
+    * [~TwilioService](#module_services..TwilioService)
+        * [.formatE164PhoneNumber()](#module_services..TwilioService+formatE164PhoneNumber) ⇒ <code>string</code> \| <code>null</code>
+        * [.sendText(to, body)](#module_services..TwilioService+sendText)
+    * [~sendRequest(url, options, serviceName)](#module_services..sendRequest) ⇒ <code>HTTPResponse</code>
+
+<a name="module_services..PassNinjaService"></a>
+
+### services~PassNinjaService
+Class used to access the PassNinja API.
+
+**Kind**: inner class of [<code>services</code>](#module_services)  
+
+* [~PassNinjaService](#module_services..PassNinjaService)
+    * [.createPass(payload)](#module_services..PassNinjaService+createPass) ⇒ <code>HTTPResponse</code>
+    * [.putPass(payload, serial)](#module_services..PassNinjaService+putPass) ⇒ <code>HTTPResponse</code>
+
+<a name="module_services..PassNinjaService+createPass"></a>
+
+#### passNinjaService.createPass(payload) ⇒ <code>HTTPResponse</code>
+Creates a PN pass
+
+**Kind**: instance method of [<code>PassNinjaService</code>](#module_services..PassNinjaService)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| payload | <code>Object</code> | https://passninja.com/docs#passes-passes-with-passninja-templates-post |
+
+<a name="module_services..PassNinjaService+putPass"></a>
+
+#### passNinjaService.putPass(payload, serial) ⇒ <code>HTTPResponse</code>
+Updates a PN pass
+
+**Kind**: instance method of [<code>PassNinjaService</code>](#module_services..PassNinjaService)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| payload | <code>Object</code> | https://passninja.com/docs#passes-passes-with-passninja-templates-post |
+| serial | <code>string</code> | UUID for the pass to update |
+
+<a name="module_services..PassNinjaScannerService"></a>
+
+### services~PassNinjaScannerService
+Class used to access the PassNinja Scanner API (placeholder)
+
+**Kind**: inner class of [<code>services</code>](#module_services)  
+<a name="module_services..PassNinjaScannerService+notifyScanner"></a>
+
+#### passNinjaScannerService.notifyScanner(payload) ⇒ <code>HTTPResponse</code>
+Notifies the scanner of the scan event and processed outcome
+
+**Kind**: instance method of [<code>PassNinjaScannerService</code>](#module_services..PassNinjaScannerService)  
+**Returns**: <code>HTTPResponse</code> - The scanner service response  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| payload | <code>Object</code> | To be determined |
+
+<a name="module_services..TwilioService"></a>
+
+### services~TwilioService
+Class used to access the Twilio API
+
+**Kind**: inner class of [<code>services</code>](#module_services)  
+
+* [~TwilioService](#module_services..TwilioService)
+    * [.formatE164PhoneNumber()](#module_services..TwilioService+formatE164PhoneNumber) ⇒ <code>string</code> \| <code>null</code>
+    * [.sendText(to, body)](#module_services..TwilioService+sendText)
+
+<a name="module_services..TwilioService+formatE164PhoneNumber"></a>
+
+#### twilioService.formatE164PhoneNumber() ⇒ <code>string</code> \| <code>null</code>
+Formats number to rough E164 standard:
+https://www.twilio.com/docs/glossary/what-e164
+
+**Kind**: instance method of [<code>TwilioService</code>](#module_services..TwilioService)  
+**Returns**: <code>string</code> - Phone number in E164 format<code>null</code> - If phone number is not valid.  
+**Params**: <code>string</code> rawPhoneNumber The raw phone number string input  
+<a name="module_services..TwilioService+sendText"></a>
+
+#### twilioService.sendText(to, body)
+Sends a text using the Twilio API if credentials have been set up in the script.
+
+**Kind**: instance method of [<code>TwilioService</code>](#module_services..TwilioService)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| to | <code>string</code> | The phone number to send the text to |
+| body | <code>string</code> | The body of the text to send |
+
+<a name="module_services..sendRequest"></a>
+
+### services~sendRequest(url, options, serviceName) ⇒ <code>HTTPResponse</code>
+The generic function for running an external call
+
+**Kind**: inner method of [<code>services</code>](#module_services)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| url | <code>string</code> | The url used in the request |
+| options | <code>object</code> | The options used for the request: https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app#fetchurl,-params |
+| serviceName | <code>string</code> | The calling service for debugging purposes |
 

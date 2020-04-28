@@ -1,3 +1,8 @@
+/**
+ *  General sheet helper functions
+ * @module utils.sheet
+ */
+
 /** Attempts to return the spreadsheet connected to the GAS Script Project.
  *  Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
  *  If multiple sheets have been programatically created it will only target the most recent.
@@ -25,8 +30,32 @@ function getLinkedSpreadsheet() {
   );
 }
 
+/** Creates a JSON object from the first found match of the given serial number.
+ *
+ * @param {Sheet} sheet Google Sheet to query
+ * @param {string} serialNumber Query string to match
+ * @returns {object} The resulting match or an empty object if no match is found
+ */
+function rowToJSONFromSerial(sheet, serialNumber) {
+  const serialNumberColumn = getColumnIndexFromString(sheet, 'serialNumber') - 1;
+  const serialNumberColumnData = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+
+  const matchIndex = findMatchIndexAtColumn(serialNumberColumnData, serialNumberColumn, serialNumber);
+
+  if (matchIndex === -1) return {};
+  return rowToJson(sheet, serialNumberColumnData[matchIndex]);
+}
+
+/** Retrieves the url for the script dev deployment
+ *
+ * @returns {string} the url for the script dev deployment
+ */
 const getDevDeploymentUrl = () => ScriptApp.getService().getUrl();
 
+/** Retrieves the url to open the script
+ *
+ * @returns {string} the url for the connected script
+ */
 const getScriptUrl = () => `https://script.google.com/d/${ScriptApp.getScriptId()}/edit`;
 
 /** Returns an Script Project environment variable if found or throws an error.
@@ -86,7 +115,7 @@ function getConfigConstants(spreadsheet) {
     spreadsheet
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
-      .filter(row => !!row[0])
+      .filter((row) => !!row[0])
   );
   if (!constants.passType) throw new UtilsError('You must enter a passType in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigConstants');
@@ -100,7 +129,7 @@ function getConfigFields(spreadsheet) {
   const fieldsData = spreadsheet
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
-    .filter(row => !!row[0]);
+    .filter((row) => !!row[0]);
   if (!fieldsData.length) throw new UtilsError('You must enter at least one field in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigFields');
   return fieldsData;
@@ -113,7 +142,7 @@ function getAllFuncs(toCheck) {
     props = props.concat(Object.getOwnPropertyNames(obj));
   } while ((obj = Object.getPrototypeOf(obj)));
 
-  return props.sort().filter(function(e, i, arr) {
+  return props.sort().filter(function (e, i, arr) {
     if (e != arr[i + 1] && typeof toCheck[e] == 'function') return true;
   });
 }
@@ -223,10 +252,7 @@ function insertRow(sheet, rowData, index, cb) {
   try {
     const rowIndex = index || 1;
     log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex + 1} columns ${1}-${1 + rowData.length}`);
-    sheet
-      .insertRowBefore(rowIndex)
-      .getRange(rowIndex, 1, 1, rowData.length)
-      .setValues([rowData]);
+    sheet.insertRowBefore(rowIndex).getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
     SpreadsheetApp.flush();
     cb && cb();
   } finally {
@@ -273,7 +299,7 @@ function getHeaders(sheet) {
 function getNamedRange(name, ss) {
   return ss
     .getNamedRanges()
-    .filter(e => e.getName() === name)[0]
+    .filter((e) => e.getName() === name)[0]
     .getRange();
 }
 
@@ -340,7 +366,7 @@ function getFormDestinationSheet(form) {
   const destinationId = form.getDestinationId();
   if (destinationId) {
     const spreadsheet = SpreadsheetApp.openById(destinationId);
-    const matches = spreadsheet.getSheets().filter(sheet => {
+    const matches = spreadsheet.getSheets().filter((sheet) => {
       const url = sheet.getFormUrl();
       return url && url.indexOf(formId) > -1;
     });

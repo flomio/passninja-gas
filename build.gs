@@ -1,3 +1,8 @@
+/**
+ * Responsible for building all GAS sheets
+ * @module build
+ */
+
 /** Creates a default PassNinja formatted Google sheet on the given spreadsheet
  *
  * @param {string} name The name of the named range to query
@@ -191,13 +196,10 @@ function buildContactsForm(ss, sheet, fieldData) {
   const triggers = ScriptApp.getProjectTriggers();
   if (
     !triggers.filter(
-      t => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
+      (t) => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
     ).length
   ) {
-    ScriptApp.newTrigger('onboardNewPassholderFromForm')
-      .forSpreadsheet(ss)
-      .onFormSubmit()
-      .create();
+    ScriptApp.newTrigger('onboardNewPassholderFromForm').forSpreadsheet(ss).onFormSubmit().create();
     log(log.SUCCESS, 'Successfully created form trigger');
   }
 

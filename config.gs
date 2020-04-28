@@ -1,3 +1,8 @@
+/**
+ * Responsible for defining project-level reusable config + constants
+ * @module config
+ */
+
 const print = Logger.log;
 const FILTER = 'FUNCTION,ERROR,SUCCESS';
 let LAST_LOG = new Date();
@@ -86,6 +91,8 @@ const FORM_LOOKUP = {
   text: 'addTextItem'
 };
 
+const V_START_ROW_OFFSET = 2;
+
 const SCANNERS_FIELDS = [
   'serialNumber',
   'id',
@@ -96,3 +103,24 @@ const SCANNERS_FIELDS = [
   'activeHourEnd',
   'unitPrice'
 ];
+
+const SCAN_PLATFORMS = ['apple-wallet', 'google-pay'];
+
+const SCAN_TEMPLATE = {
+  id: '', // #john@smith.com#dev.andres#<uuid>
+  date: '', // timestamp
+  callback: `https://script.google.com/macros/s/${Utilities.getUuid()}/exec`, // fake deployment url
+  event: {
+    serialNumber: '', // uuid
+    date: '', // timestamp
+    passType: '', // dev.andres
+    type: 'PASS_SCAN',
+    platform: '', // apple-wallet | google-pay
+    reader: {
+      type: 'FloBlePlus',
+      serialNumber: '', // Arbitrary, default is RR464-0017564
+      firmware: 'ACR1255U-J1 SWV 3.00.05'
+    },
+    uuid: '' // uuid
+  }
+};

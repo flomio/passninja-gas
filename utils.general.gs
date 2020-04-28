@@ -1,3 +1,8 @@
+/**
+ *  General utility helper functions
+ * @module utils.general
+ */
+
 /** Chose a random item from an array
  *
  * @param {array} arr Array to choose from
@@ -39,7 +44,7 @@ function findMatchIndexAtColumn(arr, column, query) {
  * @returns {boolean} Whether or not any values are present in the collection.
  */
 function rangeValuesExist(rangeValues) {
-  return rangeValues.reduce((acc, f) => acc || !!f.filter(g => g.length).length, false);
+  return rangeValues.reduce((acc, f) => acc || !!f.filter((g) => g.length).length, false);
 }
 
 /** You can get a MD5 hash value and even a 4digit short Hash value of a string.

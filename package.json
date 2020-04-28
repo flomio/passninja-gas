@@ -8,22 +8,24 @@
   },
   "scripts": {
     "test": "jest",
-    "lint:fix": "yarn lint:fix:prettier",
+    "lint:fix": "npm run lint:fix:prettier",
     "lint:fix:prettier": "prettier -c --write \"**/*.js\" \"**/*.gs\"",
-    "lint": "yarn lint:prettier -c",
+    "lint": "npm run lint:prettier -c",
     "lint:prettier": "prettier --check \"**/*.js\" \"**/*.gs\"",
     "js2gs": "for f in *.js; do mv -- \"$f\" \"${f%.js}.gs\"; done",
     "gs2js": "for f in *.gs; do mv -- \"$f\" \"${f%.gs}.js\"; done",
-    "build:docs:utils": "jsdoc2md --files utils.general.js utils.sheet.js config.js > docs/UTILS.md",
+    "build:docs:fns": "jsdoc2md --files scan.js services.js > docs/FUNCTIONS.md",
+    "build:docs:build": "jsdoc2md --files build.js virtualization.js > docs/BUILD.md",
     "build:docs:api": "jsdoc2md --files handleGet.js handlePost.js > docs/API.md",
-    "build:docs:fns": "jsdoc2md --files core.js build.js services.js virtualization.js > docs/FUNCTIONS.md",
-    "build:all": "yarn build:docs:utils && yarn build:docs:api && yarn build:docs:fns",
-    "build:docs": "yarn js2gs > dev/null 2>&1 || yarn gs2js && yarn build:all && yarn js2gs"
+    "build:docs:core": "jsdoc2md --files core.js build.js > docs/CORE.md",
+    "build:docs:utils": "jsdoc2md --files utils.general.js utils.sheet.js config.js errors.js virtualization.js > docs/UTILS.md",
+    "build:all": "npm run build:docs:build && npm run build:docs:core && npm run build:docs:utils && npm run build:docs:api && npm run build:docs:fns",
+    "build:docs": "npm run js2gs > /dev/null 2>&1 || npm run gs2js && npm run build:all && npm run js2gs"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn build:docs && yarn lint:fix && yarn test && git add .",
-      "pre-push": "yarn lint && yarn test --coverage"
+      "pre-commit": "npm run lint:fix && npm run test && git add .",
+      "pre-push": "npm run lint && npm run test --coverage"
     }
   },
   "repository": {
@@ -66,5 +68,8 @@
     "husky": "^4.2.3",
     "jest": "^25.1.0",
     "jsdoc-to-markdown": "^5.0.3"
+  },
+  "dependencies": {
+    "prettier": "^2.0.5"
   }
 }

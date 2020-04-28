@@ -1,3 +1,8 @@
+/**
+ *  Built in definition for API deploment POST method
+ * @module handlePost
+ */
+
 /** Creates an event entry in the Events spreadsheet
  * @param {object} e Request event data
  * @returns {object} Standard response with a JavaScript text body
