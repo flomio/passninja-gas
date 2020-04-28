@@ -36,7 +36,7 @@ sessions they would like to attend, grouped by date and start time.</p>
 <dd><p>Builds a events sheet based on the user config sheet</p>
 </dd>
 <dt><a href="#buildScannersSheet">buildScannersSheet(ss, fieldsNames)</a></dt>
-<dd><p>Builds a scanners sheet based on the user config sheet</p>
+<dd><p>Builds a scanners sheet based on the user config sheet with one default scanner</p>
 </dd>
 <dt><a href="#buildContactsSheet">buildContactsSheet(ss, fieldsNames)</a> ⇒ <code>Sheet</code></dt>
 <dd><p>Builds a contacts sheet based on the user config sheet</p>
@@ -141,7 +141,7 @@ Builds a events sheet based on the user config sheet
 <a name="buildScannersSheet"></a>
 
 ## buildScannersSheet(ss, fieldsNames)
-Builds a scanners sheet based on the user config sheet
+Builds a scanners sheet based on the user config sheet with one default scanner
 
 **Kind**: global function  
 

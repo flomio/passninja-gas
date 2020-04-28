@@ -121,7 +121,7 @@ function buildEventsSheet(ss) {
   log(log.SUCCESS, 'Successfully built/updated Events sheet');
 }
 
-/** Builds a scanners sheet based on the user config sheet
+/** Builds a scanners sheet based on the user config sheet with one default scanner
  *
  * @param {Spreadsheet} ss The container spreadsheet
  * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
@@ -134,7 +134,9 @@ function buildScannersSheet(ss) {
   fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
   fieldHeaders.setFontWeight('bold');
   fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
-
+  sheet
+    .getRange(2, 1, 1, SCANNERS_FIELDS.length)
+    .setValues([['RR464-0017564', '1', 'AVAILABLE', 'TRUE', '', '03:00', '23:45', '$0.00']]);
   deleteUnusedColumns(SCANNERS_FIELDS.length + 1, sheet.getMaxColumns(), sheet);
 
   log(log.SUCCESS, 'Successfully built/updated Scanners sheet');

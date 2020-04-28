@@ -276,6 +276,7 @@ function sendText_() {
 
 function mockScan_() {
   let scannerSerialNumber;
+  const ss = new VSpreadsheet();
   const ui = SpreadsheetApp.getUi();
   const response = ui.prompt('Please enter a scanner serial number or leave blank for default (RR464-0017564)');
   if (response.getSelectedButton() == ui.Button.OK) {
@@ -284,28 +285,8 @@ function mockScan_() {
     throw new ScriptError('Cancelling mock scan.');
   }
   log(log.FUNCTION, 'RUNNING MOCKSCAN_');
-  const ss = new VSpreadsheet();
-  const contactSheet = getSheet(ENUMS.CONTACTS, ss);
-  const rowNumber = getValidSheetSelectedRow(contactSheet);
-  const serialNumberColumnIndex = getColumnIndexFromString(contactSheet, ENUMS.SERIAL);
-  const serialNumberRange = contactSheet.getRange(rowNumber, serialNumberColumnIndex);
-  log(log.WARNING, serialNumberRange.getValue());
-
-  const payload = {
-    reader: {
-      type: 'FloBlePlus',
-      serial_number: scannerSerialNumber,
-      firmware: 'ACR1255U-J1 SWV 3.00.05'
-    },
-    uuid: Utilities.getUuid(),
-    type: 'apple-pay',
-    passTypeIdentifier: 'pass.com.passninja.ripped.beta',
-    data: {
-      timeStamp: '2020-03-10T15:17:04.789Z',
-      message: serialNumberRange.getValue()
-    }
-  };
-  addEvent(ss, JSON.stringify(payload));
+  const { passType, serialNumber } = getSelectedContactData(ss);
+  addEvent(ss, JSON.stringify(createMockScanPayload(passType, serialNumber, scannerSerialNumber)));
   ss.flush();
   log(log.FUNCTION, 'FINISHED MOCKSCAN_');
 }
