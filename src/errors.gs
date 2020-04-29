@@ -22,6 +22,8 @@ class PassNinjaGASError extends Error {
 class ServiceError extends PassNinjaGASError {
   constructor(...params) {
     super('SERVICE', ...params);
+    this.constructor = ServiceError;
+    this.__proto__ = ServiceError.prototype;
   }
 }
 
@@ -30,6 +32,8 @@ class ServiceError extends PassNinjaGASError {
 class UtilsError extends PassNinjaGASError {
   constructor(...params) {
     super('UTILS', ...params);
+    this.constructor = UtilsError;
+    this.__proto__ = UtilsError.prototype;
   }
 }
 
@@ -38,6 +42,8 @@ class UtilsError extends PassNinjaGASError {
 class ScriptError extends PassNinjaGASError {
   constructor(...params) {
     super('SCRIPT', ...params);
+    this.constructor = ScriptError;
+    this.__proto__ = ScriptError.prototype;
   }
 }
 
@@ -46,6 +52,8 @@ class ScriptError extends PassNinjaGASError {
 class CredentialsError extends PassNinjaGASError {
   constructor(...params) {
     super('CREDS', ...params);
+    this.constructor = CredentialsError;
+    this.__proto__ = CredentialsError.prototype;
   }
 }
 
@@ -54,19 +62,7 @@ class CredentialsError extends PassNinjaGASError {
 class BuildError extends PassNinjaGASError {
   constructor(...params) {
     super('BUILD', ...params);
-  }
-}
-
-/** Runs the function and catches then throws any error and logs it.
- *
- * @param {string} error Error to log
- * @param {string} msg The extra message to add
- */
-function catchError(fn, errorMsg) {
-  try {
-    return fn();
-  } catch (e) {
-    log(log.ERROR, errorMsg, e);
-    throw new BuildError(errorMsg, e);
+    this.constructor = BuildError;
+    this.__proto__ = BuildError.prototype;
   }
 }

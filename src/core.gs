@@ -16,9 +16,7 @@ function createSpreadsheet() {
   } catch (err) {
     log(log.STATUS, 'No sheet found, continuing...');
   }
-  const tzoffset = new Date().getTimezoneOffset() * 60000;
-  const localISOTime = new Date(Date.now() - tzoffset).toISOString().slice(0, -1);
-  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${localISOTime}`);
+  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${now()}`);
 
   ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
@@ -214,11 +212,16 @@ function createPass_() {
       ? new PassNinjaService().putPass(payloadJSONString, serial)
       : new PassNinjaService().createPass(payloadJSONString);
   } catch (err) {
-    passNinjaContentRange.setValues(
-      rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'], ['PassNinja Credentials?'], ['']]]
-    );
+    let message;
+    if (err instanceof CredentialsError) {
+      message = [[['Did you set your'], ['PassNinja Credentials?'], ['']]];
+    } else {
+      message = [[['Error: Check'], ['Events Sheet for details'], ['']]];
+    }
+    passNinjaContentRange.setValues(rangeValuesExist(originalContent) ? originalContent : message);
     highlightRange(passNinjaContentRange, 'error');
     autoResizeSheet(contactSheet._internal);
+
     throw err;
   }
   log(log.SUCCESS, JSON.stringify(responseData));
