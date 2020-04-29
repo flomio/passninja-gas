@@ -2,17 +2,17 @@
 
 <dl>
 <dt><a href="#module_handleGet">handleGet</a></dt>
-<dd><p>Built in definition for API deploment GET method</p>
+<dd><p>Built in definition for API deployment GET method</p>
 </dd>
 <dt><a href="#module_handlePost">handlePost</a></dt>
-<dd><p>Built in definition for API deploment POST method</p>
+<dd><p>Built in definition for API deployment POST method</p>
 </dd>
 </dl>
 
 <a name="module_handleGet"></a>
 
 ## handleGet
-Built in definition for API deploment GET method
+Built in definition for API deployment GET method
 
 <a name="module_handleGet..doGet"></a>
 
@@ -30,7 +30,7 @@ Returns the corresponding user entry in the Contacts sheet
 <a name="module_handlePost"></a>
 
 ## handlePost
-Built in definition for API deploment POST method
+Built in definition for API deployment POST method
 
 
 * [handlePost](#module_handlePost)
