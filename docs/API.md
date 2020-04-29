@@ -1,65 +1,60 @@
-## Functions
+## Modules
 
 <dl>
-<dt><a href="#doGet">doGet(e)</a> ⇒ <code>object</code></dt>
-<dd><p>Returns the corresponding user entry in the Contacts sheet
- matching the serialNumber query parameter</p>
+<dt><a href="#module_handleGet">handleGet</a></dt>
+<dd><p>Built in definition for API deploment GET method</p>
 </dd>
-<dt><a href="#rowToJSONFromSerial">rowToJSONFromSerial(sheet, serialNumber)</a> ⇒ <code>object</code></dt>
-<dd><p>Creates a JSON object from the first found match of the given serial number.</p>
-</dd>
-<dt><a href="#doPost">doPost(e)</a> ⇒ <code>object</code></dt>
-<dd><p>Creates an event entry in the Events spreadsheet</p>
-</dd>
-<dt><a href="#addEvent">addEvent(sheet, eventJson)</a> ⇒ <code>boolean</code></dt>
-<dd><p>Adds a PassNinja event to a new row in the target spreadsheet</p>
+<dt><a href="#module_handlePost">handlePost</a></dt>
+<dd><p>Built in definition for API deploment POST method</p>
 </dd>
 </dl>
 
-<a name="doGet"></a>
+<a name="module_handleGet"></a>
 
-## doGet(e) ⇒ <code>object</code>
+## handleGet
+Built in definition for API deploment GET method
+
+<a name="module_handleGet..doGet"></a>
+
+### handleGet~doGet(e) ⇒ <code>object</code>
 Returns the corresponding user entry in the Contacts sheet
  matching the serialNumber query parameter
 
-**Kind**: global function  
+**Kind**: inner method of [<code>handleGet</code>](#module_handleGet)  
 **Returns**: <code>object</code> - Standard response with a JavaScript text body  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | e | <code>object</code> | Request event data |
 
-<a name="rowToJSONFromSerial"></a>
+<a name="module_handlePost"></a>
 
-## rowToJSONFromSerial(sheet, serialNumber) ⇒ <code>object</code>
-Creates a JSON object from the first found match of the given serial number.
+## handlePost
+Built in definition for API deploment POST method
 
-**Kind**: global function  
-**Returns**: <code>object</code> - The resulting match or an empty object if no match is found  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| sheet | <code>Sheet</code> | Google Sheet to query |
-| serialNumber | <code>string</code> | Query string to match |
+* [handlePost](#module_handlePost)
+    * [~doPost(e)](#module_handlePost..doPost) ⇒ <code>object</code>
+    * [~addEvent(sheet, eventJson)](#module_handlePost..addEvent) ⇒ <code>boolean</code>
 
-<a name="doPost"></a>
+<a name="module_handlePost..doPost"></a>
 
-## doPost(e) ⇒ <code>object</code>
+### handlePost~doPost(e) ⇒ <code>object</code>
 Creates an event entry in the Events spreadsheet
 
-**Kind**: global function  
+**Kind**: inner method of [<code>handlePost</code>](#module_handlePost)  
 **Returns**: <code>object</code> - Standard response with a JavaScript text body  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | e | <code>object</code> | Request event data |
 
-<a name="addEvent"></a>
+<a name="module_handlePost..addEvent"></a>
 
-## addEvent(sheet, eventJson) ⇒ <code>boolean</code>
+### handlePost~addEvent(sheet, eventJson) ⇒ <code>boolean</code>
 Adds a PassNinja event to a new row in the target spreadsheet
 
-**Kind**: global function  
+**Kind**: inner method of [<code>handlePost</code>](#module_handlePost)  
 **Returns**: <code>boolean</code> - If the action completed successfully  
 
 | Param | Type | Description |

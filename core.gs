@@ -1,3 +1,8 @@
+/**
+ *  Contains createSpreadsheet + all menu functions
+ * @module core
+ */
+
 /** ~*--*~ RUN ME FIRST ~*--*~
  *  Creates the necessary demo spreadsheet in the user's spreadsheets.
  *  Spreadsheet is linked via a trigger to the script.
@@ -14,11 +19,8 @@ function createSpreadsheet() {
 
   const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
-  ScriptApp.getProjectTriggers().forEach(trigger => ScriptApp.deleteTrigger(trigger));
-  ScriptApp.newTrigger('onOpen')
-    .forSpreadsheet(ss)
-    .onOpen()
-    .create();
+  ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
+  ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
 
   buildConfigSheet(ss);
   ss.deleteSheet(ss.getSheetByName('Sheet1'));
@@ -33,7 +35,7 @@ function createSpreadsheet() {
 
   log(
     log.STATUS,
-    ss.getSheets().map(sheet => sheet.getName())
+    ss.getSheets().map((sheet) => sheet.getName())
   );
   log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
 
@@ -49,17 +51,12 @@ function createSpreadsheet() {
   throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`);
 }
 
-/** Custom Trigger: adds the PassNinja script set as a menu item on load.
- *
- */
+/** Custom Trigger: adds the PassNinja script set as a menu item on load. */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
     .addSubMenu(
-      ui
-        .createMenu('Selected Row')
-        .addItem('Create/Update Pass', 'createPass_')
-        .addItem('Run Mock Scan', 'mockScan_')
+      ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_').addItem('Run Mock Scan', 'mockScan_')
     )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
@@ -81,16 +78,19 @@ function onOpen() {
     .addToUi();
 }
 
+/** Menu-item for updating the config even if nothing has changed */
 function forceUpdateFromConfig_() {
   updateFromConfig_(true);
 }
 
+/** Menu-item for building the config even if nothing has changed */
 function buildConfigSheet_() {
   buildConfigSheet(getLinkedSpreadsheet());
 }
 
 /** Menu command to stores the Twilio auth details into the Script Properties permanently..
  * @returns {ServiceError} If setup is cancelled.
+ * @throws {ScriptError} If user cancels setup
  */
 function storeTwilioDetails_() {
   const ui = SpreadsheetApp.getUi();
@@ -110,6 +110,9 @@ function storeTwilioDetails_() {
   }
 }
 
+/** Responsible for storing user credentials for PassNinja API access
+ * @throws {ScriptError} If the user cancels the setup
+ */
 function storePassNinjaDetails_() {
   const ui = SpreadsheetApp.getUi();
 
@@ -137,7 +140,7 @@ function storePassNinjaDetails_() {
 function updateFromConfig_(force = false) {
   const ss = getLinkedSpreadsheet();
   const fields = getConfigFields(ss);
-  const fieldNames = fields.map(f => f[0]);
+  const fieldNames = fields.map((f) => f[0]);
   const constants = getConfigConstants(ss);
   //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
@@ -156,7 +159,7 @@ function updateFromConfig_(force = false) {
 
 /** Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
  *
- * @param {object} e The form event to read from
+ * @param {Object} e The form event to read from
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
@@ -164,12 +167,12 @@ function onboardNewPassholderFromForm(e) {
   const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
-    .filter(v => !!v[0]);
-  const fieldsNames = fieldsData.map(f => f[0]);
+    .filter((v) => !!v[0]);
+  const fieldsNames = fieldsData.map((f) => f[0]);
 
   const lock = LockService.getPublicLock();
   if (lock.tryLock(10000)) {
-    sheet._internal.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
+    sheet._internal.appendRow(fieldsNames.map((field) => e.namedValues[field][0]));
     lock.releaseLock();
   } else {
     return 'Lock Timeout';
@@ -180,7 +183,7 @@ function onboardNewPassholderFromForm(e) {
 
 /** Menu command to create a PassNinja pass from the selected row.
  * @returns {string} The response from the PassNinja API.
- * @returns {ServiceError} If the response from PassNinjaService is non 2xx.
+ * @throws {ServiceError} If the response from PassNinjaService is non 2xx.
  */
 function createPass_() {
   log(log.FUNCTION, 'STARTING CREATEPASS_');
@@ -238,9 +241,9 @@ function createPass_() {
 
 /** Sends a text to the current row using the TwilioService and stored Script Properties.
  *  NOTE: only works if the header 'phoneNumber' is present
- * @returns {ServiceError} If the response from TwilioService is non 2xx.
- * @returns {CredentialsError} If the credentials from TwilioService are not set up.
- * @returns {Error} If an unexpected error occurred running TwilioService.
+ * @throws {ServiceError} If the response from TwilioService is non 2xx.
+ * @throws {CredentialsError} If the credentials from TwilioService are not set up.
+ * @throws {Error} If an unexpected error occurred running TwilioService.
  */
 function sendText_() {
   log(log.FUNCTION, 'RUNNING SENDTEXT_');

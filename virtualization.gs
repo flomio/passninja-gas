@@ -1,3 +1,7 @@
+/**
+ *  Implementation for cached/virtual spreadsheets to reduce slow sheet queries
+ * @module virtualization
+ */
 class VSpreadsheet {
   constructor() {
     this._internal = getLinkedSpreadsheet();
@@ -54,7 +58,7 @@ class VSheet {
 
   flush() {
     log(log.VIRTUAL, `Flushing virtual sheet ${this._internal.getName()}:`);
-    this.rows.forEach(row => log(log.VIRTUAL, `[${row.map(val => String(val).substring(0, 10)).join(', ')}]`));
+    this.rows.forEach((row) => log(log.VIRTUAL, `[${row.map((val) => String(val).substring(0, 10)).join(', ')}]`));
     log(log.VIRTUAL, `Overwriting actual spreadsheet range: 1-${this.maxRow + 1}, 1-${this.maxCol + 1}`);
     return this._internal.getRange(1, 1, this.maxRow, this.maxCol).setValues(this.rows);
   }
@@ -76,7 +80,7 @@ class VSheet {
   }
 
   insertColBefore(colIndex) {
-    this.rows.forEach(row => row.splice(colIndex - 1, 0, ''));
+    this.rows.forEach((row) => row.splice(colIndex - 1, 0, ''));
     this.maxCol++;
     return this;
   }

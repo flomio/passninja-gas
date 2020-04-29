@@ -1,3 +1,8 @@
+/**
+ *  Custom error definitions
+ * @module errors
+ */
+
 /** Error Archetype, not to be thrown.
  */
 class PassNinjaGASError extends Error {

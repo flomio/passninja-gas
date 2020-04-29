@@ -1,4 +1,16 @@
-var sendRequest = (url, options = {}, serviceName) => {
+/**
+ *  Contains Service clases for all external service calls
+ * @module services
+ */
+
+/** The generic function for running an external call
+ *
+ * @param {string} url The url used in the request
+ * @param {object} options The options used for the request: https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app#fetchurl,-params
+ * @param {string} serviceName The calling service for debugging purposes
+ * @returns {HTTPResponse}
+ */
+const sendRequest = (url, options = {}, serviceName) => {
   log(
     log.FUNCTION,
     `Attempting to ${options.method.toUpperCase()} ${url} with payload: ${JSON.stringify(options.payload)}`
@@ -17,6 +29,7 @@ var sendRequest = (url, options = {}, serviceName) => {
   }
 };
 
+/** Class used to access the PassNinja API. */
 class PassNinjaService {
   constructor() {
     this.serviceName = 'PassNinjaAPI';
@@ -33,6 +46,11 @@ class PassNinjaService {
     this.passesUpdateRoute = `${this.baseUrl}/passes/`;
   }
 
+  /** Creates a PN pass
+   *
+   * @param {Object} payload https://passninja.com/docs#passes-passes-with-passninja-templates-post
+   * @returns {HTTPResponse}
+   */
   createPass(payload) {
     return sendRequest(
       this.passesPostRoute,
@@ -49,6 +67,12 @@ class PassNinjaService {
     );
   }
 
+  /** Updates a PN pass
+   *
+   * @param {Object} payload https://passninja.com/docs#passes-passes-with-passninja-templates-post
+   * @param {string} serial UUID for the pass to update
+   * @returns {HTTPResponse}
+   */
   putPass(payload, serial) {
     return sendRequest(
       `${this.passesUpdateRoute}${serial}`,
@@ -66,12 +90,18 @@ class PassNinjaService {
   }
 }
 
+/** Class used to access the PassNinja Scanner API (placeholder) */
 class PassNinjaScannerService {
   constructor() {
     this.serviceName = 'PassNinjaScannerAPI';
     this.baseUrl = 'https://passninja.ngrok.io/fancy/path/';
   }
 
+  /** Notifies the scanner of the scan event and processed outcome
+   *
+   * @param {Object} payload To be determined
+   * @returns {HTTPResponse} The scanner service response
+   */
   notifyScanner(payload) {
     return { statusCode: 200 };
     // return sendRequest(
@@ -86,6 +116,7 @@ class PassNinjaScannerService {
   }
 }
 
+/** Class used to access the Twilio API */
 class TwilioService {
   constructor() {
     this.serviceName = 'TwilioAPI';
@@ -103,8 +134,9 @@ class TwilioService {
     this.postRoute = `${this.baseUrl}/Accounts/${this.accountSid}/Messages.json`;
   }
 
-  /* Formats number to rough E164 standard:
+  /** Formats number to rough E164 standard:
    * https://www.twilio.com/docs/glossary/what-e164
+   *
    * @params {string} rawPhoneNumber The raw phone number string input
    * @returns {string} Phone number in E164 format
    * @returns {null} If phone number is not valid.
@@ -113,11 +145,16 @@ class TwilioService {
     if (this.formattedPhoneNumberRegex.test(rawPhoneNumber)) return rawPhoneNumber;
     const formattedPhoneNumber = `+${rawPhoneNumber}`
       .split('')
-      .filter(c => c.match(/[0-9x]/g))
+      .filter((c) => c.match(/[0-9x]/g))
       .join('');
     return this.formattedPhoneNumberRegex.test(formattedPhoneNumber) ? formattedPhoneNumber : null;
   }
 
+  /** Sends a text using the Twilio API if credentials have been set up in the script.
+   *
+   * @param {string} to The phone number to send the text to
+   * @param {string} body The body of the text to send
+   */
   sendText(to, body) {
     if (body.length > 160) throw new ServiceError(`${this.serviceName}: The text should be limited to 160 characters`);
     const options = {
