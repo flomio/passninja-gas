@@ -196,10 +196,13 @@ function buildContactsForm(ss, sheet, fieldData) {
   const triggers = ScriptApp.getProjectTriggers();
   if (
     !triggers.filter(
-      (t) => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
+      t => t.getHandlerFunction() === 'onboardNewPassholderFromForm' && t.getTriggerSourceId() === ss.getId()
     ).length
   ) {
-    ScriptApp.newTrigger('onboardNewPassholderFromForm').forSpreadsheet(ss).onFormSubmit().create();
+    ScriptApp.newTrigger('onboardNewPassholderFromForm')
+      .forSpreadsheet(ss)
+      .onFormSubmit()
+      .create();
     log(log.SUCCESS, 'Successfully created form trigger');
   }
 

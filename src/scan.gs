@@ -47,7 +47,7 @@ function getScanner(scannerSheet, serialNumber) {
   const columnValues = scannerSheet
     .getRange(V_START_ROW_OFFSET, serialNumberColumnIndex, scannerSheet.getLastRow() - 1)
     .getValues();
-  const scannerMatchIndex = columnValues.map((e) => e[0]).indexOf(serialNumber);
+  const scannerMatchIndex = columnValues.map(e => e[0]).indexOf(serialNumber);
   log(log.FUNCTION, 'ENDING getScanner');
   return { scannerMatchIndex, passSerialNumberColumnIndex };
 }
@@ -166,7 +166,7 @@ function getRowSerialMatchIndex(contactSheet, serialNumber) {
   );
   return contactPassSerials
     .getValues()
-    .map((e) => e[0])
+    .map(e => e[0])
     .indexOf(serialNumber);
 }
 

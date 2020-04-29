@@ -20,7 +20,7 @@
     "build:docs:core": "jsdoc2md --files core.js build.js > docs/CORE.md",
     "build:docs:utils": "jsdoc2md --files utils.general.js utils.sheet.js config.js errors.js virtualization.js > docs/UTILS.md",
     "build:all": "npm run build:docs:build && npm run build:docs:core && npm run build:docs:utils && npm run build:docs:api && npm run build:docs:fns",
-    "build:docs": "npm run js2gs > /dev/null 2>&1 || npm run gs2js && npm run build:all && npm run js2gs"
+    "build:docs": "cd src && npm run js2gs > /dev/null 2>&1 || npm run gs2js && npm run build:all && npm run js2gs && cd .."
   },
   "husky": {
     "hooks": {

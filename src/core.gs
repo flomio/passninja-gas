@@ -19,8 +19,11 @@ function createSpreadsheet() {
 
   const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
 
-  ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
-  ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
+  ScriptApp.getProjectTriggers().forEach(trigger => ScriptApp.deleteTrigger(trigger));
+  ScriptApp.newTrigger('onOpen')
+    .forSpreadsheet(ss)
+    .onOpen()
+    .create();
 
   buildConfigSheet(ss);
   ss.deleteSheet(ss.getSheetByName('Sheet1'));
@@ -35,7 +38,7 @@ function createSpreadsheet() {
 
   log(
     log.STATUS,
-    ss.getSheets().map((sheet) => sheet.getName())
+    ss.getSheets().map(sheet => sheet.getName())
   );
   log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
 
@@ -56,7 +59,10 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
     .addSubMenu(
-      ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_').addItem('Run Mock Scan', 'mockScan_')
+      ui
+        .createMenu('Selected Row')
+        .addItem('Create/Update Pass', 'createPass_')
+        .addItem('Run Mock Scan', 'mockScan_')
     )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
@@ -140,7 +146,7 @@ function storePassNinjaDetails_() {
 function updateFromConfig_(force = false) {
   const ss = getLinkedSpreadsheet();
   const fields = getConfigFields(ss);
-  const fieldNames = fields.map((f) => f[0]);
+  const fieldNames = fields.map(f => f[0]);
   const constants = getConfigConstants(ss);
   //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
@@ -167,12 +173,12 @@ function onboardNewPassholderFromForm(e) {
   const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
-    .filter((v) => !!v[0]);
-  const fieldsNames = fieldsData.map((f) => f[0]);
+    .filter(v => !!v[0]);
+  const fieldsNames = fieldsData.map(f => f[0]);
 
   const lock = LockService.getPublicLock();
   if (lock.tryLock(10000)) {
-    sheet._internal.appendRow(fieldsNames.map((field) => e.namedValues[field][0]));
+    sheet._internal.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
     lock.releaseLock();
   } else {
     return 'Lock Timeout';

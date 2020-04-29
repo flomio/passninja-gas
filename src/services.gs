@@ -145,7 +145,7 @@ class TwilioService {
     if (this.formattedPhoneNumberRegex.test(rawPhoneNumber)) return rawPhoneNumber;
     const formattedPhoneNumber = `+${rawPhoneNumber}`
       .split('')
-      .filter((c) => c.match(/[0-9x]/g))
+      .filter(c => c.match(/[0-9x]/g))
       .join('');
     return this.formattedPhoneNumberRegex.test(formattedPhoneNumber) ? formattedPhoneNumber : null;
   }
