@@ -1,5 +1,5 @@
 /**
- *  Built in definition for API deploment POST method
+ *  Built in definition for API deployment POST method
  * @module handlePost
  */
 
