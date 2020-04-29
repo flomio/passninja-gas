@@ -1,5 +1,5 @@
 /**
- *  Built in definition for API deploment GET method
+ *  Built in definition for API deployment GET method
  * @module handleGet
  */
 
