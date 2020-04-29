@@ -4,6 +4,18 @@
 <h1 align="center">passninja-guestlist-gas</h1>
 <h4 align="center">A repository for the PassNinja Google Apps Script demo to demonstrate PassNinja API functionality.</h4>
 
+<div align="center">
+    <a href="https://github.com/flomio/passninja-guestlist-gas/actions">
+        <img src="https://github.com/flomio/passninja-guestlist-gas/workflows/DOCS/badge.svg" alt="docs CI build status"/>
+    </a>
+    <a href="https://github.com/flomio/passninja-guestlist-gas">
+        <img alt="Status" src="https://img.shields.io/badge/status-active-success.svg" />
+    </a>
+    <a href="https://github.com/flomio/passninja-guestlist-gas/issues">
+        <img alt="Issues" src="https://img.shields.io/github/issues/flomio/passninja-guestlist-gas.svg" />
+    </a>
+</div>
+
 # Contents
 
 - [Contents](#contents)
