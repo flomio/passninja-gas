@@ -16,14 +16,12 @@ function createSpreadsheet() {
   } catch (err) {
     log(log.STATUS, 'No sheet found, continuing...');
   }
+  const tzoffset = new Date().getTimezoneOffset() * 60000;
+  const localISOTime = new Date(Date.now() - tzoffset).toISOString().slice(0, -1);
+  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${localISOTime}`);
 
-  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
-
-  ScriptApp.getProjectTriggers().forEach(trigger => ScriptApp.deleteTrigger(trigger));
-  ScriptApp.newTrigger('onOpen')
-    .forSpreadsheet(ss)
-    .onOpen()
-    .create();
+  ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
+  ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
 
   buildConfigSheet(ss);
   ss.deleteSheet(ss.getSheetByName('Sheet1'));
@@ -38,7 +36,7 @@ function createSpreadsheet() {
 
   log(
     log.STATUS,
-    ss.getSheets().map(sheet => sheet.getName())
+    ss.getSheets().map((sheet) => sheet.getName())
   );
   log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
 
@@ -59,10 +57,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('PassNinja')
     .addSubMenu(
-      ui
-        .createMenu('Selected Row')
-        .addItem('Create/Update Pass', 'createPass_')
-        .addItem('Run Mock Scan', 'mockScan_')
+      ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_').addItem('Run Mock Scan', 'mockScan_')
     )
     .addSeparator()
     .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
@@ -146,21 +141,21 @@ function storePassNinjaDetails_() {
 function updateFromConfig_(force = false) {
   const ss = getLinkedSpreadsheet();
   const fields = getConfigFields(ss);
-  const fieldNames = fields.map(f => f[0]);
+  const fieldNames = fields.map((f) => f[0]);
   const constants = getConfigConstants(ss);
-  //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
-  // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
+  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
+  const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
+  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
-  //  if (!force && hash !== fieldsHash) {
-  catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
-  catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
-  catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
-  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields), 'Error building Contacts Form - ');
-  //   setEnvVar(ENUMS.FIELDS_HASH, hash);
-  //  } else {
-  //    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
-  //  }
+  if (force || hash !== fieldsHash) {
+    buildEventsSheet(ss);
+    buildScannersSheet(ss);
+    buildContactsSheet(ss, fieldNames);
+    buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields);
+    setEnvVar(ENUMS.FIELDS_HASH, hash);
+  } else {
+    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
+  }
 }
 
 /** Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
@@ -173,12 +168,12 @@ function onboardNewPassholderFromForm(e) {
   const sheet = getSheet(ENUMS.CONTACTS, ss);
   const fieldsData = getNamedRange('config_fields', ss)
     .getValues()
-    .filter(v => !!v[0]);
-  const fieldsNames = fieldsData.map(f => f[0]);
+    .filter((v) => !!v[0]);
+  const fieldsNames = fieldsData.map((f) => f[0]);
 
   const lock = LockService.getPublicLock();
   if (lock.tryLock(10000)) {
-    sheet._internal.appendRow(fieldsNames.map(field => e.namedValues[field][0]));
+    sheet._internal.appendRow(fieldsNames.map((field) => e.namedValues[field][0]));
     lock.releaseLock();
   } else {
     return 'Lock Timeout';

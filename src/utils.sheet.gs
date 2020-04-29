@@ -115,7 +115,7 @@ function getConfigConstants(spreadsheet) {
     spreadsheet
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
-      .filter(row => !!row[0])
+      .filter((row) => !!row[0])
   );
   if (!constants.passType) throw new UtilsError('You must enter a passType in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigConstants');
@@ -129,7 +129,7 @@ function getConfigFields(spreadsheet) {
   const fieldsData = spreadsheet
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
-    .filter(row => !!row[0]);
+    .filter((row) => !!row[0]);
   if (!fieldsData.length) throw new UtilsError('You must enter at least one field in the Config sheet.');
   log(log.FUNCTION, 'ENDING getConfigFields');
   return fieldsData;
@@ -142,7 +142,7 @@ function getAllFuncs(toCheck) {
     props = props.concat(Object.getOwnPropertyNames(obj));
   } while ((obj = Object.getPrototypeOf(obj)));
 
-  return props.sort().filter(function(e, i, arr) {
+  return props.sort().filter(function (e, i, arr) {
     if (e != arr[i + 1] && typeof toCheck[e] == 'function') return true;
   });
 }
@@ -184,23 +184,38 @@ function getValidSheetSelectedRow(sheet) {
  */
 function autoResizeSheet(sheet) {
   log(log.FUNCTION, 'STARTING autoResizeSheet');
-  for (i = 1; i <= sheet.getMaxColumns(); i++) {
-    sheet.autoResizeColumn(i);
-  }
+  SpreadsheetApp.flush();
+  sheet.autoResizeColumns(1, sheet.getMaxColumns());
   log(log.FUNCTION, 'ENDING autoResizeSheet');
 }
 
-/** Deletes all columns from min->max on the given sheet
+/** Deletes all columns from last column with data to the end on the given sheet
  *
- * @param {int} min The starting column index
- * @param {int} max The final column index
+ * @param {Sheet} sheet The sheet to modify
  */
-function deleteUnusedColumns(min, max, sheet) {
-  log(log.FUNCTION, 'STARTING deleteUnusedColumns');
-  for (var i = max; i >= min; i--) {
-    sheet.deleteColumn(i);
+function autoDeleteUnusedColumns(sheet) {
+  log(log.FUNCTION, 'STARTING autoDeleteUnusedColumns');
+  const lastContentColumn = sheet.getLastColumn();
+  const lastColumn = sheet.getMaxColumns();
+  if (lastContentColumn < lastColumn) {
+    log(log.WARNING, `Deleting columns ${lastContentColumn}-${lastColumn} on sheet ${sheet.getName()}`);
+    sheet.deleteColumns(lastContentColumn + 1, lastColumn - lastContentColumn);
   }
-  log(log.FUNCTION, 'ENDING deleteUnusedColumns');
+  log(log.FUNCTION, 'ENDING autoDeleteUnusedColumns');
+}
+
+/** Shrinks sheet to specified number of rows
+ *
+ * @param {int} numRowsKeep The number of rows to keep
+ */
+function shrinkSheetRows(sheet, numRowsKeep) {
+  log(log.FUNCTION, 'STARTING shrinkSheetRows');
+  const lastRow = sheet.getMaxRows();
+  if (numRowsKeep < lastRow) {
+    log(log.WARNING, `Deleting rows ${numRowsKeep}-${lastRow} on sheet ${sheet.getName()}`);
+    sheet.deleteRows(numRowsKeep, lastRow - numRowsKeep);
+  }
+  log(log.FUNCTION, 'ENDING shrinkSheetRows');
 }
 
 /** Highlights a given range via custom status presets
@@ -252,10 +267,7 @@ function insertRow(sheet, rowData, index, cb) {
   try {
     const rowIndex = index || 1;
     log(log.STATUS, `${sheet.getName()}.insertRow ${rowIndex}-${rowIndex + 1} columns ${1}-${1 + rowData.length}`);
-    sheet
-      .insertRowBefore(rowIndex)
-      .getRange(rowIndex, 1, 1, rowData.length)
-      .setValues([rowData]);
+    sheet.insertRowBefore(rowIndex).getRange(rowIndex, 1, 1, rowData.length).setValues([rowData]);
     SpreadsheetApp.flush();
     cb && cb();
   } finally {
@@ -302,7 +314,7 @@ function getHeaders(sheet) {
 function getNamedRange(name, ss) {
   return ss
     .getNamedRanges()
-    .filter(e => e.getName() === name)[0]
+    .filter((e) => e.getName() === name)[0]
     .getRange();
 }
 
@@ -369,7 +381,7 @@ function getFormDestinationSheet(form) {
   const destinationId = form.getDestinationId();
   if (destinationId) {
     const spreadsheet = SpreadsheetApp.openById(destinationId);
-    const matches = spreadsheet.getSheets().filter(sheet => {
+    const matches = spreadsheet.getSheets().filter((sheet) => {
       const url = sheet.getFormUrl();
       return url && url.indexOf(formId) > -1;
     });

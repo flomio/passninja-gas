@@ -2,6 +2,9 @@
  *  Implementation for cached/virtual spreadsheets to reduce slow sheet queries
  * @module virtualization
  */
+
+/** Virtual SpreadSheet Class
+ */
 class VSpreadsheet {
   constructor() {
     this._internal = getLinkedSpreadsheet();
@@ -44,6 +47,8 @@ class VSpreadsheet {
   }
 }
 
+/** Virtual Sheet Class
+ */
 class VSheet {
   constructor(sheet) {
     this._internal = sheet;
@@ -58,7 +63,7 @@ class VSheet {
 
   flush() {
     log(log.VIRTUAL, `Flushing virtual sheet ${this._internal.getName()}:`);
-    this.rows.forEach(row => log(log.VIRTUAL, `[${row.map(val => String(val).substring(0, 10)).join(', ')}]`));
+    this.rows.forEach((row) => log(log.VIRTUAL, `[${row.map((val) => String(val).substring(0, 10)).join(', ')}]`));
     log(log.VIRTUAL, `Overwriting actual spreadsheet range: 1-${this.maxRow + 1}, 1-${this.maxCol + 1}`);
     return this._internal.getRange(1, 1, this.maxRow, this.maxCol).setValues(this.rows);
   }
@@ -80,7 +85,7 @@ class VSheet {
   }
 
   insertColBefore(colIndex) {
-    this.rows.forEach(row => row.splice(colIndex - 1, 0, ''));
+    this.rows.forEach((row) => row.splice(colIndex - 1, 0, ''));
     this.maxCol++;
     return this;
   }
@@ -115,6 +120,8 @@ class VSheet {
   }
 }
 
+/** Virtual Range Class
+ */
 class VRange {
   constructor(rows, row, col, numRows = 1, numColumns = 1) {
     log(log.VIRTUAL, `Creating range from row ${row}-${row + numRows} and columns ${col}-${col + numColumns}`, row < 1);
