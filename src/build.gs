@@ -47,7 +47,7 @@ function onPostSheetCreate(sheet) {
 
 /** Builds initial config sheet
  */
-function buildConfigSheet(ss, force = false) {
+function buildConfigSheet(ss) {
   log(log.FUNCTION, 'Starting buildConfigSheet');
   const CONTENT_START = 7;
   const HEADER_START = 6;
@@ -74,6 +74,7 @@ function buildConfigSheet(ss, force = false) {
     .setFontColor(COLORS.TEXT_ON);
   sheet.getRange(CONTENT_START, 1, 1, 1).setValue('passType');
   sheet.getRange(CONTENT_START, 2, 1, 1).setNote('You must specify a passType to create passes.');
+  sheet.getRange(CONTENT_START + 1, 1, sheet.getMaxRows(), 2).setBackground(COLORS.FIELD_PASSNINJA);
 
   // TODO: Implement some kind of protection.  This causes a timeout.
   // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
