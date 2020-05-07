@@ -131,6 +131,7 @@ Responsible for building all GAS sheets
 
 * [build](#module_build)
     * [~initializeSheet(name, ss)](#module_build..initializeSheet) ⇒ <code>Sheet</code>
+    * [~onPostSheetCreate(sheet)](#module_build..onPostSheetCreate)
     * [~buildConfigSheet()](#module_build..buildConfigSheet)
     * [~buildEventsSheet(ss, fieldsNames)](#module_build..buildEventsSheet)
     * [~buildScannersSheet(ss, fieldsNames)](#module_build..buildScannersSheet)
@@ -149,6 +150,17 @@ Creates a default PassNinja formatted Google sheet on the given spreadsheet
 | --- | --- | --- |
 | name | <code>string</code> | The name of the named range to query |
 | ss | <code>Spreadsheet</code> | The Google spreadsheet to query |
+
+<a name="module_build..onPostSheetCreate"></a>
+
+### build~onPostSheetCreate(sheet)
+Cleanup function for removing unused columns/rows and resizing the sheet
+
+**Kind**: inner method of [<code>build</code>](#module_build)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| sheet | <code>Sheet</code> | The Google sheet to modify |
 
 <a name="module_build..buildConfigSheet"></a>
 

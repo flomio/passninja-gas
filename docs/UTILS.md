@@ -26,7 +26,9 @@ General utility helper functions
 
 * [general](#utils.module_general)
     * [~randomChoice(arr)](#utils.module_general..randomChoice)
+    * [~sendErrorAsEvent(serviceName, code, body)](#utils.module_general..sendErrorAsEvent)
     * [~formatDate(date)](#utils.module_general..formatDate)
+    * [~now()](#utils.module_general..now) ⇒ <code>string</code>
     * [~findMatchIndexAtColumn(arr, column, query)](#utils.module_general..findMatchIndexAtColumn) ⇒ <code>int</code>
     * [~rangeValuesExist(arr)](#utils.module_general..rangeValuesExist) ⇒ <code>boolean</code>
     * [~MD5(input, isShortMode)](#utils.module_general..MD5) ⇒ <code>string</code>
@@ -42,6 +44,19 @@ Chose a random item from an array
 | --- | --- | --- |
 | arr | <code>array</code> | Array to choose from |
 
+<a name="utils.module_general..sendErrorAsEvent"></a>
+
+### general~sendErrorAsEvent(serviceName, code, body)
+Formats an error as an event and adds it to the events sheet
+
+**Kind**: inner method of [<code>general</code>](#utils.module_general)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| serviceName | <code>string</code> | The service sending the error |
+| code | <code>string</code> | The response code of the error |
+| body | <code>string</code> | The body of the response |
+
 <a name="utils.module_general..formatDate"></a>
 
 ### general~formatDate(date)
@@ -53,6 +68,13 @@ Localizes a date object to the user's timezone.
 | --- | --- | --- |
 | date | <code>Date</code> | date object to format |
 
+<a name="utils.module_general..now"></a>
+
+### general~now() ⇒ <code>string</code>
+Returns a localized time string
+
+**Kind**: inner method of [<code>general</code>](#utils.module_general)  
+**Returns**: <code>string</code> - The current timestamp  
 <a name="utils.module_general..findMatchIndexAtColumn"></a>
 
 ### general~findMatchIndexAtColumn(arr, column, query) ⇒ <code>int</code>
@@ -116,7 +138,8 @@ General sheet helper functions
     * [~getSheet(sheetName)](#utils.module_sheet..getSheet) ⇒ <code>Sheet</code>
     * [~getValidSheetSelectedRow(sheet)](#utils.module_sheet..getValidSheetSelectedRow) ⇒ <code>int</code> \| <code>boolean</code>
     * [~autoResizeSheet(sheet)](#utils.module_sheet..autoResizeSheet)
-    * [~deleteUnusedColumns(min, max)](#utils.module_sheet..deleteUnusedColumns)
+    * [~autoDeleteUnusedColumns(sheet)](#utils.module_sheet..autoDeleteUnusedColumns)
+    * [~shrinkSheetRows(numRowsKeep)](#utils.module_sheet..shrinkSheetRows)
     * [~highlightRange(range, status, [value])](#utils.module_sheet..highlightRange)
     * [~rowToJson(sheet, data)](#utils.module_sheet..rowToJson)
     * [~insertRow(sheet, rowData, [index])](#utils.module_sheet..insertRow)
@@ -248,17 +271,27 @@ Auto resizes all sheet columns
 | --- | --- | --- |
 | sheet | <code>Sheet</code> | The sheet to resize |
 
-<a name="utils.module_sheet..deleteUnusedColumns"></a>
+<a name="utils.module_sheet..autoDeleteUnusedColumns"></a>
 
-### sheet~deleteUnusedColumns(min, max)
-Deletes all columns from min->max on the given sheet
+### sheet~autoDeleteUnusedColumns(sheet)
+Deletes all columns from last column with data to the end on the given sheet
 
 **Kind**: inner method of [<code>sheet</code>](#utils.module_sheet)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| min | <code>int</code> | The starting column index |
-| max | <code>int</code> | The final column index |
+| sheet | <code>Sheet</code> | The sheet to modify |
+
+<a name="utils.module_sheet..shrinkSheetRows"></a>
+
+### sheet~shrinkSheetRows(numRowsKeep)
+Shrinks sheet to specified number of rows
+
+**Kind**: inner method of [<code>sheet</code>](#utils.module_sheet)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| numRowsKeep | <code>int</code> | The number of rows to keep |
 
 <a name="utils.module_sheet..highlightRange"></a>
 
@@ -406,7 +439,6 @@ Custom error definitions
     * [~ScriptError](#module_errors..ScriptError)
     * [~CredentialsError](#module_errors..CredentialsError)
     * [~BuildError](#module_errors..BuildError)
-    * [~catchError(error, msg)](#module_errors..catchError)
 
 <a name="module_errors..PassNinjaGASError"></a>
 
@@ -444,20 +476,32 @@ Custom Error type thrown when credentials have not been added to the script.
 Custom Error type thrown when element build has failed.
 
 **Kind**: inner class of [<code>errors</code>](#module_errors)  
-<a name="module_errors..catchError"></a>
-
-### errors~catchError(error, msg)
-Runs the function and catches then throws any error and logs it.
-
-**Kind**: inner method of [<code>errors</code>](#module_errors)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| error | <code>string</code> | Error to log |
-| msg | <code>string</code> | The extra message to add |
-
 <a name="module_virtualization"></a>
 
 ## virtualization
 Implementation for cached/virtual spreadsheets to reduce slow sheet queries
 
+
+* [virtualization](#module_virtualization)
+    * [~VSpreadsheet](#module_virtualization..VSpreadsheet)
+    * [~VSheet](#module_virtualization..VSheet)
+    * [~VRange](#module_virtualization..VRange)
+
+<a name="module_virtualization..VSpreadsheet"></a>
+
+### virtualization~VSpreadsheet
+Virtual SpreadSheet Class
+
+**Kind**: inner class of [<code>virtualization</code>](#module_virtualization)  
+<a name="module_virtualization..VSheet"></a>
+
+### virtualization~VSheet
+Virtual Sheet Class
+
+**Kind**: inner class of [<code>virtualization</code>](#module_virtualization)  
+<a name="module_virtualization..VRange"></a>
+
+### virtualization~VRange
+Virtual Range Class
+
+**Kind**: inner class of [<code>virtualization</code>](#module_virtualization)  
