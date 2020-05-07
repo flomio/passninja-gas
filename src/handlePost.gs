@@ -37,10 +37,13 @@ function addEvent(spreadsheet, eventJson) {
       scan = true;
     } else if (eventJson.event.passJson) {
       event.push(JSON.stringify(eventJson.event.passJson));
+    } else if (eventJson.error) {
+      event.push(JSON.stringify(eventJson.error));
     } else {
       event.push(JSON.stringify(eventJson));
     }
   } catch (e) {
+    log(log.ERROR, `Could not parse incoming event JSON: ${e}`);
     insertRow(eventsSheet, ['Error parsing event:', 'ERROR', '', '', eventJson], 2);
     return { error: `Invalid event data sent: ${e} ${JSON.stringify(eventJson)}` };
   }

@@ -10,6 +10,7 @@
  * @returns {Sheet} The resulting Google sheet
  */
 function initializeSheet(name, ss) {
+  log(log.FUNCTION, 'Starting initializeSheet');
   const sheet = ss.getSheetByName(name) || ss.insertSheet(name);
   const allCells = sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns());
   allCells.setBackground(COLORS.GENERIC);
@@ -17,93 +18,91 @@ function initializeSheet(name, ss) {
   allCells.setFontFamily('Montserrat');
   allCells.setNumberFormat('@');
 
+  log(log.FUNCTION, 'Finished initializeSheet');
   return sheet;
+}
+
+/** Cleanup function for removing unused columns/rows and resizing the sheet
+ *
+ * @param {Sheet} sheet The Google sheet to modify
+ */
+function onPostSheetCreate(sheet) {
+  log(log.FUNCTION, 'Starting onPostSheetCreate');
+  const sheetConfig = SHEET_DEFAULTS[sheet.getName()];
+  if (sheetConfig && sheetConfig.rows) {
+    shrinkSheetRows(sheet, sheetConfig.rows);
+  }
+  if (sheetConfig && sheetConfig.widths) {
+    sheetConfig.widths.map((width, columnIndex) => {
+      if (width) sheet.setColumnWidth(columnIndex + 1, width);
+      else sheet.autoResizeColumn(columnIndex + 1);
+    });
+  } else {
+    autoResizeSheet(sheet);
+  }
+
+  autoDeleteUnusedColumns(sheet);
+  log(log.FUNCTION, 'Finished onPostSheetCreate');
 }
 
 /** Builds initial config sheet
  */
-function buildConfigSheet(ss, force = false) {
+function buildConfigSheet(ss) {
+  log(log.FUNCTION, 'Starting buildConfigSheet');
+  const CONTENT_START = 7;
+  const HEADER_START = 6;
   const sheet = initializeSheet(ENUMS.CONFIG, ss);
-  const headerNames = [
-    'Key              ',
-    'Value                    ',
-    null,
-    'Name                  ',
-    'In Template?',
-    'Type      ',
-    'Form Options (comma separated)'
+  const headerNames = ['Key', 'Value', null, 'Name', 'In Template?'];
+  const sourceScriptUrl = `=HYPERLINK("${getScriptUrl()}", "Source Script")`;
+  const instructions = [
+    ['INSTRUCTIONS:'],
+    ['1) Specify what passType this app will be using under General Setup.'],
+    ['2) Enter all the custom field names you have in your template.'],
+    ['3) then, PassNinja... Setup... Create/Update Sheets from Config']
   ];
-  const headerRange = sheet.getRange(6, 1, 1, headerNames.length);
 
+  const headerRange = sheet.getRange(HEADER_START, 1, 1, headerNames.length);
   headerRange.setValues([headerNames]);
   headerRange.setBackground(COLORS.FIELD_PASSNINJA);
   headerRange.setFontWeight('bold');
 
-  sheet.getRange(1, 1, 5, 7).setBackground(COLORS.FIELD_PASSNINJA);
+  sheet.getRange(1, 1, 5, CONTENT_START).setBackground(COLORS.FIELD_PASSNINJA);
   sheet
-    .getRange(6, 3, sheet.getMaxRows(), 1)
+    .getRange(HEADER_START, 3, sheet.getMaxRows(), 1)
     .setBackground(COLORS.FIELD_PASSNINJA)
     .setFontWeight('bold')
     .setFontColor(COLORS.TEXT_ON);
-  sheet.getRange(7, 1, 1, 1).setValue('passType');
-  sheet.getRange(7, 2, 1, 1).setNote('You must specify a passType to create passes.');
+  sheet.getRange(CONTENT_START, 1, 1, 1).setValue('passType');
+  sheet.getRange(CONTENT_START, 2, 1, 1).setNote('You must specify a passType to create passes.');
+  sheet.getRange(CONTENT_START + 1, 1, sheet.getMaxRows(), 2).setBackground(COLORS.FIELD_PASSNINJA);
 
   // TODO: Implement some kind of protection.  This causes a timeout.
   // sheet.getRange(2, 1, 1, 1).protect().setDescription('Sample protected range');
 
-  ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(7, 1, sheet.getMaxRows(), 2));
-  ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(7, 4, sheet.getMaxRows(), 4));
+  ss.setNamedRange(ENUMS.CONFIG_CONSTANTS, sheet.getRange(CONTENT_START, 1, sheet.getMaxRows(), 2));
+  ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(CONTENT_START, 4, sheet.getMaxRows(), 4));
 
   const validationInPass = SpreadsheetApp.newDataValidation()
     .requireValueInList(['N', 'Y'], true)
     .setAllowInvalid(false)
     .build();
 
-  const validationFormType = SpreadsheetApp.newDataValidation()
-    .requireValueInList(['text', 'date', 'datetime', 'time', 'duration'], true)
-    .setAllowInvalid(false)
-    .build();
+  const fieldInPassRange = sheet.getRange(CONTENT_START, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows());
+  fieldInPassRange.setDataValidation(validationInPass).setHorizontalAlignment('center').setValue('Y');
 
-  const fieldInPassRange = sheet.getRange(7, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows(), 1);
-  fieldInPassRange.setDataValidation(validationInPass);
-  fieldInPassRange.setHorizontalAlignment('center').setValue('N');
-
-  const formTypeRange = sheet.getRange(7, headerNames.indexOf('Type      ') + 1, sheet.getMaxRows(), 1);
-  formTypeRange.setDataValidation(validationFormType);
-  formTypeRange.setHorizontalAlignment('center').setValue('text');
-
-  deleteUnusedColumns(headerNames.length + 1, sheet.getMaxColumns(), sheet);
-  autoResizeSheet(sheet);
-  const titleRange = sheet.getRange(1, 1, 4, 2);
-
-  titleRange.merge();
-  titleRange.setValue('01 CONFIG');
-  titleRange.setFontSize(24);
-  titleRange.setVerticalAlignment('middle');
-
-  const scriptUrlRange = sheet.getRange(1, 3, 4, 2);
-  scriptUrlRange.merge();
-  scriptUrlRange.setValue(`=HYPERLINK("${getScriptUrl()}", "Source Script")`);
-  scriptUrlRange.setVerticalAlignment('middle');
-
-  // const deployUrlRange = sheet.getRange(3, 3, 2, 2);
-  // deployUrlRange.merge();
-  // deployUrlRange.setValue(`=HYPERLINK("${getDevDeploymentUrl()}", "Deployment Url")`);
-  // deployUrlRange.setVerticalAlignment('middle');
-
-  sheet.getRange(1, 5, 4, 1).setFontSize(8);
-  sheet.getRange(1, 5).setValue('INSTRUCTIONS:');
-  sheet.getRange(2, 5).setValue('1) Specify what passType this app will be using under General Setup.');
-  sheet.getRange(3, 5).setValue('2) Enter all the custom field names you have in your template.');
-  sheet.getRange(4, 5).setValue('3) then, PassNinja... Setup... Create/Update Sheets from Config');
-  sheet.getRange(5, 1).setValue('General Setup');
-  sheet.getRange(5, 4).setValue('Define fields for the form that will be used to create passes');
+  sheet.getRange(1, 1, 4, 2).merge().setValue('01 CONFIG').setFontSize(24).setVerticalAlignment('middle');
+  sheet.getRange(1, 3, 4, 2).merge().setValue(sourceScriptUrl).setVerticalAlignment('middle');
+  sheet.getRange(1, 5, instructions.length).setFontSize(8).setValues(instructions);
+  sheet.getRange(5, 1, 1, 2).merge().setValue('General Setup');
+  sheet.getRange(5, 4, 1, 3).merge().setValue('Define fields for the form that will be used to create passes');
 
   sheet.getRange(5, 1, 2, 2).setBorder(true, true, true, true, false, false, COLORS.BORDER, null);
   sheet.getRange(5, 4, 2, 4).setBorder(true, true, true, true, false, false, COLORS.BORDER, null);
-  sheet.getRange(1, 1, 6, 7).setFontColor(COLORS.TITLE_TEXT);
-  sheet.setColumnWidth(3, 22);
+  sheet.getRange(1, 1, 6, headerNames.length).setFontColor(COLORS.TITLE_TEXT);
+
+  onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Events sheet');
+  log(log.FUNCTION, 'Finished buildConfigSheet');
 }
 
 /** Builds a events sheet based on the user config sheet
@@ -112,6 +111,7 @@ function buildConfigSheet(ss, force = false) {
  * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
  */
 function buildEventsSheet(ss) {
+  log(log.FUNCTION, 'Starting buildEventsSheet');
   const sheet = initializeSheet(ENUMS.EVENTS, ss);
 
   const fieldsNames = ['eventDate', 'eventType', 'passType', 'serialNumber', 'eventData'];
@@ -121,9 +121,9 @@ function buildEventsSheet(ss) {
   fieldHeaders.setFontWeight('bold');
   fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
 
-  deleteUnusedColumns(fieldsNames.length + 1, sheet.getMaxColumns(), sheet);
-
+  onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Events sheet');
+  log(log.FUNCTION, 'Finished buildEventsSheet');
 }
 
 /** Builds a scanners sheet based on the user config sheet with one default scanner
@@ -132,6 +132,7 @@ function buildEventsSheet(ss) {
  * @param {string[]} fieldsNames The names of the fields that the user has entered in the config
  */
 function buildScannersSheet(ss) {
+  log(log.FUNCTION, 'Starting buildScannersSheet');
   const sheet = initializeSheet(ENUMS.SCANNERS, ss);
 
   const fieldHeaders = sheet.getRange(1, 1, 1, SCANNERS_FIELDS.length);
@@ -139,12 +140,13 @@ function buildScannersSheet(ss) {
   fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
   fieldHeaders.setFontWeight('bold');
   fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
-  sheet
-    .getRange(2, 1, 1, SCANNERS_FIELDS.length)
-    .setValues([['RR464-0017564', '1', 'AVAILABLE', 'TRUE', '', '03:00', '23:45', '$0.00']]);
-  deleteUnusedColumns(SCANNERS_FIELDS.length + 1, sheet.getMaxColumns(), sheet);
-
+  const firstRow = sheet.getRange(2, 1, 1, SCANNERS_FIELDS.length);
+  if (firstRow.getValues()[0][0] !== 'RR464-0017564') {
+    firstRow.setValues([['RR464-0017564', '1', 'AVAILABLE', 'TRUE', '', '03:00', '23:45', '$0.00']]);
+  }
+  onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Scanners sheet');
+  log(log.FUNCTION, 'Finished buildScannersSheet');
 }
 
 /** Builds a contacts sheet based on the user config sheet
@@ -154,24 +156,30 @@ function buildScannersSheet(ss) {
  * @returns {Sheet} The resulting Contacts sheet that was created.
  */
 function buildContactsSheet(ss, fieldsNames) {
+  log(log.FUNCTION, 'Starting buildContactsSheet');
   const sheet = initializeSheet(ENUMS.CONTACTS, ss);
 
-  const fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length);
-  fieldHeaders.setValues([fieldsNames]);
-  fieldHeaders.setBackground(COLORS.FIELD_PASS);
-  fieldHeaders.setFontWeight('bold');
-  fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
+  sheet
+    .getRange(1, 1, 1, fieldsNames.length)
+    .setValues([fieldsNames])
+    .setBackground(COLORS.FIELD_PASS)
+    .setFontWeight('bold')
+    .setFontColor(COLORS.TITLE_TEXT);
 
-  const passNinjaFields = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL];
-  const passNinjaHeaders = sheet.getRange(1, fieldsNames.length + 1, 1, passNinjaFields.length);
-  passNinjaHeaders.setValues([passNinjaFields]);
-  passNinjaHeaders.setBackground(COLORS.FIELD_PASSNINJA);
-  passNinjaHeaders.setFontWeight('bold');
-  passNinjaHeaders.setFontColor(COLORS.TITLE_TEXT);
+  sheet
+    .getRange(1, fieldsNames.length + 1, 1, PASSNINJA_FIELDS.length)
+    .setValues([PASSNINJA_FIELDS])
+    .setBackground(COLORS.FIELD_PASSNINJA)
+    .setFontWeight('bold')
+    .setFontColor(COLORS.TITLE_TEXT);
 
-  deleteUnusedColumns(passNinjaFields.length + fieldsNames.length + 1, sheet.getMaxColumns(), sheet);
+  const columnWidths = Array.from({ length: fieldsNames.length }).fill(150);
+  columnWidths.push(...[400, 100, 300]);
+  SHEET_DEFAULTS[ENUMS.CONTACTS].widths = columnWidths;
 
+  onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Contacts sheet');
+  log(log.FUNCTION, 'Finished buildContactsSheet');
   return sheet;
 }
 
@@ -182,6 +190,7 @@ function buildContactsSheet(ss, fieldsNames) {
  * @param {string[]} fieldData The fields that the user has entered in the config
  */
 function buildContactsForm(ss, sheet, fieldData) {
+  log(log.FUNCTION, 'Starting buildContactsForm');
   let form;
   try {
     form = FormApp.openByUrl(ss.getFormUrl());
@@ -213,4 +222,5 @@ function buildContactsForm(ss, sheet, fieldData) {
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
   getFormDestinationSheet(form).hideSheet();
   log(log.SUCCESS, 'Successfully built Contacts Form.');
+  log(log.FUNCTION, 'Finished buildContactsForm');
 }

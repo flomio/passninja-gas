@@ -80,6 +80,22 @@ const ENUMS = {
   UNASSIGNED: 'UNASSIGNED',
   STATUS: 'status'
 };
+const PASSNINJA_FIELDS = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL];
+
+const SHEET_DEFAULTS = {
+  [ENUMS.SCANNERS]: {
+    rows: 6,
+    widths: [null, 50, 100, null, 280]
+  },
+  [ENUMS.CONFIG]: {
+    rows: 14,
+    widths: [84, 124, 22, 116, 380]
+  },
+  [ENUMS.EVENTS]: {
+    widths: [190, 100, 100, 280, 1500]
+  },
+  [ENUMS.CONTACTS]: {}
+};
 
 const FORM_LOOKUP = {
   checkbox: 'addCheckboxItem',

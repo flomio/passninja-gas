@@ -17,15 +17,24 @@ const sendRequest = (url, options = {}, serviceName) => {
   );
   options.muteHttpExceptions = true;
   response = UrlFetchApp.fetch(url, { ...options });
-  log(log.FUNCTION, 'Received response from fetch');
-  if (response.getResponseCode() < 300 && response.getResponseCode() >= 200) {
-    try {
-      return JSON.parse(response.getContentText());
-    } catch (err) {
-      return response.getContentText();
-    }
+  const code = response.getResponseCode();
+  let body = response.getContentText();
+  log(log.FUNCTION, `Received ${code} response from fetch`);
+
+  const bodyHasError = body.toLowerCase().includes('error');
+  try {
+    body = JSON.parse(body);
+  } catch (err) {
+    log(log.STATUS, `Incoming response is not JSON...`);
+  }
+
+  if (code < 300 && code >= 200 && !bodyHasError) {
+    log(log.FUNCTION, `Finished successful sendRequest`);
+    return body;
   } else {
-    throw new ServiceError(`${serviceName || ''}:${response.getResponseCode()} RESPONSE: ${response.getContentText()}`);
+    sendErrorAsEvent(serviceName, code, body);
+    log(log.FUNCTION, `Finished failed sendRequest`);
+    throw new ServiceError(`${serviceName || ''}:${code} RESPONSE: ${response.getContentText()}`);
   }
 };
 
@@ -38,8 +47,7 @@ class PassNinjaService {
       this.accountId = getEnvVar(ENUMS.PASSNINJA_ACCOUNT_ID);
       this.apiKey = getEnvVar(ENUMS.PASSNINJA_API_KEY);
     } catch (err) {
-      if (err instanceof ScriptError)
-        throw new CredentialsError(`${this.serviceName}: PassNinja API credentials have not been set up.`);
+      throw new CredentialsError(`${this.serviceName}: Credentials have not been set up.`);
     }
     this.baseUrl = `https://api.passninja.com/${this.branch === 'master' ? 'v1' : this.branch}`;
     this.passesPostRoute = `${this.baseUrl}/passes/`;

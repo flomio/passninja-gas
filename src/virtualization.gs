@@ -2,6 +2,9 @@
  *  Implementation for cached/virtual spreadsheets to reduce slow sheet queries
  * @module virtualization
  */
+
+/** Virtual SpreadSheet Class
+ */
 class VSpreadsheet {
   constructor() {
     this._internal = getLinkedSpreadsheet();
@@ -44,6 +47,8 @@ class VSpreadsheet {
   }
 }
 
+/** Virtual Sheet Class
+ */
 class VSheet {
   constructor(sheet) {
     this._internal = sheet;
@@ -115,6 +120,8 @@ class VSheet {
   }
 }
 
+/** Virtual Range Class
+ */
 class VRange {
   constructor(rows, row, col, numRows = 1, numColumns = 1) {
     log(log.VIRTUAL, `Creating range from row ${row}-${row + numRows} and columns ${col}-${col + numColumns}`, row < 1);

@@ -184,23 +184,38 @@ function getValidSheetSelectedRow(sheet) {
  */
 function autoResizeSheet(sheet) {
   log(log.FUNCTION, 'STARTING autoResizeSheet');
-  for (i = 1; i <= sheet.getMaxColumns(); i++) {
-    sheet.autoResizeColumn(i);
-  }
+  SpreadsheetApp.flush();
+  sheet.autoResizeColumns(1, sheet.getMaxColumns());
   log(log.FUNCTION, 'ENDING autoResizeSheet');
 }
 
-/** Deletes all columns from min->max on the given sheet
+/** Deletes all columns from last column with data to the end on the given sheet
  *
- * @param {int} min The starting column index
- * @param {int} max The final column index
+ * @param {Sheet} sheet The sheet to modify
  */
-function deleteUnusedColumns(min, max, sheet) {
-  log(log.FUNCTION, 'STARTING deleteUnusedColumns');
-  for (var i = max; i >= min; i--) {
-    sheet.deleteColumn(i);
+function autoDeleteUnusedColumns(sheet) {
+  log(log.FUNCTION, 'STARTING autoDeleteUnusedColumns');
+  const lastContentColumn = sheet.getLastColumn();
+  const lastColumn = sheet.getMaxColumns();
+  if (lastContentColumn < lastColumn) {
+    log(log.WARNING, `Deleting columns ${lastContentColumn}-${lastColumn} on sheet ${sheet.getName()}`);
+    sheet.deleteColumns(lastContentColumn + 1, lastColumn - lastContentColumn);
   }
-  log(log.FUNCTION, 'ENDING deleteUnusedColumns');
+  log(log.FUNCTION, 'ENDING autoDeleteUnusedColumns');
+}
+
+/** Shrinks sheet to specified number of rows
+ *
+ * @param {int} numRowsKeep The number of rows to keep
+ */
+function shrinkSheetRows(sheet, numRowsKeep) {
+  log(log.FUNCTION, 'STARTING shrinkSheetRows');
+  const lastRow = sheet.getMaxRows();
+  if (numRowsKeep < lastRow) {
+    log(log.WARNING, `Deleting rows ${numRowsKeep}-${lastRow} on sheet ${sheet.getName()}`);
+    sheet.deleteRows(numRowsKeep, lastRow - numRowsKeep);
+  }
+  log(log.FUNCTION, 'ENDING shrinkSheetRows');
 }
 
 /** Highlights a given range via custom status presets

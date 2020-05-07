@@ -11,6 +11,23 @@ function randomChoice(arr) {
   return arr[Math.floor(arr.length * Math.random())];
 }
 
+/** Formats an error as an event and adds it to the events sheet
+ *
+ * @param {string} serviceName The service sending the error
+ * @param {string} code The response code of the error
+ * @param {string} body The body of the response
+ */
+function sendErrorAsEvent(serviceName, code, body) {
+  const eventJson = {
+    date: now(),
+    event: { type: serviceName, passType: code, serialNumber: '' },
+    error: body.error || body
+  };
+  const ss = new VSpreadsheet();
+  addEvent(ss, JSON.stringify(eventJson));
+  ss.flush();
+}
+
 /** Localizes a date object to the user's timezone.
  *
  * @param {Date} date date object to format
@@ -18,6 +35,15 @@ function randomChoice(arr) {
 function formatDate(date) {
   const FUS1 = date.toString().substr(25, 6) + ':00';
   return Utilities.formatDate(date, FUS1, DATE_FORMAT);
+}
+
+/** Returns a localized time string
+ *
+ * @returns {string} The current timestamp
+ */
+function now() {
+  const tzoffset = new Date().getTimezoneOffset() * 60000;
+  return new Date(Date.now() - tzoffset).toISOString().slice(0, -1);
 }
 
 /** Returns the index of the matching query in the 2D array at column index.

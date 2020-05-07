@@ -16,8 +16,7 @@ function createSpreadsheet() {
   } catch (err) {
     log(log.STATUS, 'No sheet found, continuing...');
   }
-
-  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${new Date().toISOString()}`);
+  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${now()}`);
 
   ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
@@ -142,19 +141,19 @@ function updateFromConfig_(force = false) {
   const fields = getConfigFields(ss);
   const fieldNames = fields.map((f) => f[0]);
   const constants = getConfigConstants(ss);
-  //  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
-  // const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  // log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
+  const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
+  const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
+  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
-  //  if (!force && hash !== fieldsHash) {
-  catchError(() => buildEventsSheet(ss), 'Error building Contacts Form - ');
-  catchError(() => buildScannersSheet(ss), 'Error building Scanners Form - ');
-  catchError(() => buildContactsSheet(ss, fieldNames), 'Error building Contacts Sheet - ');
-  catchError(() => buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields), 'Error building Contacts Form - ');
-  //   setEnvVar(ENUMS.FIELDS_HASH, hash);
-  //  } else {
-  //    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
-  //  }
+  if (force || hash !== fieldsHash) {
+    buildEventsSheet(ss);
+    buildScannersSheet(ss);
+    buildContactsSheet(ss, fieldNames);
+    buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields);
+    setEnvVar(ENUMS.FIELDS_HASH, hash);
+  } else {
+    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
+  }
 }
 
 /** Custom Trigger: inputs a new user's data from a form submit event and triggers a pass creation.
@@ -213,11 +212,16 @@ function createPass_() {
       ? new PassNinjaService().putPass(payloadJSONString, serial)
       : new PassNinjaService().createPass(payloadJSONString);
   } catch (err) {
-    passNinjaContentRange.setValues(
-      rangeValuesExist(originalContent) ? originalContent : [[['Did you set your'], ['PassNinja Credentials?'], ['']]]
-    );
+    let message;
+    if (err instanceof CredentialsError) {
+      message = [[['Did you set your'], ['PassNinja Credentials?'], ['']]];
+    } else {
+      message = [[['Error: Check'], ['Events Sheet for details'], ['']]];
+    }
+    passNinjaContentRange.setValues(rangeValuesExist(originalContent) ? originalContent : message);
     highlightRange(passNinjaContentRange, 'error');
     autoResizeSheet(contactSheet._internal);
+
     throw err;
   }
   log(log.SUCCESS, JSON.stringify(responseData));

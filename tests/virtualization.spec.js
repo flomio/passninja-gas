@@ -1,4 +1,4 @@
-const { VSheet, VRange } = require('../virtualization.gs');
+const { VSheet, VRange } = require('../src/virtualization.gs');
 
 // Patching globals from GAS runtime
 global.log = () => {};

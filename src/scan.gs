@@ -216,6 +216,7 @@ function processScanEvent(ss, eventJson) {
     virtualScannerIndex,
     contactMatchIndex
   );
+  scannersSheet.flush();
   autoResizeSheet(scannersSheet._internal);
   log(log.FUNCTION, 'ENDING PROCESSSCANEVENT');
   return scannerPayload;
