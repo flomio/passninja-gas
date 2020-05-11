@@ -12,18 +12,21 @@ function createSpreadsheet() {
   try {
     log(log.STATUS, 'Checking for existing sheet first.');
     const ss = getLinkedSpreadsheet();
-    ss.rename(`${ss.getName()}_DISCONNECTED`);
+    ss.rename(`${ss.getName()}_${ENUMS.DISCONNECTED}`);
   } catch (err) {
     log(log.STATUS, 'No sheet found, continuing...');
   }
-  const ss = SpreadsheetApp.create(`PassNinja Demo Spreadsheet - ${now()}`);
+  const ss = SpreadsheetApp.create(`PassNinja ${localizeString('Demo Spreadsheet')} - ${now()}`);
 
   ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
 
   buildConfigSheet(ss);
-  ss.deleteSheet(ss.getSheetByName('Sheet1'));
-
+  try {
+    ss.deleteSheet(ss.getSheetByName(localizeString('Sheet1')));
+  } catch (err) {
+    log(log.ERROR, `Could not find sheet ${localizeString('Sheet1')}`);
+  }
   setEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, ss.getId());
   setEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, ss.getUrl());
 
@@ -43,36 +46,40 @@ function createSpreadsheet() {
   setEnvVar('spreadsheet_creator', currentSheetOwnerEmail);
   MailApp.sendEmail(
     Session.getActiveUser().getEmail(),
-    'Your PassNinja Spreadsheet',
-    `Here is the link to your spreadsheet ${spreadsheetUrl}`
+    localizeString('Your PassNinja Spreadsheet'),
+    localizeString(`Here is the link to your spreadsheet ${spreadsheetUrl}`)
   );
   log(log.FUNCTION, 'FINISHED CREATESPREADSHEET');
-  throw new Error(`Successfully created spreadsheet, click Details for URL -> ${spreadsheetUrl}`);
+  throw new Error(`${localizeString('Successfully created spreadsheet, click Details for URL')} -> ${spreadsheetUrl}`);
 }
 
 /** Custom Trigger: adds the PassNinja script set as a menu item on load. */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
+
   ui.createMenu('PassNinja')
     .addSubMenu(
-      ui.createMenu('Selected Row').addItem('Create/Update Pass', 'createPass_').addItem('Run Mock Scan', 'mockScan_')
+      ui
+        .createMenu(MENU_LABELS.selected.label)
+        .addItem(MENU_LABELS.selected.create.label, 'createPass_')
+        .addItem(MENU_LABELS.selected.mock.label, 'mockScan_')
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Config/Setup').addItem('Create/Update Sheets From Config', 'updateFromConfig_'))
+    .addSubMenu(ui.createMenu(MENU_LABELS.config.label).addItem(MENU_LABELS.config.create.label, 'updateFromConfig_'))
     .addSeparator()
     .addSubMenu(
       ui
-        .createMenu('Add Credentials')
-        .addItem('Set Twilio Credentials', 'storeTwilioDetails_')
-        .addItem('Set PassNinja Credentials', 'storePassNinjaDetails_')
+        .createMenu(MENU_LABELS.credentials.label)
+        .addItem(MENU_LABELS.credentials.twilio.label, 'storeTwilioDetails_')
+        .addItem(MENU_LABELS.credentials.pn.label, 'storePassNinjaDetails_')
     )
     .addSeparator()
     .addSubMenu(
       ui
-        .createMenu('Overrides')
-        .addItem('Force (Re)Build of Config Sheet', 'buildConfigSheet_')
-        .addItem('Force Create/Update Sheets From Config', 'forceUpdateFromConfig_')
-        .addItem('Force Text passUrl to phoneNumber', 'sendText_')
+        .createMenu(MENU_LABELS.overrides.label)
+        .addItem(MENU_LABELS.overrides.rebuildConfig.label, 'buildConfigSheet_')
+        .addItem(MENU_LABELS.overrides.rebuildSheets.label, 'forceUpdateFromConfig_')
+        .addItem(MENU_LABELS.overrides.sendText.label, 'sendText_')
     )
     .addToUi();
 }
@@ -92,41 +99,23 @@ function buildConfigSheet_() {
  * @throws {ScriptError} If user cancels setup
  */
 function storeTwilioDetails_() {
-  const ui = SpreadsheetApp.getUi();
-
   const questions = [
     ['Enter your Twilio SID:', ENUMS.TWILIO_SID],
     ['Enter your Twilio AUTH:', ENUMS.TWILIO_AUTH],
     ['Enter your Twilio NUMBER:', ENUMS.TWILIO_NUMBER]
   ];
-  for ([question, envVar] of questions) {
-    const response = ui.prompt(question);
-    if (response.getSelectedButton() == ui.Button.OK) {
-      setEnvVar(envVar, response.getResponseText());
-    } else {
-      throw new ScriptError('Cancelling Twilio setup.');
-    }
-  }
+  storeSetupFromQuestions(questions, 'Twilio');
 }
 
 /** Responsible for storing user credentials for PassNinja API access
  * @throws {ScriptError} If the user cancels the setup
  */
 function storePassNinjaDetails_() {
-  const ui = SpreadsheetApp.getUi();
-
   const questions = [
     ['Enter your PassNinja Account ID:', ENUMS.PASSNINJA_ACCOUNT_ID],
     ['Enter your PassNinja Api Key:', ENUMS.PASSNINJA_API_KEY]
   ];
-  for ([question, envVar] of questions) {
-    const response = ui.prompt(question);
-    if (response.getSelectedButton() == ui.Button.OK) {
-      setEnvVar(envVar, response.getResponseText());
-    } else {
-      throw new ScriptError('Cancelling PassNinja account setup.');
-    }
-  }
+  storeSetupFromQuestions(questions, 'PassNinja');
 }
 
 /**
@@ -149,10 +138,14 @@ function updateFromConfig_(force = false) {
     buildEventsSheet(ss);
     buildScannersSheet(ss);
     buildContactsSheet(ss, fieldNames);
-    buildContactsForm(ss, getSheet(ENUMS.CONTACTS, ss), fields);
+    buildContactsForm(ss, fields);
     setEnvVar(ENUMS.FIELDS_HASH, hash);
   } else {
-    Browser.msgBox('No Update', "The Config sheet's field data has not changed, not updating.", Browser.Buttons.OK);
+    Browser.msgBox(
+      localizeString('No Update'),
+      localizeString("The Config sheet's field data has not changed, not updating."),
+      Browser.Buttons.OK
+    );
   }
 }
 
@@ -202,8 +195,8 @@ function createPass_() {
   const serial = serialNumberRange.getValue();
 
   const originalContent = passNinjaContentRange.getValues();
-  highlightRange(passNinjaContentRange, 'loading');
-  passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress']]);
+  highlightRange(passNinjaContentRange, ENUMS.STATUS_LOADING);
+  passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress'].map(localizeString)]);
   SpreadsheetApp.flush();
 
   let responseData;
@@ -212,14 +205,16 @@ function createPass_() {
       ? new PassNinjaService().putPass(payloadJSONString, serial)
       : new PassNinjaService().createPass(payloadJSONString);
   } catch (err) {
-    let message;
+    let message = ['', '', ''];
     if (err instanceof CredentialsError) {
-      message = [[['Did you set your'], ['PassNinja Credentials?'], ['']]];
+      message = ['Did you set your', 'PassNinja Credentials?', ''];
     } else {
-      message = [[['Error: Check'], ['Events Sheet for details'], ['']]];
+      message = ['Error: Check', 'Events Sheet for details', ''];
     }
-    passNinjaContentRange.setValues(rangeValuesExist(originalContent) ? originalContent : message);
-    highlightRange(passNinjaContentRange, 'error');
+    passNinjaContentRange.setValues(
+      rangeValuesExist(originalContent) ? originalContent : [message.map(localizeString)]
+    );
+    highlightRange(passNinjaContentRange, ENUMS.STATUS_ERROR);
     autoResizeSheet(contactSheet._internal);
 
     throw err;
@@ -233,7 +228,7 @@ function createPass_() {
     ]
   ]);
 
-  highlightRange(passNinjaContentRange, 'success');
+  highlightRange(passNinjaContentRange, ENUMS.STATUS_SUCCESS);
   contactSheet.setActiveSelection(passUrlRange);
   autoResizeSheet(contactSheet._internal);
 
@@ -273,7 +268,10 @@ function sendText_() {
   }
 
   try {
-    twilio.sendText(phoneNumber + '', `Please click the link to install the requested PassNinja NFC pass: ${passUrl}`);
+    twilio.sendText(
+      phoneNumber + '',
+      `${localizeString('Please click the link to install the requested PassNinja NFC pass')}: ${passUrl}`
+    );
   } catch (err) {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
@@ -285,7 +283,9 @@ function mockScan_() {
   let scannerSerialNumber;
   const ss = new VSpreadsheet();
   const ui = SpreadsheetApp.getUi();
-  const response = ui.prompt('Please enter a scanner serial number or leave blank for default (RR464-0017564)');
+  const response = ui.prompt(
+    `${localizeString('Please enter a scanner serial number or leave blank for default')} (RR464-0017564)`
+  );
   if (response.getSelectedButton() == ui.Button.OK) {
     scannerSerialNumber = response.getResponseText() || 'RR464-0017564';
   } else {

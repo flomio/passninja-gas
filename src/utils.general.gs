@@ -3,6 +3,22 @@
  * @module utils.general
  */
 
+/** Localization for non-english users
+ *
+ * @param {string} input The text to translate
+ * @param {string} toLanguage The language to translate from
+ * @param {string} fromLanguage The language to translate to
+ */
+const localizeString = (input, toLanguage, fromLanguage = 'en') => {
+  if (!toLanguage) toLanguage = Session.getActiveUserLocale();
+  if (!input || toLanguage === fromLanguage) return input;
+  try {
+    return LanguageApp.translate(input, fromLanguage, toLanguage);
+  } catch (err) {
+    return input;
+  }
+};
+
 /** Chose a random item from an array
  *
  * @param {array} arr Array to choose from

@@ -3,6 +3,24 @@
  * @module utils.sheet
  */
 
+/** Asks a set of questions in order and sets environment variables from the responses and allows for cancellation.
+ *
+ * @param {string[]} questions Array of 2 strings, [0] is the question, [1] is the name of the env var to store
+ * @param {string} sender The name of the setup we are performing for
+ */
+function storeSetupFromQuestions(questions, sender) {
+  const ui = SpreadsheetApp.getUi();
+
+  for ([question, envVar] of questions) {
+    const response = ui.prompt(localizeString(question));
+    if (response.getSelectedButton() == ui.Button.OK) {
+      setEnvVar(envVar, response.getResponseText());
+    } else {
+      throw new ScriptError(`Cancelling ${sender} account setup.`);
+    }
+  }
+}
+
 /** Attempts to return the spreadsheet connected to the GAS Script Project.
  *  Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
  *  If multiple sheets have been programatically created it will only target the most recent.

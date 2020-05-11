@@ -4,14 +4,11 @@
  */
 
 const print = Logger.log;
-const FILTER = 'FUNCTION,ERROR,SUCCESS';
 let LAST_LOG = new Date();
-const DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-
 const log = (eventType, msg, ...args) => {
   const NEW_LOG = new Date();
   let ms = ((NEW_LOG - LAST_LOG) / 1000).toFixed(3);
-  FILTER === '*' || FILTER.includes(eventType) ? print(' ' + eventType + ` (+${ms}s): ` + msg, ...args) : null;
+  FILTER === '*' || FILTER.includes(eventType) ? print(localizeString(`${eventType} (+${ms}s): ${msg} ${args}`)) : null;
   LAST_LOG = NEW_LOG;
 };
 
@@ -21,6 +18,9 @@ log.ERROR = 'ERROR';
 log.STATUS = 'STATUS';
 log.FUNCTION = 'FUNCTION';
 log.VIRTUAL = 'VIRTUAL';
+const FILTER = `${log.FUNCTION},${log.ERROR},${log.SUCCESS}`;
+
+const DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 const COLORS = {
   FIELD_PASSNINJA: '#325D79',
@@ -58,10 +58,23 @@ const STATUS_LOOKUP = {
 };
 
 const ENUMS = {
-  CONFIG: 'Config',
-  CONTACTS: 'Contacts',
-  EVENTS: 'Events',
-  SCANNERS: 'Scanners',
+  CONFIG: localizeString('Config'),
+  CONTACTS: localizeString('Contacts'),
+  EVENTS: localizeString('Events'),
+  SCANNERS: localizeString('Scanners'),
+  DISCONNECTED: localizeString('DISCONNECTED'),
+  AVAILABLE: localizeString('AVAILABLE'),
+  RESERVED: localizeString('RESERVED'),
+  UNASSIGNED: localizeString('UNASSIGNED'),
+  STATUS: localizeString('status'),
+  TRUE: localizeString('TRUE'),
+  FALSE: localizeString('FALSE'),
+  YES: localizeString('YES'),
+  NO: localizeString('NO'),
+  STATUS_SUCCESS: 'success',
+  STATUS_LOADING: 'loading',
+  STATUS_OK: 'ok',
+  STATUS_ERROR: 'error',
   PASSURL: 'passUrl',
   PASSTYPE: 'passType',
   SERIAL: 'serialNumber',
@@ -74,11 +87,7 @@ const ENUMS = {
   PASSNINJA_ACCOUNT_ID: 'passninja_account_id',
   PASSNINJA_API_KEY: 'passninja_api_key',
   CURRENT_SPREADSHEET_ID: 'current_spreadsheet_id',
-  CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url',
-  AVAILABLE: 'AVAILABLE',
-  RESERVED: 'RESERVED',
-  UNASSIGNED: 'UNASSIGNED',
-  STATUS: 'status'
+  CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url'
 };
 const PASSNINJA_FIELDS = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL];
 
@@ -139,4 +148,61 @@ const SCAN_TEMPLATE = {
     },
     uuid: '' // uuid
   }
+};
+
+const MENU_LABELS = {
+  selected: {
+    label: localizeString('Selected Row'),
+    create: { label: localizeString('Create/Update Pass') },
+    mock: { label: localizeString('Run Mock Scan') }
+  },
+  config: {
+    label: localizeString('Config/Setup'),
+    create: { label: localizeString('Create/Update Sheets From Config') }
+  },
+  credentials: {
+    label: localizeString('Add Credentials'),
+    twilio: { label: localizeString('Set Twilio Credentials') },
+    pn: { label: localizeString('Set PassNinja Credentials') }
+  },
+  overrides: {
+    label: localizeString('Overrides'),
+    rebuildConfig: { label: localizeString('Force (Re)Build of Config Sheet') },
+    rebuildSheets: { label: localizeString('Force Create/Update Sheets From Config') },
+    sendText: { label: localizeString('Force Text passUrl to phoneNumber') }
+  }
+};
+
+const CONFIG_LABELS = {
+  title: localizeString('01 CONFIG'),
+  headers: {
+    key: localizeString('key'),
+    value: localizeString('value'),
+    name: localizeString('name'),
+    template: localizeString('In Template?')
+  },
+  source: localizeString('Source Script'),
+  instructions: [
+    'INSTRUCTIONS:',
+    '1) Specify what passType this app will be using under General Setup.',
+    '2) Enter all the custom field names you have in your template.',
+    '3) then, PassNinja... Setup... Create/Update Sheets from Config'
+  ].map((line) => [localizeString(line)]),
+  passType: {
+    label: localizeString('Pass Type'),
+    info: localizeString('You must specify a passType to create passes.')
+  },
+  confirm: { no: ENUMS.NO, yes: ENUMS.YES },
+  general: {
+    label: localizeString('General Setup'),
+    info: localizeString('Define fields for the form that will be used to create passes')
+  }
+};
+
+const EVENTS_LABELS = {
+  date: localizeString('Event Date'),
+  eventtype: localizeString('Event Type'),
+  passType: localizeString('Pass Type'),
+  serial: localizeString('Serial Number'),
+  data: localizeString('Event Data')
 };
