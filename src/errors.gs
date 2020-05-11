@@ -7,7 +7,8 @@
  */
 class PassNinjaGASError extends Error {
   constructor(code = 'GENERIC', ...params) {
-    super(...params.map(localizeString));
+    params = params.map((p) => localizeString(p));
+    super(...params);
     this.code = code;
     log(log.ERROR, `New ${this.code} Error thrown from: `, params);
 

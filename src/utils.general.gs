@@ -4,17 +4,19 @@
  */
 
 /** Localization for non-english users
+ * Options: https://cloud.google.com/translate/docs/languages
  *
  * @param {string} input The text to translate
  * @param {string} toLanguage The language to translate from
  * @param {string} fromLanguage The language to translate to
  */
 const localizeString = (input, toLanguage, fromLanguage = 'en') => {
-  if (!toLanguage) toLanguage = Session.getActiveUserLocale();
-  if (!input || toLanguage === fromLanguage) return input;
+  if (!TRANSLATE || !input) return input;
+  if (toLanguage === fromLanguage) return input;
   try {
-    return LanguageApp.translate(input, fromLanguage, toLanguage);
+    return LanguageApp.translate(input, fromLanguage, (toLanguage || LOCALE).substring(0, 2));
   } catch (err) {
+    Logger.log(`There was an error translating ${err}.`);
     return input;
   }
 };

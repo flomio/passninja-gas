@@ -28,7 +28,7 @@ function initializeSheet(name, ss) {
  */
 function onPostSheetCreate(sheet) {
   log(log.FUNCTION, 'Starting onPostSheetCreate');
-  const sheetConfig = SHEET_DEFAULTS[sheet.getName()];
+  const sheetConfig = SHEET_SIZES[sheet.getName()];
   if (sheetConfig && sheetConfig.rows) {
     shrinkSheetRows(sheet, sheetConfig.rows);
   }
@@ -59,7 +59,7 @@ function buildConfigSheet(ss) {
     CONFIG_LABELS.headers.name,
     CONFIG_LABELS.headers.template
   ];
-  const sourceScriptUrl = `=HYPERLINK("${getScriptUrl()}", ${CONFIG_LABELS.source})`;
+  const sourceScriptUrl = `=HYPERLINK("${getScriptUrl()}"; "${CONFIG_LABELS.source}")`;
 
   const headerRange = sheet.getRange(HEADER_START, 1, 1, headerNames.length);
   headerRange.setValues([headerNames]);
@@ -72,7 +72,7 @@ function buildConfigSheet(ss) {
     .setBackground(COLORS.FIELD_PASSNINJA)
     .setFontWeight('bold')
     .setFontColor(COLORS.TEXT_ON);
-  sheet.getRange(CONTENT_START, 1, 1, 1).setValue(CONFIG_LABELS.passType.lable);
+  sheet.getRange(CONTENT_START, 1, 1, 1).setValue(CONFIG_LABELS.passType.label).setFontWeight('bold');
   sheet.getRange(CONTENT_START, 2, 1, 1).setNote(CONFIG_LABELS.passType.info);
   sheet.getRange(CONTENT_START + 1, 1, sheet.getMaxRows(), 2).setBackground(COLORS.FIELD_PASSNINJA);
 
@@ -188,7 +188,7 @@ function buildContactsSheet(ss, fieldsNames) {
 
   const columnWidths = Array.from({ length: fieldsNames.length }).fill(150);
   columnWidths.push(...[400, 100, 300]);
-  SHEET_DEFAULTS[ENUMS.CONTACTS].widths = columnWidths;
+  SHEET_SIZES[ENUMS.CONTACTS].widths = columnWidths;
 
   onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Contacts sheet');

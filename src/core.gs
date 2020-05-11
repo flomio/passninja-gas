@@ -8,7 +8,7 @@
  *  Spreadsheet is linked via a trigger to the script.
  */
 function createSpreadsheet() {
-  log(log.FUNCTION, 'STARTING CREATESPREADSHEET');
+  log(log.FUNCTION, 'Starting CREATESPREADSHEET');
   try {
     log(log.STATUS, 'Checking for existing sheet first.');
     const ss = getLinkedSpreadsheet();
@@ -16,17 +16,14 @@ function createSpreadsheet() {
   } catch (err) {
     log(log.STATUS, 'No sheet found, continuing...');
   }
+  setEnvVar(ENUMS.FIELDS_HASH, '');
   const ss = SpreadsheetApp.create(`PassNinja ${localizeString('Demo Spreadsheet')} - ${now()}`);
 
   ScriptApp.getProjectTriggers().forEach((trigger) => ScriptApp.deleteTrigger(trigger));
   ScriptApp.newTrigger('onOpen').forSpreadsheet(ss).onOpen().create();
 
   buildConfigSheet(ss);
-  try {
-    ss.deleteSheet(ss.getSheetByName(localizeString('Sheet1')));
-  } catch (err) {
-    log(log.ERROR, `Could not find sheet ${localizeString('Sheet1')}`);
-  }
+  ss.deleteSheet(ss.getSheets()[0]);
   setEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, ss.getId());
   setEnvVar(ENUMS.CURRENT_SPREADSHEET_URL, ss.getUrl());
 
@@ -41,15 +38,15 @@ function createSpreadsheet() {
   );
   log(log.STATUS, `Current user is: ${currentUserEmail} and the new sheet is owned by: ${currentSheetOwnerEmail}`);
 
-  setEnvVar('current_user', currentUserEmail);
-  setEnvVar('spreadsheet_name', ss.getName());
-  setEnvVar('spreadsheet_creator', currentSheetOwnerEmail);
+  setEnvVar(ENUMS.CURRENT_USER, currentUserEmail);
+  setEnvVar(ENUMS.SPREADSHEET_NAME, ss.getName());
+  setEnvVar(ENUMS.SPREADSHEET_CREATOR, currentSheetOwnerEmail);
   MailApp.sendEmail(
     Session.getActiveUser().getEmail(),
     localizeString('Your PassNinja Spreadsheet'),
     localizeString(`Here is the link to your spreadsheet ${spreadsheetUrl}`)
   );
-  log(log.FUNCTION, 'FINISHED CREATESPREADSHEET');
+  log(log.FUNCTION, 'Finished CREATESPREADSHEET');
   throw new Error(`${localizeString('Successfully created spreadsheet, click Details for URL')} -> ${spreadsheetUrl}`);
 }
 
@@ -132,7 +129,7 @@ function updateFromConfig_(force = false) {
   const constants = getConfigConstants(ss);
   const fieldsHash = getEnvVar(ENUMS.FIELDS_HASH, false);
   const hash = MD5(JSON.stringify(fields), true) + MD5(JSON.stringify(constants));
-  log(log.STATUS, `Computed hash for fieldsData [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
+  log(log.STATUS, `Computed hash for fields data [new] <-> [old]: ${hash} <-> ${fieldsHash}`);
 
   if (force || hash !== fieldsHash) {
     buildEventsSheet(ss);
@@ -155,9 +152,10 @@ function updateFromConfig_(force = false) {
  * @returns {string} "Lock Timeout" if the contact sheet queries cause a timeout
  */
 function onboardNewPassholderFromForm(e) {
+  log(log.FUNCTION, 'Starting onboardNewPassholderFromForm');
   const ss = new VSpreadsheet();
   const sheet = getSheet(ENUMS.CONTACTS, ss);
-  const fieldsData = getNamedRange('config_fields', ss)
+  const fieldsData = getNamedRange(ENUMS.CONFIG_FIELDS, ss)
     .getValues()
     .filter((v) => !!v[0]);
   const fieldsNames = fieldsData.map((f) => f[0]);
@@ -170,6 +168,7 @@ function onboardNewPassholderFromForm(e) {
     return 'Lock Timeout';
   }
   sheet._internal.setActiveRange(sheet._internal.getRange(sheet._internal.getLastRow(), 1));
+  log(log.FUNCTION, 'Finished onboardNewPassholderFromForm');
   createPass_();
 }
 
@@ -178,7 +177,7 @@ function onboardNewPassholderFromForm(e) {
  * @throws {ServiceError} If the response from PassNinjaService is non 2xx.
  */
 function createPass_() {
-  log(log.FUNCTION, 'STARTING CREATEPASS_');
+  log(log.FUNCTION, 'Starting createPass_');
   const ss = new VSpreadsheet();
   const contactSheet = getSheet(ENUMS.CONTACTS, ss);
 
@@ -196,7 +195,7 @@ function createPass_() {
 
   const originalContent = passNinjaContentRange.getValues();
   highlightRange(passNinjaContentRange, ENUMS.STATUS_LOADING);
-  passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress'].map(localizeString)]);
+  passNinjaContentRange.setValues([['Please wait...', 'pass creation', 'in progress'].map((s) => localizeString(s))]);
   SpreadsheetApp.flush();
 
   let responseData;
@@ -212,7 +211,7 @@ function createPass_() {
       message = ['Error: Check', 'Events Sheet for details', ''];
     }
     passNinjaContentRange.setValues(
-      rangeValuesExist(originalContent) ? originalContent : [message.map(localizeString)]
+      rangeValuesExist(originalContent) ? originalContent : [message.map((s) => localizeString(s))]
     );
     highlightRange(passNinjaContentRange, ENUMS.STATUS_ERROR);
     autoResizeSheet(contactSheet._internal);
@@ -234,7 +233,7 @@ function createPass_() {
 
   if (!serial) sendText_();
 
-  log(log.FUNCTION, 'FINISHED CREATEPASS_');
+  log(log.FUNCTION, 'Finished createPass_');
   return response.getContentText();
 }
 
@@ -242,10 +241,10 @@ function createPass_() {
  *  NOTE: only works if the header 'phoneNumber' is present
  * @throws {ServiceError} If the response from TwilioService is non 2xx.
  * @throws {CredentialsError} If the credentials from TwilioService are not set up.
- * @throws {Error} If an unexpected error occurred running TwilioService.
+ * @throws {Error} If an unexpected error occurred Starting TwilioService.
  */
 function sendText_() {
-  log(log.FUNCTION, 'RUNNING SENDTEXT_');
+  log(log.FUNCTION, 'Starting sendText_');
   let twilio;
   let phoneNumber;
   let passUrl;
@@ -276,7 +275,7 @@ function sendText_() {
     log(log.ERROR, 'Twilio ran into an unexpected error: ', err);
     throw err;
   }
-  log(log.FUNCTION, 'FINISHED SENDTEXT_');
+  log(log.FUNCTION, 'Finished sendText_');
 }
 
 function mockScan_() {
@@ -291,9 +290,9 @@ function mockScan_() {
   } else {
     throw new ScriptError('Cancelling mock scan.');
   }
-  log(log.FUNCTION, 'RUNNING MOCKSCAN_');
+  log(log.FUNCTION, 'Starting mockScan_');
   const { passType, serialNumber } = getSelectedContactData(ss);
   addEvent(ss, JSON.stringify(createMockScanPayload(passType, serialNumber, scannerSerialNumber)));
   ss.flush();
-  log(log.FUNCTION, 'FINISHED MOCKSCAN_');
+  log(log.FUNCTION, 'Finished mockScan_');
 }
