@@ -11,12 +11,12 @@
  * @returns {Object} Mock scan event payload with current time and relevant details
  */
 function createMockScanPayload(passType, serialNumber, scannerSerialNumber) {
-  log(log.FUNCTION, 'RUNNING createMockScanPayload');
+  log(log.FUNCTION, 'Starting createMockScanPayload');
   const payload = Object.assign(SCAN_TEMPLATE);
   const eventStart = new Date();
   const eventEnd = new Date(eventStart);
   eventEnd.setSeconds(eventEnd.getSeconds() + 5);
-  payload.id = `#john@smith.com#${passType}#${Utilities.getUuid()}`;
+  payload.id = `#${GENERIC_NAME.first}.${GENERIC_NAME.last}@example.com#${passType}#${Utilities.getUuid()}`;
   payload.date = formatDate(eventStart);
   payload.uuid = Utilities.getUuid();
   payload.event.serialNumber = serialNumber;
@@ -25,7 +25,7 @@ function createMockScanPayload(passType, serialNumber, scannerSerialNumber) {
   payload.event.platform = randomChoice(SCAN_PLATFORMS);
   payload.event.reader.serialNumber = scannerSerialNumber;
 
-  log(log.FUNCTION, 'FINISHED createMockScanPayload');
+  log(log.FUNCTION, 'Finished createMockScanPayload');
   return payload;
 }
 /**
@@ -41,14 +41,14 @@ function createMockScanPayload(passType, serialNumber, scannerSerialNumber) {
  * @returns {ScannerMatch}
  */
 function getScanner(scannerSheet, serialNumber) {
-  log(log.FUNCTION, 'STARTING getScanner');
-  const serialNumberColumnIndex = getColumnIndexFromString(scannerSheet, 'serialNumber');
-  const passSerialNumberColumnIndex = getColumnIndexFromString(scannerSheet, 'attachedPassSerial');
+  log(log.FUNCTION, 'Starting getScanner');
+  const serialNumberColumnIndex = getColumnIndexFromString(scannerSheet, SCANNERS_LABELS.serial);
+  const passSerialNumberColumnIndex = getColumnIndexFromString(scannerSheet, SCANNERS_LABELS.attached);
   const columnValues = scannerSheet
     .getRange(V_START_ROW_OFFSET, serialNumberColumnIndex, scannerSheet.getLastRow() - 1)
     .getValues();
   const scannerMatchIndex = columnValues.map((e) => e[0]).indexOf(serialNumber);
-  log(log.FUNCTION, 'ENDING getScanner');
+  log(log.FUNCTION, `Ending getScanner with ${scannerMatchIndex} ${passSerialNumberColumnIndex}`);
   return { scannerMatchIndex, passSerialNumberColumnIndex };
 }
 
@@ -64,7 +64,7 @@ function getScanner(scannerSheet, serialNumber) {
  * @throws {ScriptError} If one of the validations is not passed it will throw a related error
  */
 function validateScan(status, eventPassSerial, currentPassSerial, date, start, end, provisioned) {
-  if (status === 'RESERVED') {
+  if (status === ENUMS.RESERVED) {
     if (currentPassSerial === '') {
       throw new ScriptError('Requested resource is marked in use but no pass is attached...manual fix required.');
     }
@@ -127,11 +127,11 @@ function updateScannerSheetAndPass(
   scannerMatchIndex,
   contactMatchIndex
 ) {
-  log(log.FUNCTION, 'STARTING updateScannerSheetAndPass');
+  log(log.FUNCTION, 'Starting updateScannerSheetAndPass');
   const passNinjaColumnStart = getColumnIndexFromString(contactSheet, ENUMS.PASSURL);
   const contactRange = contactSheet.getRange(contactMatchIndex + V_START_ROW_OFFSET, 1, 1, passNinjaColumnStart - 1);
   const passJson = getRowPassPayload(contactRange, ss);
-  const statusIndex = getColumnIndexFromString(scannersSheet, ENUMS.STATUS);
+  const statusIndex = getColumnIndexFromString(scannersSheet, SCANNERS_LABELS.status);
 
   if (status === ENUMS.AVAILABLE) {
     serialNumberCellRange.setValue(serialNumber);
@@ -149,7 +149,7 @@ function updateScannerSheetAndPass(
   } catch (err) {
     log(log.ERROR, err);
   }
-  log(log.FUNCTION, 'ENDING updateScannerSheetAndPass');
+  log(log.FUNCTION, 'Ending updateScannerSheetAndPass');
 }
 
 /** Finds a mtaching row number for the serial in question in the Contacts sheet
@@ -178,7 +178,7 @@ function getRowSerialMatchIndex(contactSheet, serialNumber) {
  * @throws {ScriptError} If we cannot find a matching scanner or matching pass will throw an error
  */
 function processScanEvent(ss, eventJson) {
-  log(log.FUNCTION, 'STARTING PROCESSSCANEVENT');
+  log(log.FUNCTION, 'Starting PROCESSSCANEVENT');
   log(log.STATUS, `Processing scan event from JSON: ${eventJson}`);
   const scannersSheet = getSheet(ENUMS.SCANNERS, ss);
   const { serialNumber, reader, date } = eventJson.event;
@@ -218,6 +218,6 @@ function processScanEvent(ss, eventJson) {
   );
   scannersSheet.flush();
   autoResizeSheet(scannersSheet._internal);
-  log(log.FUNCTION, 'ENDING PROCESSSCANEVENT');
+  log(log.FUNCTION, 'Ending PROCESSSCANEVENT');
   return scannerPayload;
 }

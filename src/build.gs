@@ -28,7 +28,7 @@ function initializeSheet(name, ss) {
  */
 function onPostSheetCreate(sheet) {
   log(log.FUNCTION, 'Starting onPostSheetCreate');
-  const sheetConfig = SHEET_DEFAULTS[sheet.getName()];
+  const sheetConfig = SHEET_SIZES[sheet.getName()];
   if (sheetConfig && sheetConfig.rows) {
     shrinkSheetRows(sheet, sheetConfig.rows);
   }
@@ -52,14 +52,14 @@ function buildConfigSheet(ss) {
   const CONTENT_START = 7;
   const HEADER_START = 6;
   const sheet = initializeSheet(ENUMS.CONFIG, ss);
-  const headerNames = ['Key', 'Value', null, 'Name', 'In Template?'];
-  const sourceScriptUrl = `=HYPERLINK("${getScriptUrl()}", "Source Script")`;
-  const instructions = [
-    ['INSTRUCTIONS:'],
-    ['1) Specify what passType this app will be using under General Setup.'],
-    ['2) Enter all the custom field names you have in your template.'],
-    ['3) then, PassNinja... Setup... Create/Update Sheets from Config']
+  const headerNames = [
+    CONFIG_LABELS.headers.key,
+    CONFIG_LABELS.headers.value,
+    '',
+    CONFIG_LABELS.headers.name,
+    CONFIG_LABELS.headers.template
   ];
+  const sourceScriptUrl = `=HYPERLINK("${getScriptUrl()}"; "${CONFIG_LABELS.source}")`;
 
   const headerRange = sheet.getRange(HEADER_START, 1, 1, headerNames.length);
   headerRange.setValues([headerNames]);
@@ -72,8 +72,8 @@ function buildConfigSheet(ss) {
     .setBackground(COLORS.FIELD_PASSNINJA)
     .setFontWeight('bold')
     .setFontColor(COLORS.TEXT_ON);
-  sheet.getRange(CONTENT_START, 1, 1, 1).setValue('passType');
-  sheet.getRange(CONTENT_START, 2, 1, 1).setNote('You must specify a passType to create passes.');
+  sheet.getRange(CONTENT_START, 1, 1, 1).setValue(CONFIG_LABELS.passType.label).setFontWeight('bold');
+  sheet.getRange(CONTENT_START, 2, 1, 1).setNote(CONFIG_LABELS.passType.info);
   sheet.getRange(CONTENT_START + 1, 1, sheet.getMaxRows(), 2).setBackground(COLORS.FIELD_PASSNINJA);
 
   // TODO: Implement some kind of protection.  This causes a timeout.
@@ -83,18 +83,25 @@ function buildConfigSheet(ss) {
   ss.setNamedRange(ENUMS.CONFIG_FIELDS, sheet.getRange(CONTENT_START, 4, sheet.getMaxRows(), 4));
 
   const validationInPass = SpreadsheetApp.newDataValidation()
-    .requireValueInList(['N', 'Y'], true)
+    .requireValueInList([CONFIG_LABELS.confirm.no, CONFIG_LABELS.confirm.yes], true)
     .setAllowInvalid(false)
     .build();
 
-  const fieldInPassRange = sheet.getRange(CONTENT_START, headerNames.indexOf('In Template?') + 1, sheet.getMaxRows());
-  fieldInPassRange.setDataValidation(validationInPass).setHorizontalAlignment('center').setValue('Y');
+  const fieldInPassRange = sheet.getRange(
+    CONTENT_START,
+    headerNames.indexOf(CONFIG_LABELS.headers.template) + 1,
+    sheet.getMaxRows()
+  );
+  fieldInPassRange
+    .setDataValidation(validationInPass)
+    .setHorizontalAlignment('center')
+    .setValue(CONFIG_LABELS.confirm.yes);
 
-  sheet.getRange(1, 1, 4, 2).merge().setValue('01 CONFIG').setFontSize(24).setVerticalAlignment('middle');
+  sheet.getRange(1, 1, 4, 2).merge().setValue(CONFIG_LABELS.title).setFontSize(24).setVerticalAlignment('middle');
   sheet.getRange(1, 3, 4, 2).merge().setValue(sourceScriptUrl).setVerticalAlignment('middle');
-  sheet.getRange(1, 5, instructions.length).setFontSize(8).setValues(instructions);
-  sheet.getRange(5, 1, 1, 2).merge().setValue('General Setup');
-  sheet.getRange(5, 4, 1, 3).merge().setValue('Define fields for the form that will be used to create passes');
+  sheet.getRange(1, 5, CONFIG_LABELS.instructions.length).setFontSize(8).setValues(CONFIG_LABELS.instructions);
+  sheet.getRange(5, 1, 1, 2).merge().setValue(CONFIG_LABELS.general.label);
+  sheet.getRange(5, 4, 1, 3).merge().setValue(CONFIG_LABELS.general.info);
 
   sheet.getRange(5, 1, 2, 2).setBorder(true, true, true, true, false, false, COLORS.BORDER, null);
   sheet.getRange(5, 4, 2, 4).setBorder(true, true, true, true, false, false, COLORS.BORDER, null);
@@ -114,7 +121,13 @@ function buildEventsSheet(ss) {
   log(log.FUNCTION, 'Starting buildEventsSheet');
   const sheet = initializeSheet(ENUMS.EVENTS, ss);
 
-  const fieldsNames = ['eventDate', 'eventType', 'passType', 'serialNumber', 'eventData'];
+  const fieldsNames = [
+    EVENTS_LABELS.date,
+    EVENTS_LABELS.eventType,
+    EVENTS_LABELS.passType,
+    EVENTS_LABELS.serial,
+    EVENTS_LABELS.data
+  ];
   const fieldHeaders = sheet.getRange(1, 1, 1, fieldsNames.length);
   fieldHeaders.setValues([fieldsNames]);
   fieldHeaders.setBackground(COLORS.FIELD_PASSNINJA);
@@ -142,7 +155,7 @@ function buildScannersSheet(ss) {
   fieldHeaders.setFontColor(COLORS.TITLE_TEXT);
   const firstRow = sheet.getRange(2, 1, 1, SCANNERS_FIELDS.length);
   if (firstRow.getValues()[0][0] !== 'RR464-0017564') {
-    firstRow.setValues([['RR464-0017564', '1', 'AVAILABLE', 'TRUE', '', '03:00', '23:45', '$0.00']]);
+    firstRow.setValues([['RR464-0017564', '1', ENUMS.AVAILABLE, ENUMS.TRUE, '', '03:00', '23:45', '$0.00']]);
   }
   onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Scanners sheet');
@@ -175,7 +188,7 @@ function buildContactsSheet(ss, fieldsNames) {
 
   const columnWidths = Array.from({ length: fieldsNames.length }).fill(150);
   columnWidths.push(...[400, 100, 300]);
-  SHEET_DEFAULTS[ENUMS.CONTACTS].widths = columnWidths;
+  SHEET_SIZES[ENUMS.CONTACTS].widths = columnWidths;
 
   onPostSheetCreate(sheet);
   log(log.SUCCESS, 'Successfully built/updated Contacts sheet');
@@ -189,7 +202,7 @@ function buildContactsSheet(ss, fieldsNames) {
  * @param {Sheet} sheet The container sheet for the form
  * @param {string[]} fieldData The fields that the user has entered in the config
  */
-function buildContactsForm(ss, sheet, fieldData) {
+function buildContactsForm(ss, fieldData) {
   log(log.FUNCTION, 'Starting buildContactsForm');
   let form;
   try {
@@ -197,7 +210,7 @@ function buildContactsForm(ss, sheet, fieldData) {
     clearFormDestinationSheet(form);
   } catch (e) {
     log(log.STATUS, 'No previous form detected, creating...');
-    form = FormApp.create('Create New Contact');
+    form = FormApp.create(localizeString('Create New Contact'));
   } finally {
     clearForm(form);
   }
@@ -213,11 +226,11 @@ function buildContactsForm(ss, sheet, fieldData) {
   }
 
   for (field of fieldData) {
-    let [fieldName, includeInPass, fieldType, fieldOptions] = field;
+    let [fieldName, includeInPass, fieldType] = field;
     if (!fieldType) fieldType = 'text';
     form[FORM_LOOKUP[fieldType]]()
       .setTitle(fieldName)
-      .setRequired(includeInPass === 'Y');
+      .setRequired(includeInPass === ENUMS.YES);
   }
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
   getFormDestinationSheet(form).hideSheet();

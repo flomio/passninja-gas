@@ -3,7 +3,7 @@
  * @module services
  */
 
-/** The generic function for running an external call
+/** The generic function for Starting an external call
  *
  * @param {string} url The url used in the request
  * @param {object} options The options used for the request: https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app#fetchurl,-params
