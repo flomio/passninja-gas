@@ -26,13 +26,6 @@
   - [Utilities](#utilities)
   - [Generated with jsdoc2md](#generated-with-jsdoc2md)
 - [CONTRIBUTING](#contributing)
-  - [REQUIRED SETUP](#required-setup)
-- [FUNCTIONALITY](#functionality)
-  - [To Verify Sheet and Form creation](#to-verify-sheet-and-form-creation)
-  - [To Verify Form Submission](#to-verify-form-submission)
-  - [To Verify POST and GET requests](#to-verify-post-and-get-requests)
-  - [To Verify Activating Pass Creation from the spreadsheet](#to-verify-activating-pass-creation-from-the-spreadsheet)
-  - [To Verify Rebuilding from Config in an existing built spreadsheet](#to-verify-rebuilding-from-config-in-an-existing-built-spreadsheet)
 
 # INSTALLATION
 
