@@ -5,8 +5,11 @@
 <h4 align="center">A repository for the PassNinja Google Apps Script demo to demonstrate PassNinja API functionality.</h4>
 
 <div align="center">
-    <a href="https://github.com/flomio/passninja-guestlist-gas/actions">
-        <img src="https://github.com/flomio/passninja-guestlist-gas/workflows/DOCS/badge.svg" alt="docs CI build status"/>
+    <a href="https://github.com/flomio/passninja-guestlist-gas/actions?query=workflow%3ACI">
+        <img alt="tests status" src="https://github.com/flomio/passninja-guestlist-gas/workflows/CI/badge.svg" />
+    </a>
+    <a href="https://github.com/flomio/passninja-guestlist-gas/actions?query=workflow%3ADOCS">
+        <img alt="docs build status" src="https://github.com/flomio/passninja-guestlist-gas/workflows/DOCS/badge.svg"/>
     </a>
     <a href="https://github.com/flomio/passninja-guestlist-gas">
         <img alt="Status" src="https://img.shields.io/badge/status-active-success.svg" />
