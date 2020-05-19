@@ -98,7 +98,7 @@ function getRowPassPayload(rowRange, spreadsheet) {
 
   for (i = 0; i < rowValues.length; i++) {
     const [fieldName, fieldIncluded] = fieldsData[i];
-    if (fieldIncluded === 'Y') {
+    if (fieldIncluded === ENUMS.YES) {
       log(log.SUCCESS, `Added (${fieldName}: ${rowValues[i]}) to POST payload.`);
       postData.pass[fieldName] = rowValues[i];
     }
