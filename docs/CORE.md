@@ -121,7 +121,7 @@ Sends a text to the current row using the TwilioService and stored Script Proper
 
 - <code>ServiceError</code> If the response from TwilioService is non 2xx.
 - <code>CredentialsError</code> If the credentials from TwilioService are not set up.
-- <code>Error</code> If an unexpected error occurred running TwilioService.
+- <code>Error</code> If an unexpected error occurred Starting TwilioService.
 
 <a name="module_build"></a>
 

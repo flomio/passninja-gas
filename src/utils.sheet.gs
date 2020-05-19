@@ -3,6 +3,24 @@
  * @module utils.sheet
  */
 
+/** Asks a set of questions in order and sets environment variables from the responses and allows for cancellation.
+ *
+ * @param {string[]} questions Array of 2 strings, [0] is the question, [1] is the name of the env var to store
+ * @param {string} sender The name of the setup we are performing for
+ */
+function storeSetupFromQuestions(questions, sender) {
+  const ui = SpreadsheetApp.getUi();
+
+  for ([question, envVar] of questions) {
+    const response = ui.prompt(localizeString(question));
+    if (response.getSelectedButton() == ui.Button.OK) {
+      setEnvVar(envVar, response.getResponseText());
+    } else {
+      throw new ScriptError(`Cancelling ${sender} account setup.`);
+    }
+  }
+}
+
 /** Attempts to return the spreadsheet connected to the GAS Script Project.
  *  Uses three methods: id env var, url env var and SpreadsheetApp.getActiveSheet
  *  If multiple sheets have been programatically created it will only target the most recent.
@@ -10,7 +28,7 @@
  * @returns {Spreadsheet} The spreadsheet that is linked to the GAS Script Project.
  */
 function getLinkedSpreadsheet() {
-  log(log.FUNCTION, 'STARTING getLinkedSpreadsheet');
+  log(log.FUNCTION, 'Starting getLinkedSpreadsheet');
   const fnRunner = [
     [SpreadsheetApp.getActive, []],
     [SpreadsheetApp.openById, [getEnvVar(ENUMS.CURRENT_SPREADSHEET_ID, false)]],
@@ -20,7 +38,7 @@ function getLinkedSpreadsheet() {
   for ([fn, args] of fnRunner) {
     ss = fn(...args);
     if (ss) {
-      log(log.FUNCTION, 'ENDING getLinkedSpreadsheet');
+      log(log.FUNCTION, 'Ending getLinkedSpreadsheet');
       log(log.SUCCESS, `Found spreadsheet ${ss.getName()}`);
       return ss;
     }
@@ -86,7 +104,7 @@ function setEnvVar(name, value) {
  * @param {Range} rowRange Row range to query
  */
 function getRowPassPayload(rowRange, spreadsheet) {
-  log(log.FUNCTION, 'STARTING getRowPassPayload');
+  log(log.FUNCTION, 'Starting getRowPassPayload');
   const fieldsData = getConfigFields(spreadsheet);
   const { passType, ...passFieldConstants } = getConfigConstants(spreadsheet);
   const rowValues = rowRange.getValues()[0];
@@ -103,35 +121,35 @@ function getRowPassPayload(rowRange, spreadsheet) {
       postData.pass[fieldName] = rowValues[i];
     }
   }
-  log(log.FUNCTION, 'ENDING getRowPassPayload');
+  log(log.FUNCTION, 'Ending getRowPassPayload');
   return postData;
 }
 
 /** Returns an object with key:value pairs from the Config sheet
  */
 function getConfigConstants(spreadsheet) {
-  log(log.FUNCTION, 'STARTING getConfigConstants');
+  log(log.FUNCTION, 'Starting getConfigConstants');
   const constants = Object.fromEntries(
     spreadsheet
       .getRangeByName(ENUMS.CONFIG_CONSTANTS)
       .getValues()
       .filter((row) => !!row[0])
   );
-  if (!constants.passType) throw new UtilsError('You must enter a passType in the Config sheet.');
-  log(log.FUNCTION, 'ENDING getConfigConstants');
+  if (!constants[ENUMS.PASSTYPE]) throw new UtilsError('You must enter a passType in the Config sheet.');
+  log(log.FUNCTION, 'Ending getConfigConstants');
   return constants;
 }
 
 /** Returns a list of config field entries
  */
 function getConfigFields(spreadsheet) {
-  log(log.FUNCTION, 'STARTING getConfigFields');
+  log(log.FUNCTION, 'Starting getConfigFields');
   const fieldsData = spreadsheet
     .getRangeByName(ENUMS.CONFIG_FIELDS)
     .getValues()
     .filter((row) => !!row[0]);
   if (!fieldsData.length) throw new UtilsError('You must enter at least one field in the Config sheet.');
-  log(log.FUNCTION, 'ENDING getConfigFields');
+  log(log.FUNCTION, 'Ending getConfigFields');
   return fieldsData;
 }
 
@@ -153,10 +171,10 @@ function getAllFuncs(toCheck) {
  * @returns {Sheet} Google Sheet object
  */
 function getSheet(sheetName, ss) {
-  log(log.FUNCTION, 'STARTING sheetName');
+  log(log.FUNCTION, 'Starting sheetName');
   const sheet = ss.getSheetByName(sheetName);
   if (!sheet) throw new UtilsError(`Sheet ${sheetName} not found in spreadsheet ${ss}`);
-  log(log.FUNCTION, 'ENDING sheetName');
+  log(log.FUNCTION, 'Ending sheetName');
   return sheet;
 }
 
@@ -167,14 +185,14 @@ function getSheet(sheetName, ss) {
  * @returns {boolean} If the selected row is invalid
  */
 function getValidSheetSelectedRow(sheet) {
-  log(log.FUNCTION, 'STARTING getValidSheetSelectedRow');
+  log(log.FUNCTION, 'Starting getValidSheetSelectedRow');
   const selectedRow = sheet.getActiveCell().getRow();
   const rowNumber = Number(selectedRow);
   if (isNaN(rowNumber) || rowNumber < 2 || rowNumber > sheet.getLastRow()) {
     throw new UtilsError(`Row ${selectedRow} is not valid.`);
     return false;
   }
-  log(log.FUNCTION, 'ENDING getValidSheetSelectedRow');
+  log(log.FUNCTION, 'Ending getValidSheetSelectedRow');
   return rowNumber;
 }
 
@@ -183,10 +201,10 @@ function getValidSheetSelectedRow(sheet) {
  * @param {Sheet} sheet The sheet to resize
  */
 function autoResizeSheet(sheet) {
-  log(log.FUNCTION, 'STARTING autoResizeSheet');
+  log(log.FUNCTION, 'Starting autoResizeSheet');
   SpreadsheetApp.flush();
   sheet.autoResizeColumns(1, sheet.getMaxColumns());
-  log(log.FUNCTION, 'ENDING autoResizeSheet');
+  log(log.FUNCTION, 'Ending autoResizeSheet');
 }
 
 /** Deletes all columns from last column with data to the end on the given sheet
@@ -194,14 +212,14 @@ function autoResizeSheet(sheet) {
  * @param {Sheet} sheet The sheet to modify
  */
 function autoDeleteUnusedColumns(sheet) {
-  log(log.FUNCTION, 'STARTING autoDeleteUnusedColumns');
+  log(log.FUNCTION, 'Starting autoDeleteUnusedColumns');
   const lastContentColumn = sheet.getLastColumn();
   const lastColumn = sheet.getMaxColumns();
   if (lastContentColumn < lastColumn) {
     log(log.WARNING, `Deleting columns ${lastContentColumn}-${lastColumn} on sheet ${sheet.getName()}`);
     sheet.deleteColumns(lastContentColumn + 1, lastColumn - lastContentColumn);
   }
-  log(log.FUNCTION, 'ENDING autoDeleteUnusedColumns');
+  log(log.FUNCTION, 'Ending autoDeleteUnusedColumns');
 }
 
 /** Shrinks sheet to specified number of rows
@@ -209,13 +227,13 @@ function autoDeleteUnusedColumns(sheet) {
  * @param {int} numRowsKeep The number of rows to keep
  */
 function shrinkSheetRows(sheet, numRowsKeep) {
-  log(log.FUNCTION, 'STARTING shrinkSheetRows');
+  log(log.FUNCTION, 'Starting shrinkSheetRows');
   const lastRow = sheet.getMaxRows();
   if (numRowsKeep < lastRow) {
     log(log.WARNING, `Deleting rows ${numRowsKeep}-${lastRow} on sheet ${sheet.getName()}`);
     sheet.deleteRows(numRowsKeep, lastRow - numRowsKeep);
   }
-  log(log.FUNCTION, 'ENDING shrinkSheetRows');
+  log(log.FUNCTION, 'Ending shrinkSheetRows');
 }
 
 /** Highlights a given range via custom status presets
@@ -225,7 +243,7 @@ function shrinkSheetRows(sheet, numRowsKeep) {
  * @param {string} [value] Value to set the cell contents to
  */
 function highlightRange(range, status, value) {
-  log(log.FUNCTION, 'STARTING highlightRange');
+  log(log.FUNCTION, 'Starting highlightRange');
   if (value) range.setValue(value);
   const statusColors = STATUS_LOOKUP[status];
   if (statusColors.border)
@@ -233,7 +251,7 @@ function highlightRange(range, status, value) {
   if (statusColors.background) range.setBackground(statusColors.background);
   if (statusColors.color) range.setFontColor(statusColors.color);
   if (statusColors.bold) range.setFontWeight('bold');
-  log(log.FUNCTION, 'ENDING highlightRange');
+  log(log.FUNCTION, 'Ending highlightRange');
 }
 
 /** Creates an object from a sheet's first row headers as keys with the values from the data object.
@@ -242,7 +260,7 @@ function highlightRange(range, status, value) {
  * @param {string[]} data Array of string data representing a row
  */
 function rowToJson(sheet, data) {
-  log(log.FUNCTION, 'STARTING rowToJson');
+  log(log.FUNCTION, 'Starting rowToJson');
   const obj = {};
   const keys = getHeaders(sheet);
 
@@ -250,7 +268,7 @@ function rowToJson(sheet, data) {
     obj[keys[i]] = data[i];
   }
 
-  log(log.FUNCTION, 'ENDING rowToJson');
+  log(log.FUNCTION, 'Ending rowToJson');
   return obj;
 }
 
@@ -261,7 +279,7 @@ function rowToJson(sheet, data) {
  * @param {int} [index] Optional index to specify the insertion point
  */
 function insertRow(sheet, rowData, index, cb) {
-  log(log.FUNCTION, 'STARTING insertRow');
+  log(log.FUNCTION, 'Starting insertRow');
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
@@ -273,7 +291,7 @@ function insertRow(sheet, rowData, index, cb) {
   } finally {
     lock.releaseLock();
   }
-  log(log.FUNCTION, 'ENDING insertRow');
+  log(log.FUNCTION, 'Ending insertRow');
 }
 
 /** Returns first found matching column (searches first row of the sheet)
@@ -283,16 +301,16 @@ function insertRow(sheet, rowData, index, cb) {
  * @returns {int} The first found column index, -1 if not found
  */
 function getColumnIndexFromString(sheet, searchTerm) {
-  log(log.FUNCTION, 'STARTING getColumnIndexFromString');
+  log(log.FUNCTION, 'Starting getColumnIndexFromString');
   const headers = getHeaders(sheet);
-  log(log.STATUS, `Got headers: ${headers}`);
+  log(log.STATUS, `Looking for ${searchTerm} in headers: ${headers}`);
   for (var i = 0; i < headers.length; i++) {
     if (headers[i] == searchTerm) {
       log(log.STATUS, `Header ${searchTerm} found at column ${i + 1}`);
       return i + 1;
     }
   }
-  log(log.FUNCTION, 'ENDING getColumnIndexFromString');
+  log(log.FUNCTION, 'Ending getColumnIndexFromString');
   return -1;
 }
 
@@ -349,7 +367,7 @@ function clearForm(form) {
 }
 
 function getSelectedContactData(ss) {
-  log(log.FUNCTION, 'RUNNING getSelectedContactData');
+  log(log.FUNCTION, 'Starting getSelectedContactData');
   try {
     const contactSheet = getSheet(ENUMS.CONTACTS, ss);
     const rowNumber = getValidSheetSelectedRow(contactSheet);
@@ -363,7 +381,7 @@ function getSelectedContactData(ss) {
     const passType = passTypeRange.getValue();
 
     log(log.STATUS, `Selected contact info: ${serialNumber}, ${passType}`);
-    log(log.FUNCTION, 'FINISHED getSelectedContactData');
+    log(log.FUNCTION, 'Finished getSelectedContactData');
     return { passType, serialNumber };
   } catch (err) {
     throw new ScriptError(`Could not find contact fields for serialNumber or passType: ${err}`);

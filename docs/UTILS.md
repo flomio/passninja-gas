@@ -25,6 +25,7 @@ General utility helper functions
 
 
 * [general](#utils.module_general)
+    * [~localizeString(input, toLanguage, fromLanguage)](#utils.module_general..localizeString)
     * [~randomChoice(arr)](#utils.module_general..randomChoice)
     * [~sendErrorAsEvent(serviceName, code, body)](#utils.module_general..sendErrorAsEvent)
     * [~formatDate(date)](#utils.module_general..formatDate)
@@ -32,6 +33,20 @@ General utility helper functions
     * [~findMatchIndexAtColumn(arr, column, query)](#utils.module_general..findMatchIndexAtColumn) ⇒ <code>int</code>
     * [~rangeValuesExist(arr)](#utils.module_general..rangeValuesExist) ⇒ <code>boolean</code>
     * [~MD5(input, isShortMode)](#utils.module_general..MD5) ⇒ <code>string</code>
+
+<a name="utils.module_general..localizeString"></a>
+
+### general~localizeString(input, toLanguage, fromLanguage)
+Localization for non-english users
+Options: https://cloud.google.com/translate/docs/languages
+
+**Kind**: inner method of [<code>general</code>](#utils.module_general)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| input | <code>string</code> |  | The text to translate |
+| toLanguage | <code>string</code> |  | The language to translate from |
+| fromLanguage | <code>string</code> | <code>&quot;en&quot;</code> | The language to translate to |
 
 <a name="utils.module_general..randomChoice"></a>
 
@@ -126,6 +141,7 @@ General sheet helper functions
 
 
 * [sheet](#utils.module_sheet)
+    * [~storeSetupFromQuestions(questions, sender)](#utils.module_sheet..storeSetupFromQuestions)
     * [~getLinkedSpreadsheet()](#utils.module_sheet..getLinkedSpreadsheet) ⇒ <code>Spreadsheet</code>
     * [~rowToJSONFromSerial(sheet, serialNumber)](#utils.module_sheet..rowToJSONFromSerial) ⇒ <code>object</code>
     * [~getDevDeploymentUrl()](#utils.module_sheet..getDevDeploymentUrl) ⇒ <code>string</code>
@@ -150,6 +166,18 @@ General sheet helper functions
     * [~clearForm(form)](#utils.module_sheet..clearForm)
     * [~getFormDestinationSheet(form)](#utils.module_sheet..getFormDestinationSheet) ⇒ <code>Sheet</code> \| <code>null</code>
     * [~clearFormDestinationSheet(form, ss)](#utils.module_sheet..clearFormDestinationSheet) ⇒ <code>null</code>
+
+<a name="utils.module_sheet..storeSetupFromQuestions"></a>
+
+### sheet~storeSetupFromQuestions(questions, sender)
+Asks a set of questions in order and sets environment variables from the responses and allows for cancellation.
+
+**Kind**: inner method of [<code>sheet</code>](#utils.module_sheet)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| questions | <code>Array.&lt;string&gt;</code> | Array of 2 strings, [0] is the question, [1] is the name of the env var to store |
+| sender | <code>string</code> | The name of the setup we are performing for |
 
 <a name="utils.module_sheet..getLinkedSpreadsheet"></a>
 

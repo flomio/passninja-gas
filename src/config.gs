@@ -3,15 +3,13 @@
  * @module config
  */
 
+const TRANSLATE = true;
 const print = Logger.log;
-const FILTER = 'FUNCTION,ERROR,SUCCESS';
 let LAST_LOG = new Date();
-const DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-
 const log = (eventType, msg, ...args) => {
   const NEW_LOG = new Date();
   let ms = ((NEW_LOG - LAST_LOG) / 1000).toFixed(3);
-  FILTER === '*' || FILTER.includes(eventType) ? print(' ' + eventType + ` (+${ms}s): ` + msg, ...args) : null;
+  (FILTER === '*' || FILTER.includes(eventType)) && print(`${eventType} (+${ms}s): ${msg} ${args}`);
   LAST_LOG = NEW_LOG;
 };
 
@@ -21,6 +19,11 @@ log.ERROR = 'ERROR';
 log.STATUS = 'STATUS';
 log.FUNCTION = 'FUNCTION';
 log.VIRTUAL = 'VIRTUAL';
+const FILTER = `${log.FUNCTION},${log.ERROR},${log.SUCCESS}`;
+
+const LOCALE = Session.getActiveUserLocale() || SpreadsheetApp.getActive().getSpreadsheetLocale() || '';
+
+const DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 const COLORS = {
   FIELD_PASSNINJA: '#325D79',
@@ -58,10 +61,23 @@ const STATUS_LOOKUP = {
 };
 
 const ENUMS = {
-  CONFIG: 'Config',
-  CONTACTS: 'Contacts',
-  EVENTS: 'Events',
-  SCANNERS: 'Scanners',
+  CONFIG: localizeString('Config'),
+  CONTACTS: localizeString('Contacts'),
+  EVENTS: localizeString('Events'),
+  SCANNERS: localizeString('Scanners'),
+  DISCONNECTED: localizeString('DISCONNECTED'),
+  AVAILABLE: localizeString('AVAILABLE'),
+  RESERVED: localizeString('RESERVED'),
+  UNASSIGNED: localizeString('UNASSIGNED'),
+  STATUS: localizeString('status'),
+  TRUE: localizeString('TRUE'),
+  FALSE: localizeString('FALSE'),
+  YES: localizeString('YES'),
+  NO: localizeString('NO'),
+  STATUS_SUCCESS: 'success',
+  STATUS_LOADING: 'loading',
+  STATUS_OK: 'ok',
+  STATUS_ERROR: 'error',
   PASSURL: 'passUrl',
   PASSTYPE: 'passType',
   SERIAL: 'serialNumber',
@@ -75,21 +91,20 @@ const ENUMS = {
   PASSNINJA_API_KEY: 'passninja_api_key',
   CURRENT_SPREADSHEET_ID: 'current_spreadsheet_id',
   CURRENT_SPREADSHEET_URL: 'current_spreadsheet_url',
-  AVAILABLE: 'AVAILABLE',
-  RESERVED: 'RESERVED',
-  UNASSIGNED: 'UNASSIGNED',
-  STATUS: 'status'
+  CURRENT_USER: 'current_user',
+  SPREADSHEET_NAME: 'spreadsheet_name',
+  SPREADSHEET_CREATOR: 'spreadsheet_creator'
 };
 const PASSNINJA_FIELDS = [ENUMS.PASSURL, ENUMS.PASSTYPE, ENUMS.SERIAL];
 
-const SHEET_DEFAULTS = {
+const SHEET_SIZES = {
   [ENUMS.SCANNERS]: {
     rows: 6,
     widths: [null, 50, 100, null, 280]
   },
   [ENUMS.CONFIG]: {
     rows: 14,
-    widths: [84, 124, 22, 116, 380]
+    widths: [100, 150, 16, 200, 450]
   },
   [ENUMS.EVENTS]: {
     widths: [190, 100, 100, 280, 1500]
@@ -109,16 +124,32 @@ const FORM_LOOKUP = {
 
 const V_START_ROW_OFFSET = 2;
 
+const SCANNERS_LABELS = {
+  serial: localizeString('Serial Number'),
+  id: 'id',
+  status: localizeString('Status'),
+  provisioned: localizeString('Provisioned'),
+  attached: localizeString('Attached Pass'),
+  activeStart: localizeString('Active Hours Start'),
+  activeEnd: localizeString('Active Hours End'),
+  price: localizeString('Unit Price')
+};
+
 const SCANNERS_FIELDS = [
-  'serialNumber',
-  'id',
-  'status',
-  'provisioned',
-  'attachedPassSerial',
-  'activeHourStart',
-  'activeHourEnd',
-  'unitPrice'
+  SCANNERS_LABELS.serial,
+  SCANNERS_LABELS.id,
+  SCANNERS_LABELS.status,
+  SCANNERS_LABELS.provisioned,
+  SCANNERS_LABELS.attached,
+  SCANNERS_LABELS.activeStart,
+  SCANNERS_LABELS.activeEnd,
+  SCANNERS_LABELS.price
 ];
+
+const GENERIC_NAME = {
+  first: localizeString('john'),
+  last: localizeString('smith')
+};
 
 const SCAN_PLATFORMS = ['apple-wallet', 'google-pay'];
 
@@ -139,4 +170,61 @@ const SCAN_TEMPLATE = {
     },
     uuid: '' // uuid
   }
+};
+
+const MENU_LABELS = {
+  selected: {
+    label: localizeString('Selected Row'),
+    create: { label: localizeString('Create/Update Pass') },
+    mock: { label: localizeString('Run Mock Scan') }
+  },
+  config: {
+    label: localizeString('Configuration'),
+    create: { label: localizeString('Create/Update Sheets From Config') }
+  },
+  credentials: {
+    label: localizeString('Add Credentials'),
+    twilio: { label: localizeString('Set Twilio Credentials') },
+    pn: { label: localizeString('Set PassNinja Credentials') }
+  },
+  overrides: {
+    label: localizeString('Overrides'),
+    rebuildConfig: { label: localizeString('Force Build of Config Sheet') },
+    rebuildSheets: { label: localizeString('Force Create/Update Sheets From Config') },
+    sendText: { label: localizeString('Force Text passUrl to phoneNumber') }
+  }
+};
+
+const CONFIG_LABELS = {
+  title: localizeString('01 CONFIG'),
+  headers: {
+    key: localizeString('key'),
+    value: localizeString('value'),
+    name: localizeString('name'),
+    template: localizeString('In Template?')
+  },
+  source: localizeString('Source Script'),
+  instructions: [
+    'INSTRUCTIONS:',
+    '1) Specify what passType this app will be using under General Setup.',
+    '2) Enter all the custom field names you have in your template.',
+    '3) then, PassNinja... Setup... Create/Update Sheets from Config'
+  ].map((line) => [localizeString(line)]),
+  passType: {
+    label: ENUMS.PASSTYPE,
+    info: localizeString('You must specify a passType to create passes.')
+  },
+  confirm: { no: ENUMS.NO, yes: ENUMS.YES },
+  general: {
+    label: localizeString('General Setup'),
+    info: localizeString('Define fields for the form that will be used to create passes')
+  }
+};
+
+const EVENTS_LABELS = {
+  date: localizeString('Event Date'),
+  eventType: localizeString('Event Type'),
+  passType: localizeString('Pass Type'),
+  serial: localizeString('Serial Number'),
+  data: localizeString('Event Data')
 };

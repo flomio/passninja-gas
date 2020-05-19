@@ -19,13 +19,13 @@ function doPost(e) {
  * @return {boolean} If the action completed successfully
  */
 function addEvent(spreadsheet, eventJson) {
-  log(log.FUNCTION, 'STARTING ADD_EVENT');
+  log(log.FUNCTION, 'Starting ADD_EVENT');
   let event;
   let scan = false;
   const eventsSheet = getSheet(ENUMS.EVENTS, spreadsheet);
   const callback = () => {
     spreadsheet.flush();
-    log(log.FUNCTION, 'TECHNICALLY ALL LOGIC IS FINISHED, FLASHING FOLLOWS.');
+    log(log.FUNCTION, 'TECHNICALLY ALL LOGIC IS Finished, FLASHING FOLLOWS.');
     autoResizeSheet(eventsSheet._internal);
   };
 
@@ -51,6 +51,6 @@ function addEvent(spreadsheet, eventJson) {
 
   if (scan) processScanEvent(spreadsheet, eventJson);
   callback();
-  log(log.FUNCTION, 'ENDING ADD_EVENT');
+  log(log.FUNCTION, 'Ending ADD_EVENT');
   return { data: event };
 }

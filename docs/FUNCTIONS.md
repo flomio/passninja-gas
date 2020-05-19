@@ -254,7 +254,7 @@ Sends a text using the Twilio API if credentials have been set up in the script.
 <a name="module_services..sendRequest"></a>
 
 ### services~sendRequest(url, options, serviceName) ⇒ <code>HTTPResponse</code>
-The generic function for running an external call
+The generic function for Starting an external call
 
 **Kind**: inner method of [<code>services</code>](#module_services)  
 
