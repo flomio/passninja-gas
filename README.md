@@ -22,15 +22,15 @@
 # Contents
 
 - [Contents](#contents)
-- [INSTALLATION](#installation)
+- [Installation](#installation)
 - [Documentation](#documentation)
   - [API Endpoints](#api-endpoints)
   - [Functions](#functions)
   - [Utilities](#utilities)
   - [Generated with jsdoc2md](#generated-with-jsdoc2md)
-- [CONTRIBUTING](#contributing)
+- [Contributing](#contributing)
 
-# INSTALLATION
+# Installation
 
 1.  Ask PassNinja to share this personal Google Apps Script (GAS) Project with you
 1.  Open the GAS Project and open the `core.gs` file then run the `createSpreadsheet` function from `Menu->Run->Run function->createSpreadsheet`
@@ -56,4 +56,4 @@
 
 [`^ Back to Top`](#contents)
 
-# [CONTRIBUTING](CONTRIBUTING.md)
+# [Contributing](CONTRIBUTING.md)
